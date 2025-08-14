@@ -111,7 +111,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
             ->schema([
                 Infolists\Components\Section::make('Office Stationery Item Details')
                     ->schema([
-                        Infolists\Components\Grid::make(5)
+                        Infolists\Components\Grid::make(4)
                             ->schema([
                                 Infolists\Components\TextEntry::make('division.name')
                                     ->label('Division')
@@ -128,14 +128,95 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                 Infolists\Components\TextEntry::make('item.unit_of_measure')
                                     ->label('Unit of Measure')
                                     ->icon('heroicon-o-scale'),
-
+                            ]),
+                        
+                    ])
+                    ->columns(1),
+                
+                Infolists\Components\Section::make('Stock Movement Details')
+                    ->schema([
+                        Infolists\Components\Grid::make(4)
+                            ->schema([
                                 Infolists\Components\TextEntry::make('current_stock')
                                     ->label('Current Stock')
                                     ->badge()
                                     ->color(fn ($state) => $state > 10 ? 'success' : ($state > 0 ? 'warning' : 'danger'))
                                     ->icon('heroicon-o-archive-box'),
+                                
+                                Infolists\Components\TextEntry::make('requests')
+                                    ->label('Latest Stock Requests Quantity')
+                                    ->getStateUsing(function ($record) {
+                                        $latestRequest = $record->requests()
+                                            ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
+                                            ->latest()
+                                            ->first();
+                                            
+                                        if ($latestRequest) {
+                                            $requestItem = $latestRequest->items()
+                                                ->where('item_id', $record->item_id)
+                                                ->first();
+                                            return $requestItem ? $requestItem->quantity : 0;
+                                        }
+                                        
+                                        return 0;
+                                    })
+                                    ->icon('heroicon-o-arrow-up-tray'),
+                                
+                                Infolists\Components\TextEntry::make('requests')
+                                    ->label('Latest Stock Requests Requester')
+                                    ->getStateUsing(function ($record) {
+                                        $latestRequest = $record->requests()
+                                            ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
+                                            ->latest()
+                                            ->first();
+                                            
+                                        return $latestRequest ? $latestRequest->requester->name : '-';
+                                    })
+                                    ->icon('heroicon-o-user'),
+                                
+                                Infolists\Components\TextEntry::make('requests')
+                                    ->label('Latest Stock Requests Date')
+                                    ->getStateUsing(function ($record) {
+                                        $latestRequest = $record->requests()
+                                            ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
+                                            ->latest()
+                                            ->first();
+                                            
+                                        return $latestRequest ? $latestRequest->created_at->format('d M Y') : '-';
+                                    })
+                                    ->icon('heroicon-o-calendar'),
+                                
+                                Infolists\Components\TextEntry::make('usages')
+                                    ->label('Latest Stock Usages Quantity')
+                                    ->getStateUsing(function ($record) {
+                                        $latestUsage = $record->usages()
+                                            ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
+                                            ->latest()
+                                            ->first();
+                                            
+                                        if ($latestUsage) {
+                                            $usageItem = $latestUsage->items()
+                                                ->where('item_id', $record->item_id)
+                                                ->first();
+                                            return $usageItem ? $usageItem->quantity : 0;
+                                        }
+                                        
+                                        return 0;
+                                    })
+                                    ->icon('heroicon-o-arrow-down-tray'),
+                                
+                                Infolists\Components\TextEntry::make('usages')
+                                    ->label('Latest Stock Usages Date')
+                                    ->getStateUsing(function ($record) {
+                                        $latestUsage = $record->usages()
+                                            ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
+                                            ->latest()
+                                            ->first();
+                                            
+                                        return $latestUsage ? $latestUsage->created_at->format('d M Y') : '-';
+                                    })
+                                    ->icon('heroicon-o-calendar'),
                             ]),
-                        
                     ])
                     ->columns(1),
             ]);
