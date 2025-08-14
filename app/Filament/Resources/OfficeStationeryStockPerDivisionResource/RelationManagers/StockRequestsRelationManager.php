@@ -14,6 +14,10 @@ class StockRequestsRelationManager extends RelationManager
 {
     protected static string $relationship = 'requests';
     protected static ?string $title = 'Stock Requests';
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function table(Table $table): Table
     {
