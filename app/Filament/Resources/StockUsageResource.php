@@ -24,7 +24,7 @@ class StockUsageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationParentItem = 'Stocks';
+    protected static ?string $navigationParentItem = 'Office Stationery';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
