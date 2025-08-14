@@ -309,7 +309,7 @@ class StockRequestResource extends Resource
             ->schema([
                 Infolists\Components\Section::make('Stock Request Detail')
                     ->schema([
-                        Infolists\Components\Grid::make(3)
+                        Infolists\Components\Grid::make(5)
                             ->schema([
                                 Infolists\Components\TextEntry::make('request_number')
                                     ->label('Request Number'),
@@ -317,70 +317,67 @@ class StockRequestResource extends Resource
                                     ->label('Requester Name'),
                                 Infolists\Components\TextEntry::make('division.name')
                                     ->label('Division Name'),
-                            ]),
-                    ])
-                    ->columns(1),
-
-                Infolists\Components\Section::make('Stock Request Status')
-                    ->schema([
-                        Infolists\Components\Grid::make(3)
-                            ->schema([
                                 Infolists\Components\TextEntry::make('type')
-                                    ->label('Stock Request Type')
+                                    ->label('Type')
                                     ->formatStateUsing(fn ($state) => match ($state) {
-                                        'increase' => 'Stock Increase',
+                                        StockRequest::TYPE_INCREASE => 'Stock Increase',
                                         default => ucfirst($state),
                                     })
                                     ->badge()
                                     ->color(fn ($state) => match ($state) {
-                                        'increase' => 'primary',
+                                        StockRequest::TYPE_INCREASE => 'primary',
                                         default => 'secondary',
                                     }),
+                                Infolists\Components\TextEntry::make('notes')
+                                    ->label('Notes'),
+                            ]),
+                    ])
+                    ->columns(1),
+                Infolists\Components\Section::make('Stock Request Status')
+                    ->schema([
+                        Infolists\Components\Grid::make(5)
+                            ->schema([
                                 Infolists\Components\TextEntry::make('status')
-                                    ->label('Stock Request Status')
+                                    ->label('Status')
                                     ->formatStateUsing(fn ($state) => match ($state) {
-                                        'pending' => 'Pending',
-                                        'approved_by_head' => 'Approved by Head',
-                                        'rejected_by_head' => 'Rejected by Head',
-                                        'approved_by_ipc' => 'Approved by IPC',
-                                        'rejected_by_ipc' => 'Rejected by IPC',
-                                        'delivered' => 'Delivered',
-                                        'completed' => 'Completed',
+                                        StockRequest::STATUS_PENDING => 'Pending',
+                                        StockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                                        StockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                                        StockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
+                                        StockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
+                                        StockRequest::STATUS_DELIVERED => 'Delivered',
+                                        StockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
                                     ->badge()
                                     ->color(fn ($state) => match ($state) {
-                                        'pending' => 'warning',
-                                        'approved_by_head', 'approved_by_ipc' => 'success',
-                                        'rejected_by_head', 'rejected_by_ipc' => 'danger',
-                                        'delivered', 'completed' => 'success',
+                                        StockRequest::STATUS_PENDING => 'warning',
+                                        StockRequest::STATUS_APPROVED_BY_HEAD, StockRequest::STATUS_APPROVED_BY_IPC => 'success',
+                                        StockRequest::STATUS_REJECTED_BY_HEAD, StockRequest::STATUS_REJECTED_BY_IPC => 'danger',
+                                        StockRequest::STATUS_DELIVERED, StockRequest::STATUS_COMPLETED => 'success',
                                         default => 'secondary',
                                     }),
-                                Infolists\Components\TextEntry::make('notes')
-                                    ->label('Stock Request Notes')
-                                    ->columnSpan(3),
-                                Infolists\Components\TextEntry::make('rejection_reason')
-                                    ->label('Stock Request Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, ['rejected_by_head', 'rejected_by_ipc']))
-                                    ->columnSpan(3),
                                 Infolists\Components\TextEntry::make('divisionHead.name')
-                                    ->label('Stock Request Head Approval Name')
+                                    ->label('Head Approve')
                                     ->placeholder('-'),
                                 Infolists\Components\TextEntry::make('approval_head_at')
                                     ->label('Head Approval At')
                                     ->dateTime()
                                     ->placeholder('-'),
                                 Infolists\Components\TextEntry::make('ipcStaff.name')
-                                    ->label('IPC Approval Name')
+                                    ->label('IPC Approve')
                                     ->placeholder('-'),
                                 Infolists\Components\TextEntry::make('approval_ipc_at')
                                     ->label('IPC Approval At')
                                     ->dateTime()
                                     ->placeholder('-'),
+                                Infolists\Components\TextEntry::make('rejection_reason')
+                                    ->label('Rejection Reason')
+                                    ->visible(fn ($record) => in_array($record->status, [StockRequest::STATUS_REJECTED_BY_HEAD, StockRequest::STATUS_REJECTED_BY_IPC]))
+                                    ->columnSpan(5),
                             ]),
                     ])
                     ->columns(1),
-
                 Infolists\Components\Section::make('Stock Request Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
@@ -388,9 +385,9 @@ class StockRequestResource extends Resource
                                 Infolists\Components\Grid::make(4)
                                     ->schema([
                                         Infolists\Components\TextEntry::make('item.name')
-                                            ->label('Item Name'),
+                                            ->label('Name'),
                                         Infolists\Components\TextEntry::make('category.name')
-                                            ->label('Item Category Name'),
+                                            ->label('Category'),
                                         Infolists\Components\TextEntry::make('quantity')
                                             ->label('Quantity'),
                                         Infolists\Components\TextEntry::make('notes')
