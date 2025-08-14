@@ -28,7 +28,7 @@ class StockRequestResource extends Resource
     
     protected static ?string $navigationGroup = 'Stocks';
     protected static ?string $navigationLabel = 'Stock Requests';
-    protected static ?string $navigationParentItem = 'Stocks';
+    protected static ?string $navigationParentItem = 'Office Stationery';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -326,10 +326,36 @@ class StockRequestResource extends Resource
                         Infolists\Components\Grid::make(3)
                             ->schema([
                                 Infolists\Components\TextEntry::make('type')
-                                    ->label('Stock Request Type'),
+                                    ->label('Stock Request Type')
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                        'increase' => 'Stock Increase',
+                                        default => ucfirst($state),
+                                    })
+                                    ->badge()
+                                    ->color(fn ($state) => match ($state) {
+                                        'increase' => 'primary',
+                                        default => 'secondary',
+                                    }),
                                 Infolists\Components\TextEntry::make('status')
                                     ->label('Stock Request Status')
-                                    ->badge(),
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                        'pending' => 'Pending',
+                                        'approved_by_head' => 'Approved by Head',
+                                        'rejected_by_head' => 'Rejected by Head',
+                                        'approved_by_ipc' => 'Approved by IPC',
+                                        'rejected_by_ipc' => 'Rejected by IPC',
+                                        'delivered' => 'Delivered',
+                                        'completed' => 'Completed',
+                                        default => ucfirst(str_replace('_', ' ', $state)),
+                                    })
+                                    ->badge()
+                                    ->color(fn ($state) => match ($state) {
+                                        'pending' => 'warning',
+                                        'approved_by_head', 'approved_by_ipc' => 'success',
+                                        'rejected_by_head', 'rejected_by_ipc' => 'danger',
+                                        'delivered', 'completed' => 'success',
+                                        default => 'secondary',
+                                    }),
                                 Infolists\Components\TextEntry::make('notes')
                                     ->label('Stock Request Notes')
                                     ->columnSpan(3),
