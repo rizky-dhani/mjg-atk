@@ -95,13 +95,17 @@ class PrintMedia extends Model
             switch ($movement->movement_type) {
                 case 'in':
                 case 'transfer':
-                case 'adjustment':
                     $currentStock += $movement->quantity;
                     break;
                 case 'out':
                 case 'damaged':
                 case 'expired':
                     $currentStock -= $movement->quantity;
+                    break;
+                case 'adjustment':
+                    // Adjustments can be positive or negative
+                    // Positive quantity increases stock, negative quantity decreases stock
+                    $currentStock += $movement->quantity;
                     break;
             }
         }
