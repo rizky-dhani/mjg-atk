@@ -2,19 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DivisionInventorySettingResource\Pages;
-use App\Filament\Resources\DivisionInventorySettingResource\RelationManagers;
-use App\Models\DivisionInventorySetting;
-use App\Models\CompanyDivision;
-use App\Models\item;
-use App\Models\OfficeStationeryItem;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\item;
 use Filament\Tables;
+use Filament\Forms\Get;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\CompanyDivision;
+use Filament\Resources\Resource;
+use App\Models\OfficeStationeryItem;
+use App\Models\DivisionInventorySetting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\DivisionInventorySettingResource\Pages;
+use App\Filament\Resources\DivisionInventorySettingResource\RelationManagers;
 
 class DivisionInventorySettingResource extends Resource
 {
@@ -46,7 +47,7 @@ class DivisionInventorySettingResource extends Resource
                             ->preload()
                             ->required(),
                         Forms\Components\Hidden::make('category_id')
-                            ->default(function (Forms\Get $get) {
+                            ->default(function (Get $get) {
                                 $itemId = $get('item_id');
                                 if ($itemId) {
                                     $item = OfficeStationeryItem::find($itemId);
