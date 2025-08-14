@@ -30,7 +30,7 @@ class StockRequestsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('request_number')->label('Request #')->searchable(),
                 Tables\Columns\TextColumn::make('status')->badge()->sortable(),
                 Tables\Columns\TextColumn::make('type')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('requester.name'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
