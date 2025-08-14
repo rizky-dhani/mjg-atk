@@ -66,7 +66,8 @@ class StockUsagesRelationManager extends RelationManager
                                             ->dateTime(),
                                         Infolists\Components\TextEntry::make('head.name')
                                             ->label('Approved By')
-                                            ->placeholder('-'),
+                                            ->placeholder('-')
+                                            ->formatStateUsing(fn ($state, $record) => $record->head_id ? 'Approved' : '-'),
                                     ]),
                             ])
                             ->columns(1),

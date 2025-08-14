@@ -95,18 +95,24 @@ class StockRequestsRelationManager extends RelationManager
                                             ->columnSpan(3),
                                         Infolists\Components\TextEntry::make('divisionHead.name')
                                             ->label('Stock Request Head Approval Name')
-                                            ->placeholder('-'),
+                                            ->placeholder('-')
+                                            ->formatStateUsing(fn ($state, $record) => $record->approval_head_id ? 'Approved' : '-')
+                                            ->visible(fn ($record) => $record->approval_head_id || $record->status !== 'pending'),
                                         Infolists\Components\TextEntry::make('approval_head_at')
                                             ->label('Head Approval At')
                                             ->dateTime()
-                                            ->placeholder('-'),
+                                            ->placeholder('-')
+                                            ->visible(fn ($record) => $record->approval_head_id || $record->status !== 'pending'),
                                         Infolists\Components\TextEntry::make('ipcStaff.name')
                                             ->label('IPC Approval Name')
-                                            ->placeholder('-'),
+                                            ->placeholder('-')
+                                            ->formatStateUsing(fn ($state, $record) => $record->approval_ipc_id ? 'Approved' : '-')
+                                            ->visible(fn ($record) => $record->approval_ipc_id || in_array($record->status, ['approved_by_ipc', 'delivered', 'completed'])),
                                         Infolists\Components\TextEntry::make('approval_ipc_at')
                                             ->label('IPC Approval At')
                                             ->dateTime()
-                                            ->placeholder('-'),
+                                            ->placeholder('-')
+                                            ->visible(fn ($record) => $record->approval_ipc_id || in_array($record->status, ['approved_by_ipc', 'delivered', 'completed'])),
                                     ]),
                             ])
                             ->columns(1),
