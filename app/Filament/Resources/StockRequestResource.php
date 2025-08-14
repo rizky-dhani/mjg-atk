@@ -250,16 +250,26 @@ class StockRequestResource extends Resource
                         auth()->user()->hasRole('Staff')
                     )
                     ->requiresConfirmation()
+                    ->databaseTransaction()
                     ->action(function ($record) {
                         // Update stock levels
                         foreach ($record->items as $item) {
-                            $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::firstOrCreate([
-                                'division_id' => $record->division_id,
-                                'item_id' => $item->item_id,
-                            ], [
-                                'current_stock' => 0,
-                            ]);
-                            $officeStationeryStockPerDivision->increment('current_stock', $item->quantity);
+                            $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
+                                ->where('item_id', $item->item_id)
+                                ->lockForUpdate()
+                                ->first();
+                                
+                            if ($officeStationeryStockPerDivision) {
+                                // Store previous stock
+                                $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
+                                
+                                // Update stock
+                                $officeStationeryStockPerDivision->increment('current_stock', $item->quantity);
+                                
+                                // Store new stock
+                                $item->new_stock = $officeStationeryStockPerDivision->current_stock;
+                                $item->save();
+                            }
                         }
                         
                         $record->update([

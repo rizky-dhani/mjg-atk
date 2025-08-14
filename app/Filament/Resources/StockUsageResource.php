@@ -106,6 +106,7 @@ class StockUsageResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->requiresConfirmation()
                     ->visible(fn($record) => $record->status === 'pending' && auth()->user()->division_id === $record->division_id && auth()->user()->hasRole('Head'))
+                    ->databaseTransaction()
                     ->action(function ($record) {
                         DB::transaction(function () use ($record) {
                             // Update status
@@ -119,10 +120,19 @@ class StockUsageResource extends Resource
                             foreach ($record->items as $item) {
                                 $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
                                     ->where('item_id', $item->item_id)
+                                    ->lockForUpdate()
                                     ->first();
 
                                 if ($officeStationeryStockPerDivision) {
+                                    // Store previous stock
+                                    $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
+                                    
+                                    // Update stock
                                     $officeStationeryStockPerDivision->decrement('current_stock', $item->quantity);
+                                    
+                                    // Store new stock
+                                    $item->new_stock = $officeStationeryStockPerDivision->current_stock;
+                                    $item->save();
                                 }
                             }
                         });
