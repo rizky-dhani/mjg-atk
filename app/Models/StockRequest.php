@@ -84,7 +84,9 @@ class StockRequest extends Model
         
         static::creating(function ($model) {
             if (empty($model->request_number)) {
-                $model->request_number = 'REQ-' . now()->timezone('Asia/Jakarta')->format('Ymd') . '-' . str_pad(StockRequest::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+                $latestRequest = StockRequest::orderBy('id', 'desc')->first();
+                $nextId = $latestRequest ? $latestRequest->id + 1 : 1;
+                $model->request_number = 'REQ-' . str_pad($nextId, 8, '0', STR_PAD_LEFT);
             }
         });
     }

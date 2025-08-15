@@ -81,7 +81,7 @@ class StockRequestSeeder extends Seeder
             $gaAdmin = $userGA->isNotEmpty() ? $userGA->random() : $admin; // Fallback to regular admin if no GA admin
 
             $request = StockRequest::create([
-                'request_number' => 'REQ-' . str_pad((string)$i, 8, '0', STR_PAD_LEFT),
+                'request_number' => 'REQ-' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
                 'requested_by' => $admin->id,
                 'division_id' => $division->id,
                 'type' => StockRequest::TYPE_INCREASE,
