@@ -251,7 +251,7 @@ class ViewStockRequest extends ViewRecord
                     ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Admin') &&
+                        auth()->user()->hasRole('Staff') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
@@ -261,18 +261,16 @@ class ViewStockRequest extends ViewRecord
                             ->schema([
                                 TextInput::make('item.name')
                                     ->label('Item')
-                                    ->disabled()
-                                    ->default(fn ($state, $record) => $record->item->name ?? ''),
+                                    ->disabled(),
                                 TextInput::make('quantity')
                                     ->label('Requested Quantity')
-                                    ->disabled()
-                                    ->default(fn ($state, $record) => $record->quantity ?? 0),
+                                    ->disabled(),
                                 TextInput::make('adjusted_quantity')
                                     ->label('Adjusted Quantity')
                                     ->numeric()
                                     ->minValue(0)
                                     ->required()
-                                    ->default(fn ($state, $record) => $record->quantity ?? 0),
+                                    ->default(fn ($state, $record) => $record->quantity),
                             ])
                             ->columns(3)
                             ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
