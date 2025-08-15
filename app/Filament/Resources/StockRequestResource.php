@@ -723,7 +723,9 @@ class StockRequestResource extends Resource
                     ])
                     ->columns(1)
                     ->collapsible()
-                    ->persistCollapsed(),
+                    ->persistCollapsed()
+                    ->id('stock-request-detail'),
+                    
                 Infolists\Components\Section::make('Stock Request Status')
                     ->schema([
                         Infolists\Components\Grid::make(6)
@@ -872,7 +874,10 @@ class StockRequestResource extends Resource
                     ])
                     ->columns(1)
                     ->collapsible()
-                    ->persistCollapsed(),
+                    ->collapsed()
+                    ->persistCollapsed()
+                    ->id('stock-request-status'),
+
                 Infolists\Components\Section::make('Stock Request Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
@@ -897,7 +902,8 @@ class StockRequestResource extends Resource
                     ])
                     ->columns(1)
                     ->collapsible()
-                    ->persistCollapsed(),
+                    ->persistCollapsed()
+                    ->id('stock-request-items'),
             ]);
     }
 

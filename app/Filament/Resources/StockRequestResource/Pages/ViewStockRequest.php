@@ -117,7 +117,7 @@ class ViewStockRequest extends ViewRecord
                     ->visible(fn ($record) => 
                         $record->status === StockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -142,7 +142,7 @@ class ViewStockRequest extends ViewRecord
                     ->visible(fn ($record) => 
                         $record->status === StockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->form([
                         Textarea::make('rejection_reason')
@@ -226,7 +226,7 @@ class ViewStockRequest extends ViewRecord
                     ->modalSubheading('Are you sure to mark the Stock Request as Delivered?')
                     ->visible(fn ($record) => 
                         $record->canBeDelivered() &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->databaseTransaction()
@@ -251,7 +251,7 @@ class ViewStockRequest extends ViewRecord
                     ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Staff') &&
+                        auth()->user()->hasRole('Admin') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
@@ -261,16 +261,18 @@ class ViewStockRequest extends ViewRecord
                             ->schema([
                                 TextInput::make('item.name')
                                     ->label('Item')
-                                    ->disabled(),
+                                    ->disabled()
+                                    ->default(fn ($state, $record) => $record->item->name ?? ''),
                                 TextInput::make('quantity')
                                     ->label('Requested Quantity')
-                                    ->disabled(),
+                                    ->disabled()
+                                    ->default(fn ($state, $record) => $record->quantity ?? 0),
                                 TextInput::make('adjusted_quantity')
                                     ->label('Adjusted Quantity')
                                     ->numeric()
                                     ->minValue(0)
                                     ->required()
-                                    ->default(fn ($state, $record) => $record->quantity),
+                                    ->default(fn ($state, $record) => $record->quantity ?? 0),
                             ])
                             ->columns(3)
                             ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
@@ -279,6 +281,10 @@ class ViewStockRequest extends ViewRecord
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
                         foreach ($record->items as $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
                             $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
                             
                             // Get current stock and maximum limit
@@ -312,6 +318,10 @@ class ViewStockRequest extends ViewRecord
                         
                         // Save adjusted quantities
                         foreach ($record->items as $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
                             $item->adjusted_quantity = $item->adjusted_quantity ?? $item->quantity;
                             $item->save();
                         }
@@ -398,6 +408,10 @@ class ViewStockRequest extends ViewRecord
                     ->action(function ($record) {
                         // Update stock levels with adjusted quantities
                         foreach ($record->items as $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
                             $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
                             
                             $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
