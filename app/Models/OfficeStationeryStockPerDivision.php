@@ -54,6 +54,42 @@ class OfficeStationeryStockPerDivision extends Model
     }
 
     /**
+     * Get the maximum limit for this item in this division.
+     */
+    public function maxLimit()
+    {
+        $setting = $this->setting();
+        return $setting ? $setting->max_limit : null;
+    }
+
+    /**
+     * Check if current stock exceeds the maximum limit.
+     */
+    public function isOverLimit(): bool
+    {
+        $maxLimit = $this->maxLimit();
+        return $maxLimit !== null && $this->current_stock > $maxLimit;
+    }
+
+    /**
+     * Check if current stock is at the maximum limit.
+     */
+    public function isAtLimit(): bool
+    {
+        $maxLimit = $this->maxLimit();
+        return $maxLimit !== null && $this->current_stock == $maxLimit;
+    }
+
+    /**
+     * Check if current stock is within the maximum limit.
+     */
+    public function isWithinLimit(): bool
+    {
+        $maxLimit = $this->maxLimit();
+        return $maxLimit === null || $this->current_stock <= $maxLimit;
+    }
+
+    /**
      * Stock requests belonging to the same division.
      * Additional item filtering will be applied in the RelationManager.
      */

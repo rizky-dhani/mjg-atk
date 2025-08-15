@@ -59,6 +59,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('division.initial')
                     ->label('Division')
+                    ->visible(fn() => auth()->user()->division?->name === 'IPC' || auth()->user()->division?->name === 'General Affairs' )
                     ->sortable()
                     ->searchable(),
 
@@ -68,7 +69,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('item.category.name')
-                    ->label('Item Category')
+                    ->label('Category')
                     ->sortable()
                     ->searchable(),
 
@@ -76,6 +77,45 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                     ->label('Current Stock')
                     ->numeric()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('max_limit')
+                    ->label('Max Limit')
+                    ->getStateUsing(function ($record) {
+                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                            ->where('item_id', $record->item_id)
+                            ->first();
+                        return $setting ? $setting->max_limit : '-';
+                    })
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('stock_status')
+                    ->label('Stock Status')
+                    ->getStateUsing(function ($record) {
+                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                            ->where('item_id', $record->item_id)
+                            ->first();
+                        
+                        if (!$setting) {
+                            return 'No limit set';
+                        }
+                        
+                        if ($record->current_stock > $setting->max_limit) {
+                            return 'Over limit';
+                        } elseif ($record->current_stock == $setting->max_limit) {
+                            return 'At limit';
+                        } else {
+                            return 'Within limit';
+                        }
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Over limit' => 'danger',
+                        'At limit' => 'warning',
+                        'Within limit' => 'success',
+                        default => 'gray',
+                    }),
+
                 Tables\Columns\TextColumn::make('item.unit_of_measure')
                     ->label('UOM')
             ])
@@ -142,6 +182,50 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->badge()
                                     ->color(fn ($state) => $state > 10 ? 'success' : ($state > 0 ? 'warning' : 'danger'))
                                     ->icon('heroicon-o-archive-box'),
+                                
+                                Infolists\Components\TextEntry::make('max_limit')
+                                    ->label('Max Limit')
+                                    ->getStateUsing(function ($record) {
+                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                            ->where('item_id', $record->item_id)
+                                            ->first();
+                                        return $setting ? $setting->max_limit : 'No limit set';
+                                    })
+                                    ->badge()
+                                    ->color(fn ($state, $record) => 
+                                        $state === 'No limit set' ? 'gray' : 
+                                        ($record->current_stock > $state ? 'danger' : 
+                                        ($record->current_stock == $state ? 'warning' : 'success'))
+                                    )
+                                    ->icon('heroicon-o-scale'),
+                                
+                                Infolists\Components\TextEntry::make('stock_status')
+                                    ->label('Stock Status')
+                                    ->getStateUsing(function ($record) {
+                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                            ->where('item_id', $record->item_id)
+                                            ->first();
+                                        
+                                        if (!$setting) {
+                                            return 'No limit set';
+                                        }
+                                        
+                                        if ($record->current_stock > $setting->max_limit) {
+                                            return 'Over limit';
+                                        } elseif ($record->current_stock == $setting->max_limit) {
+                                            return 'At limit';
+                                        } else {
+                                            return 'Within limit';
+                                        }
+                                    })
+                                    ->badge()
+                                    ->color(fn (string $state): string => match ($state) {
+                                        'Over limit' => 'danger',
+                                        'At limit' => 'warning',
+                                        'Within limit' => 'success',
+                                        default => 'gray',
+                                    })
+                                    ->icon('heroicon-o-exclamation-triangle'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
                                     ->label('Latest Stock Requests Quantity')

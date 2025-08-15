@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('stock_request_items', function (Blueprint $table) {
             $table->integer('previous_stock')->nullable()->after('quantity');
             $table->integer('new_stock')->nullable()->after('previous_stock');
+            $table->integer('adjusted_quantity')->nullable()->after('quantity');
         });
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stock_request_items', function (Blueprint $table) {
-            $table->dropColumn(['previous_stock', 'new_stock']);
+            $table->dropColumn(['previous_stock', 'new_stock', 'adjusted_quantity']);
         });
     }
 };

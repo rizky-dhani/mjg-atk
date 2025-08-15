@@ -14,7 +14,7 @@ class ListOfficeStationeryStocksPerDivision extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                    ->label('New Stock Movement'),
+                    ->label('New Item'),
         ];
     }
 }

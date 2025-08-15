@@ -20,13 +20,27 @@ class StockRequest extends Model
         'approval_head_at',
         'approval_ipc_id',
         'approval_ipc_at',
+        'approval_ipc_head_id',
+        'approval_ipc_head_at',
         'delivered_by',
         'delivered_at',
+        'approval_stock_adjustment_id',
+        'approval_stock_adjustment_at',
+        'approval_ga_admin_id',
+        'approval_ga_admin_at',
+        'approval_ga_head_id',
+        'approval_ga_head_at',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'approval_head_at' => 'datetime',
+        'approval_ipc_at' => 'datetime',
+        'approval_ipc_head_at' => 'datetime',
+        'approval_stock_adjustment_at' => 'datetime',
+        'approval_ga_admin_at' => 'datetime',
+        'approval_ga_head_at' => 'datetime',
     ];
 
     const TYPE_INCREASE = 'increase';
@@ -36,7 +50,14 @@ class StockRequest extends Model
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
     const STATUS_APPROVED_BY_IPC = 'approved_by_ipc';
     const STATUS_REJECTED_BY_IPC = 'rejected_by_ipc';
+    const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
+    const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
     const STATUS_DELIVERED = 'delivered';
+    const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
+    const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
+    const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
+    const STATUS_APPROVED_BY_GA_HEAD = 'approved_by_ga_head';
+    const STATUS_REJECTED_BY_GA_HEAD = 'rejected_by_ga_head';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -45,7 +66,7 @@ class StockRequest extends Model
         
         static::creating(function ($model) {
             if (empty($model->request_number)) {
-                $model->request_number = 'REQ-' . date('Ymd') . '-' . str_pad(StockRequest::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+                $model->request_number = 'REQ-' . now()->timezone('Asia/Jakarta')->format('Ymd') . '-' . str_pad(StockRequest::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
             }
         });
     }
@@ -71,7 +92,7 @@ class StockRequest extends Model
      */
     public function divisionHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'division_head_id');
+        return $this->belongsTo(User::class, 'approval_head_id');
     }
 
     /**
@@ -80,6 +101,38 @@ class StockRequest extends Model
     public function ipcStaff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_ipc_id');
+    }
+
+    /**
+     * Get the IPC Head who approved this.
+     */
+    public function ipcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ipc_head_id');
+    }
+
+    /**
+     * Get the user who approved the stock adjustment.
+     */
+    public function approvalStockAdjustmentBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_stock_adjustment_id');
+    }
+
+    /**
+     * Get the GA Admin who approved this.
+     */
+    public function gaAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ga_admin_id');
+    }
+
+    /**
+     * Get the GA Head who approved this.
+     */
+    public function gaHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ga_head_id');
     }
 
     /**
@@ -115,11 +168,43 @@ class StockRequest extends Model
     }
 
     /**
+     * Check if request needs IPC Head approval.
+     */
+    public function needsIpcHeadApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC;
+    }
+
+    /**
      * Check if request can be delivered.
      */
     public function canBeDelivered(): bool
     {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
+    }
+
+    /**
+     * Check if request needs stock adjustment approval.
+     */
+    public function needsStockAdjustmentApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
+    }
+
+    /**
+     * Check if request needs GA Admin approval.
+     */
+    public function needsGaAdminApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_STOCK_ADJUSTMENT;
+    }
+
+    /**
+     * Check if request needs GA Head approval.
+     */
+    public function needsGaHeadApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
     
 }

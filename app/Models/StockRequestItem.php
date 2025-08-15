@@ -12,11 +12,17 @@ class StockRequestItem extends Model
         'item_id',
         'category_id',
         'quantity',
+        'adjusted_quantity',
+        'previous_stock',
+        'new_stock',
         'notes',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
+        'adjusted_quantity' => 'integer',
+        'previous_stock' => 'integer',
+        'new_stock' => 'integer',
     ];
 
     /**

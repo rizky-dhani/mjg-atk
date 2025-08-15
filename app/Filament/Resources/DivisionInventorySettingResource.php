@@ -83,6 +83,42 @@ class DivisionInventorySettingResource extends Resource
                     ->label('Max Limit')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('current_stock')
+                    ->label('Current Stock')
+                    ->getStateUsing(function ($record) {
+                        $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
+                            ->where('item_id', $record->item_id)
+                            ->first();
+                        return $stock ? $stock->current_stock : 0;
+                    })
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('stock_status')
+                    ->label('Stock Status')
+                    ->getStateUsing(function ($record) {
+                        $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
+                            ->where('item_id', $record->item_id)
+                            ->first();
+                        
+                        if (!$stock) {
+                            return 'No stock record';
+                        }
+                        
+                        if ($stock->current_stock > $record->max_limit) {
+                            return 'Over limit';
+                        } elseif ($stock->current_stock == $record->max_limit) {
+                            return 'At limit';
+                        } else {
+                            return 'Within limit';
+                        }
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Over limit' => 'danger',
+                        'At limit' => 'warning',
+                        'Within limit' => 'success',
+                        default => 'gray',
+                    }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('division_id')
