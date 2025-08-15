@@ -265,7 +265,7 @@ class ViewStockRequest extends ViewRecord
                         $itemsData = [];
                         foreach ($record->items as $item) {
                             $itemsData[] = [
-                                'item.name' => $item->item->name ?? '',
+                                'item_name' => $item->item->name ?? '',
                                 'quantity' => $item->quantity ?? 0,
                                 'adjusted_quantity' => $item->quantity ?? 0,
                             ];
@@ -276,7 +276,7 @@ class ViewStockRequest extends ViewRecord
                         return [
                             Repeater::make('items')
                                 ->schema([
-                                    TextInput::make('item.name')
+                                    TextInput::make('item_name')
                                         ->label('Item')
                                         ->disabled(),
                                     TextInput::make('quantity')
