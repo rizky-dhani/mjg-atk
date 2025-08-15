@@ -255,36 +255,48 @@ class ViewStockRequest extends ViewRecord
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
-                    ->form([
-                        Repeater::make('items')
-                            ->relationship()
-                            ->schema([
-                                TextInput::make('item.name')
-                                    ->label('Item')
-                                    ->disabled(),
-                                TextInput::make('quantity')
-                                    ->label('Requested Quantity')
-                                    ->disabled(),
-                                TextInput::make('adjusted_quantity')
-                                    ->label('Adjusted Quantity')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->default(fn ($state, $record) => $record->quantity),
-                            ])
-                            ->columns(3)
-                            ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
-                            ->required()
-                    ])
+                    ->form(function ($record) {
+                        // Pre-populate the items data
+                        $itemsData = [];
+                        foreach ($record->items as $item) {
+                            $itemsData[] = [
+                                'item.name' => $item->item->name ?? '',
+                                'quantity' => $item->quantity ?? 0,
+                                'adjusted_quantity' => $item->quantity ?? 0,
+                            ];
+                        }
+                        
+                        return [
+                            Repeater::make('items')
+                                ->schema([
+                                    TextInput::make('item.name')
+                                        ->label('Item')
+                                        ->disabled(),
+                                    TextInput::make('quantity')
+                                        ->label('Requested Quantity')
+                                        ->disabled(),
+                                    TextInput::make('adjusted_quantity')
+                                        ->label('Adjusted Quantity')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->required(),
+                                ])
+                                ->columns(3)
+                                ->disabled(fn () => !$record->needsStockAdjustmentApproval())
+                                ->required()
+                                ->default($itemsData)
+                        ];
+                    })
                     ->action(function ($record, array $data) {
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
-                        foreach ($record->items as $item) {
+                        foreach ($record->items as $index => $item) {
                             if (!$item) {
                                 continue;
                             }
                             
-                            $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
                             
                             // Get current stock and maximum limit
                             $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
@@ -309,19 +321,21 @@ class ViewStockRequest extends ViewRecord
                         if (!empty($validationErrors)) {
                             Notification::make()
                                 ->title('Stock adjustment exceeds maximum limits')
-                                ->body(implode('\n', $validationErrors))
+                                ->body(implode("\n", $validationErrors))
                                 ->danger()
                                 ->send();
                             return;
                         }
                         
                         // Save adjusted quantities
-                        foreach ($record->items as $item) {
+                        foreach ($record->items as $index => $item) {
                             if (!$item) {
                                 continue;
                             }
                             
-                            $item->adjusted_quantity = $item->adjusted_quantity ?? $item->quantity;
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
+                            $item->adjusted_quantity = $adjustedQuantity;
                             $item->save();
                         }
                         
