@@ -257,7 +257,7 @@ class ViewStockRequest extends ViewRecord
                     ->requiresConfirmation()
                     ->form([
                         Repeater::make('items')
-                            ->relationship('items')
+                            ->relationship()
                             ->schema([
                                 TextInput::make('item.name')
                                     ->label('Item')
@@ -274,6 +274,7 @@ class ViewStockRequest extends ViewRecord
                             ])
                             ->columns(3)
                             ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
+                            ->required()
                     ])
                     ->action(function ($record, array $data) {
                         // Validate adjusted quantities against maximum limits
