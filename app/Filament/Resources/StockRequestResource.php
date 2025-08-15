@@ -176,9 +176,10 @@ class StockRequestResource extends Resource
                                     ]),
                                 Forms\Components\Textarea::make('notes')
                                     ->maxLength(1000)
-                                    ->columnSpanFull(),
+                                    ->rows(1)
+                                    ->autosize(),
                             ])
-                            ->columns(3)
+                            ->columns(4)
                             ->minItems(1)
                             ->addActionLabel('Add Item')
                             ->reorderableWithButtons()
@@ -270,7 +271,8 @@ class StockRequestResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
                     ->visible(fn ($record) => $record->status === StockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by),
-                
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => $record->status === StockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by),
                 // Approval Actions
                 Tables\Actions\Action::make('approve_as_head')
                     ->label('Approve')
@@ -674,7 +676,7 @@ class StockRequestResource extends Resource
         $query = parent::getEloquentQuery();
         
         // Filter based on user role
-        if (auth()->user()->division?->name === 'IPC') {
+        if (auth()->user()->division?->initial === 'IPC') {
             $query->orderByDesc('request_number');
         }else{
             $query->orderByDesc('request_number')->where('division_id', auth()->user()->division_id);
@@ -719,7 +721,9 @@ class StockRequestResource extends Resource
                                     ->label('Notes'),
                             ]),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed(),
                 Infolists\Components\Section::make('Stock Request Status')
                     ->schema([
                         Infolists\Components\Grid::make(6)
@@ -866,7 +870,9 @@ class StockRequestResource extends Resource
                                     ->columnSpan(6),
                             ]),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed(),
                 Infolists\Components\Section::make('Stock Request Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
@@ -889,7 +895,9 @@ class StockRequestResource extends Resource
                             ])
                             ->columns(1),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed(),
             ]);
     }
 

@@ -67,6 +67,36 @@ class ViewStockRequest extends ViewRecord
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_HEAD,
+                            'rejection_head_id' => auth()->user()->id,
+                            'rejection_head_at' => now('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Request rejected successfully')
+                            ->warning()
+                            ->send();
+                    }),
+                
+                Action::make('reject_as_head')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->modalHeading('Reject Stock Request')
+                    ->modalSubheading('Are you sure to reject the Stock Request?')
+                    ->visible(fn ($record) => 
+                        $record->status === StockRequest::STATUS_PENDING && 
+                        auth()->user()->hasRole('Head') &&
+                        auth()->user()->division_id === $record->division_id
+                    )
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => StockRequest::STATUS_REJECTED_BY_HEAD,
                             'approval_head_id' => auth()->user()->id,
                             'approval_head_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
@@ -103,6 +133,36 @@ class ViewStockRequest extends ViewRecord
                             ->send();
                     }),
                 
+                Action::make('reject_as_ipc')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->modalHeading('Reject Stock Request')
+                    ->modalSubheading('Are you sure you want to reject this Stock Request?')
+                    ->visible(fn ($record) => 
+                        $record->status === StockRequest::STATUS_APPROVED_BY_HEAD && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        auth()->user()->hasRole('Staff')
+                    )
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => StockRequest::STATUS_REJECTED_BY_IPC,
+                            'rejection_ipc_id' => auth()->user()->id,
+                            'rejection_ipc_at' => now('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Request rejected successfully')
+                            ->warning()
+                            ->send();
+                    }),
+                
                 Action::make('approve_as_ipc_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
@@ -125,6 +185,36 @@ class ViewStockRequest extends ViewRecord
                         Notification::make()
                             ->title('Request approved successfully')
                             ->success()
+                            ->send();
+                    }),
+                
+                Action::make('reject_as_ipc_head')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->modalHeading('Reject Stock Request')
+                    ->modalSubheading('Are you sure you want to reject this Stock Request?')
+                    ->visible(fn ($record) => 
+                        $record->needsIpcHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        auth()->user()->hasRole('Head')
+                    )
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => StockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                            'rejection_ipc_head_id' => auth()->user()->id,
+                            'rejection_ipc_head_at' => now('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Request rejected successfully')
+                            ->warning()
                             ->send();
                     }),
                 
@@ -262,6 +352,36 @@ class ViewStockRequest extends ViewRecord
                             ->send();
                     }),
                 
+                Action::make('reject_as_ga_admin')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->modalHeading('Reject Stock Request')
+                    ->modalSubheading('Are you sure you want to reject this Stock Request?')
+                    ->visible(fn ($record) => 
+                        $record->needsGaAdminApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        auth()->user()->hasRole('Admin')
+                    )
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => StockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Request rejected successfully')
+                            ->warning()
+                            ->send();
+                    }),
+                
                 Action::make('approve_as_ga_head')
                     ->label('Approve (GA Head)')
                     ->icon('heroicon-o-check-circle')
@@ -307,6 +427,36 @@ class ViewStockRequest extends ViewRecord
                         Notification::make()
                             ->title('Request approved by GA Head and stock updated successfully')
                             ->success()
+                            ->send();
+                    }),
+                
+                Action::make('reject_as_ga_head')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->modalHeading('Reject Stock Request')
+                    ->modalSubheading('Are you sure you want to reject this Stock Request?')
+                    ->visible(fn ($record) => 
+                        $record->needsGaHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        auth()->user()->hasRole('Head')
+                    )
+                    ->form([
+                        Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => StockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'rejection_ga_head_id' => auth()->user()->id,
+                            'rejection_ga_head_at' => now('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Request rejected successfully')
+                            ->warning()
                             ->send();
                     }),
         ];
