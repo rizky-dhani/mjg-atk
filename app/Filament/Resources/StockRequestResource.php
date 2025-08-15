@@ -462,6 +462,7 @@ class StockRequestResource extends Resource
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
+                    ->modalWidth('7xl')
                     ->form([
                         Forms\Components\Repeater::make('items')
                             ->relationship('items')

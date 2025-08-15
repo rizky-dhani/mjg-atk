@@ -243,12 +243,13 @@ class ViewStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('adjust_and_approve_stock')
+                                Action::make('adjust_and_approve_stock')
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->modalHeading('Stock Request Adjustment')
                     ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
+                    ->modalWidth('7xl')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
                         auth()->user()->hasRole('Admin') &&
@@ -277,7 +278,7 @@ class ViewStockRequest extends ViewRecord
                             Repeater::make('items')
                                 ->schema([
                                     TextInput::make('item_name')
-                                        ->label('Item')
+                                            ->label('Item')
                                         ->disabled(),
                                     TextInput::make('quantity')
                                         ->label('Requested Quantity')
