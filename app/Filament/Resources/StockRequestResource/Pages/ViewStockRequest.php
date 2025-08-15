@@ -251,11 +251,16 @@ class ViewStockRequest extends ViewRecord
                     ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Staff') &&
+                        auth()->user()->hasRole('Admin') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
                     ->form(function ($record) {
+                        // Debug: Log the record and its items
+                        \Log::info('Adjust stock action - Record ID: ' . $record->id);
+                        \Log::info('Adjust stock action - Items count: ' . $record->items->count());
+                        \Log::info('Adjust stock action - Items: ' . $record->items->pluck('id')->join(', '));
+                        
                         // Pre-populate the items data
                         $itemsData = [];
                         foreach ($record->items as $item) {
@@ -265,6 +270,8 @@ class ViewStockRequest extends ViewRecord
                                 'adjusted_quantity' => $item->quantity ?? 0,
                             ];
                         }
+                        
+                        \Log::info('Adjust stock action - Items data: ' . json_encode($itemsData));
                         
                         return [
                             Repeater::make('items')
@@ -288,6 +295,9 @@ class ViewStockRequest extends ViewRecord
                         ];
                     })
                     ->action(function ($record, array $data) {
+                        // Debug: Log the data received
+                        \Log::info('Adjust stock action - Form data: ' . json_encode($data));
+                        
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
                         foreach ($record->items as $index => $item) {
