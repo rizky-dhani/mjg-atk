@@ -18,29 +18,47 @@ class StockRequest extends Model
         'rejection_reason',
         'approval_head_id',
         'approval_head_at',
+        'rejection_head_id',
+        'rejection_head_at',
         'approval_ipc_id',
         'approval_ipc_at',
+        'rejection_ipc_id',
+        'rejection_ipc_at',
         'approval_ipc_head_id',
         'approval_ipc_head_at',
+        'rejection_ipc_head_id',
+        'rejection_ipc_head_at',
         'delivered_by',
         'delivered_at',
         'approval_stock_adjustment_id',
         'approval_stock_adjustment_at',
+        'rejection_stock_adjustment_id',
+        'rejection_stock_adjustment_at',
         'approval_ga_admin_id',
         'approval_ga_admin_at',
+        'rejection_ga_admin_id',
+        'rejection_ga_admin_at',
         'approval_ga_head_id',
         'approval_ga_head_at',
+        'rejection_ga_head_id',
+        'rejection_ga_head_at',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'delivered_at' => 'datetime',
         'approval_head_at' => 'datetime',
+        'rejection_head_at' => 'datetime',
         'approval_ipc_at' => 'datetime',
+        'rejection_ipc_at' => 'datetime',
         'approval_ipc_head_at' => 'datetime',
+        'rejection_ipc_head_at' => 'datetime',
         'approval_stock_adjustment_at' => 'datetime',
+        'rejection_stock_adjustment_at' => 'datetime',
         'approval_ga_admin_at' => 'datetime',
+        'rejection_ga_admin_at' => 'datetime',
         'approval_ga_head_at' => 'datetime',
+        'rejection_ga_head_at' => 'datetime',
     ];
 
     const TYPE_INCREASE = 'increase';
@@ -96,11 +114,27 @@ class StockRequest extends Model
     }
 
     /**
+     * Get the user who rejected this.
+     */
+    public function rejectionHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_head_id');
+    }
+
+    /**
      * Get the user who approved this.
      */
     public function ipcStaff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_ipc_id');
+    }
+
+    /**
+     * Get the user who rejected this.
+     */
+    public function rejectionIpc(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ipc_id');
     }
 
     /**
@@ -112,11 +146,27 @@ class StockRequest extends Model
     }
 
     /**
+     * Get the IPC Head who rejected this.
+     */
+    public function rejectionIpcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ipc_head_id');
+    }
+
+    /**
      * Get the user who approved the stock adjustment.
      */
     public function approvalStockAdjustmentBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_stock_adjustment_id');
+    }
+
+    /**
+     * Get the user who rejected the stock adjustment.
+     */
+    public function rejectionStockAdjustmentBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_stock_adjustment_id');
     }
 
     /**
@@ -128,11 +178,27 @@ class StockRequest extends Model
     }
 
     /**
+     * Get the GA Admin who rejected this.
+     */
+    public function rejectionGaAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ga_admin_id');
+    }
+
+    /**
      * Get the GA Head who approved this.
      */
     public function gaHead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_ga_head_id');
+    }
+
+    /**
+     * Get the GA Head who rejected this.
+     */
+    public function rejectionGaHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ga_head_id');
     }
 
     /**

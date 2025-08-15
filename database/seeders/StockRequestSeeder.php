@@ -192,15 +192,15 @@ class StockRequestSeeder extends Seeder
                 $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === StockRequest::STATUS_REJECTED_BY_HEAD) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_head_id = $head->id;
+                $request->rejection_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by head due to budget constraints';
                 $request->save();
             } elseif($request->status === StockRequest::STATUS_REJECTED_BY_IPC) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ipc_id = $ipc->id;
+                $request->rejection_ipc_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by IPC due to stock availability';
                 $request->save();
             } elseif($request->status === StockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
@@ -208,8 +208,8 @@ class StockRequestSeeder extends Seeder
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
                 $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ipc_head_id = $ipc->id;
+                $request->rejection_ipc_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by IPC Head due to policy violation';
                 $request->save();
             } elseif($request->status === StockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
@@ -223,8 +223,8 @@ class StockRequestSeeder extends Seeder
                 $request->delivered_at = now()->timezone('Asia/Jakarta');
                 $request->approval_stock_adjustment_id = $ipc->id;
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ga_admin_id = $gaAdmin->id;
+                $request->rejection_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by GA Admin due to documentation issues';
                 $request->save();
             } elseif($request->status === StockRequest::STATUS_REJECTED_BY_GA_HEAD) {
@@ -240,8 +240,8 @@ class StockRequestSeeder extends Seeder
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
                 $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_head_id = $gaAdmin->id;
-                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ga_head_id = $gaAdmin->id;
+                $request->rejection_ga_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by GA Head due to budget approval';
                 $request->save();
             }

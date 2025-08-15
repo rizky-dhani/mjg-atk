@@ -312,8 +312,8 @@ class StockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_head_id' => auth()->user()->id,
+                            'rejection_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -364,8 +364,8 @@ class StockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_ipc_id' => auth()->user()->id,
+                            'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -416,8 +416,8 @@ class StockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_ipc_head_id' => auth()->user()->id,
+                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -573,8 +573,8 @@ class StockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-                            'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -648,8 +648,8 @@ class StockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => StockRequest::STATUS_REJECTED_BY_GA_HEAD,
-                            'approval_ga_head_id' => auth()->user()->id,
-                            'approval_ga_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_ga_head_id' => auth()->user()->id,
+                            'rejection_ga_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -736,10 +736,10 @@ class StockRequestResource extends Resource
                                         StockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
                                         StockRequest::STATUS_DELIVERED => 'Delivered',
                                         StockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                                        StockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                         StockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                                        StockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                                        StockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                         StockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
+                                        StockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
                                         StockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
@@ -754,46 +754,112 @@ class StockRequestResource extends Resource
                                     ->columnSpan(6),
                                 Infolists\Components\TextEntry::make('divisionHead.name')
                                     ->label('Head Approve')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_head_id !== null),
                                 Infolists\Components\TextEntry::make('approval_head_at')
                                     ->label('Head Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionHead.name')
+                                    ->label('Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_head_at')
+                                    ->label('Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_head_id !== null),
                                 Infolists\Components\TextEntry::make('ipcStaff.name')
                                     ->label('IPC Approve')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_id !== null),
                                 Infolists\Components\TextEntry::make('approval_ipc_at')
                                     ->label('IPC Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionIpc.name')
+                                    ->label('IPC Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ipc_at')
+                                    ->label('IPC Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_id !== null),
                                 Infolists\Components\TextEntry::make('ipcHead.name')
                                     ->label('IPC Head Approve')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_head_id !== null),
                                 Infolists\Components\TextEntry::make('approval_ipc_head_at')
                                     ->label('IPC Head Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionIpcHead.name')
+                                    ->label('IPC Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ipc_head_at')
+                                    ->label('IPC Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_head_id !== null),
                                 Infolists\Components\TextEntry::make('approval_stock_adjustment_by.name')
                                     ->label('Stock Adjustment Approved By')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_stock_adjustment_id !== null),
                                 Infolists\Components\TextEntry::make('approval_stock_adjustment_at')
                                     ->label('Stock Adjustment Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionStockAdjustmentBy.name')
+                                    ->label('Stock Adjustment Rejected By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_stock_adjustment_at')
+                                    ->label('Stock Adjustment Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_stock_adjustment_id !== null),
                                 Infolists\Components\TextEntry::make('gaAdmin.name')
                                     ->label('GA Admin Approve')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
                                 Infolists\Components\TextEntry::make('approval_ga_admin_at')
                                     ->label('GA Admin Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionGaAdmin.name')
+                                    ->label('GA Admin Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ga_admin_at')
+                                    ->label('GA Admin Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
                                 Infolists\Components\TextEntry::make('gaHead.name')
                                     ->label('GA Head Approve')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_head_id !== null),
                                 Infolists\Components\TextEntry::make('approval_ga_head_at')
                                     ->label('GA Head Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionGaHead.name')
+                                    ->label('GA Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ga_head_at')
+                                    ->label('GA Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
                                     ->visible(fn ($record) => in_array($record->status, [StockRequest::STATUS_REJECTED_BY_HEAD, StockRequest::STATUS_REJECTED_BY_IPC, StockRequest::STATUS_REJECTED_BY_IPC_HEAD, StockRequest::STATUS_REJECTED_BY_GA_ADMIN, StockRequest::STATUS_REJECTED_BY_GA_HEAD]))
