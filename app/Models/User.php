@@ -64,7 +64,7 @@ class User extends Authenticatable
      */
     public function stockRequests(): HasMany
     {
-        return $this->hasMany(StockRequest::class, 'requested_by');
+        return $this->hasMany(OfficeStationeryStockRequest::class, 'requested_by');
     }
 
     /**
@@ -72,7 +72,7 @@ class User extends Authenticatable
      */
     public function approvedStockRequests(): HasMany
     {
-        return $this->hasMany(StockRequest::class, 'approved_by');
+        return $this->hasMany(OfficeStationeryStockRequest::class, 'approved_by');
     }
 
     /**
@@ -80,6 +80,6 @@ class User extends Authenticatable
      */
     public function deliveredStockRequests(): HasMany
     {
-        return $this->hasMany(StockRequest::class, 'delivered_by');
+        return $this->hasMany(OfficeStationeryStockRequest::class, 'delivered_by');
     }
 }

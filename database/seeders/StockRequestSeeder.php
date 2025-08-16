@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\StockRequest;
+use App\Models\OfficeStationeryStockRequest;
 use App\Models\StockRequestItem;
 use App\Models\User;
 use App\Models\CompanyDivision;
@@ -80,60 +80,50 @@ class StockRequestSeeder extends Seeder
             // Pick a random GA admin
             $gaAdmin = $userGA->isNotEmpty() ? $userGA->random() : $admin; // Fallback to regular admin if no GA admin
 
-            $request = StockRequest::create([
+            $request = OfficeStationeryStockRequest::create([
                 'request_number' => 'REQ-' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
                 'requested_by' => $admin->id,
                 'division_id' => $division->id,
-                'type' => StockRequest::TYPE_INCREASE,
+                'type' => OfficeStationeryStockRequest::TYPE_INCREASE,
                 'status' => [
-                    StockRequest::STATUS_PENDING, 
-                    StockRequest::STATUS_APPROVED_BY_HEAD, 
-                    StockRequest::STATUS_REJECTED_BY_HEAD, 
-                    StockRequest::STATUS_APPROVED_BY_IPC, 
-                    StockRequest::STATUS_REJECTED_BY_IPC, 
-                    StockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    StockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                    StockRequest::STATUS_DELIVERED, 
-                    StockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
-                    StockRequest::STATUS_APPROVED_BY_GA_ADMIN,
-                    StockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-                    StockRequest::STATUS_APPROVED_BY_GA_HEAD,
-                    StockRequest::STATUS_REJECTED_BY_GA_HEAD,
-                    StockRequest::STATUS_COMPLETED
+                    OfficeStationeryStockRequest::STATUS_PENDING, 
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, 
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, 
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, 
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, 
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_DELIVERED, 
+                    OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                    OfficeStationeryStockRequest::STATUS_COMPLETED
                 ][rand(0, 13)],
                 'notes' => 'Sample request ' . $i,
             ]);
 
             // Set approval fields based on status
-            if ($request->status === StockRequest::STATUS_APPROVED_BY_HEAD) {
+            if ($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_APPROVED_BY_IPC) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
-                $request->save();
-            } elseif($request->status === StockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
                 $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_DELIVERED) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
                 $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_head_id = $ipc->id;
                 $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_DELIVERED) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -142,10 +132,8 @@ class StockRequestSeeder extends Seeder
                 $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
                 $request->delivered_by = $ipc->id;
                 $request->delivered_at = now()->timezone('Asia/Jakarta');
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_APPROVED_BY_GA_ADMIN) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -156,10 +144,8 @@ class StockRequestSeeder extends Seeder
                 $request->delivered_at = now()->timezone('Asia/Jakarta');
                 $request->approval_stock_adjustment_id = $ipc->id;
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_APPROVED_BY_GA_HEAD) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -172,10 +158,8 @@ class StockRequestSeeder extends Seeder
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
                 $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_head_id = $gaAdmin->id;
-                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_COMPLETED) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -191,19 +175,35 @@ class StockRequestSeeder extends Seeder
                 $request->approval_ga_head_id = $gaAdmin->id;
                 $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_REJECTED_BY_HEAD) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_COMPLETED) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_id = $ipc->id;
+                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_by = $ipc->id;
+                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id;
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD) {
                 $request->rejection_head_id = $head->id;
                 $request->rejection_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by head due to budget constraints';
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_REJECTED_BY_IPC) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_ipc_id = $ipc->id;
                 $request->rejection_ipc_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by IPC due to stock availability';
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -212,7 +212,7 @@ class StockRequestSeeder extends Seeder
                 $request->rejection_ipc_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by IPC Head due to policy violation';
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -227,7 +227,7 @@ class StockRequestSeeder extends Seeder
                 $request->rejection_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by GA Admin due to documentation issues';
                 $request->save();
-            } elseif($request->status === StockRequest::STATUS_REJECTED_BY_GA_HEAD) {
+            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ipc_id = $ipc->id;
@@ -264,7 +264,7 @@ class StockRequestSeeder extends Seeder
                     $currentStock = $stock?->current_stock ?? 0;
 
                     // Calculate allowed quantity for request
-                    if ($request->type === StockRequest::TYPE_INCREASE) {
+                    if ($request->type === OfficeStationeryStockRequest::TYPE_INCREASE) {
                         // Only allow up to (max_limit - current_stock)
                         $allowed = max($maxLimit - $currentStock, 0);
                         // If allowed is 0, skip this item

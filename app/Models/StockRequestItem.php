@@ -30,7 +30,7 @@ class StockRequestItem extends Model
      */
     public function stockRequest(): BelongsTo
     {
-        return $this->belongsTo(StockRequest::class);
+        return $this->belongsTo(OfficeStationeryStockRequest::class);
     }
 
     /**

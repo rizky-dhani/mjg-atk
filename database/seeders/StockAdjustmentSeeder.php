@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\StockRequest;
+use App\Models\OfficeStationeryStockRequest;
 use App\Models\StockRequestItem;
 
 class StockAdjustmentSeeder extends Seeder
@@ -15,7 +15,7 @@ class StockAdjustmentSeeder extends Seeder
     public function run(): void
     {
         // Get all stock requests that have been delivered
-        $requests = StockRequest::where('status', 'delivered')->get();
+        $requests = OfficeStationeryStockRequest::where('status', 'delivered')->get();
         
         foreach ($requests as $request) {
             // For each request, adjust the quantities to simulate actual delivery

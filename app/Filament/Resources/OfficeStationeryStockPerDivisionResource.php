@@ -309,7 +309,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\StockRequestsRelationManager::class,
+            RelationManagers\OfficeStationeryStockRequestsRelationManager::class,
             RelationManagers\StockUsagesRelationManager::class,
         ];
     }

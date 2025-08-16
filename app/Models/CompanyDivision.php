@@ -33,7 +33,7 @@ class CompanyDivision extends Model
      */
     public function stockRequests(): HasMany
     {
-        return $this->hasMany(StockRequest::class, 'division_id');
+        return $this->hasMany(OfficeStationeryStockRequest::class, 'division_id');
     }
 
     /**
@@ -45,10 +45,10 @@ class CompanyDivision extends Model
     }
 
     /**
-     * Get the print media stock movements for this division.
+     * Get the marketing media stock movements for this division.
      */
-    public function printMediaStockMovements(): HasMany
+    public function marketingMediaStockMovements(): HasMany
     {
-        return $this->hasMany(PrintMediaStockMovement::class, 'division_id');
+        return $this->hasMany(MarketingMediaStockMovement::class, 'division_id');
     }
 }

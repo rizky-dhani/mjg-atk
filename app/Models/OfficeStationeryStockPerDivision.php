@@ -95,7 +95,7 @@ class OfficeStationeryStockPerDivision extends Model
      */
     public function requests(): HasMany
     {
-        return $this->hasMany(StockRequest::class, 'division_id', 'division_id');
+        return $this->hasMany(OfficeStationeryStockRequest::class, 'division_id', 'division_id');
     }
 
     /**

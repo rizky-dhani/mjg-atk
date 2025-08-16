@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\StockRequest;
+use App\Models\OfficeStationeryStockRequest;
 
 class UpdateStockRequestRejectionFieldsSeeder extends Seeder
 {
@@ -14,7 +14,7 @@ class UpdateStockRequestRejectionFieldsSeeder extends Seeder
     public function run(): void
     {
         // Move existing rejection data to new rejection fields
-        $rejectedRequests = StockRequest::where('status', 'LIKE', 'rejected%')->get();
+        $rejectedRequests = OfficeStationeryStockRequest::where('status', 'LIKE', 'rejected%')->get();
         
         foreach ($rejectedRequests as $request) {
             // For simplicity, we'll use the same user for both approval and rejection

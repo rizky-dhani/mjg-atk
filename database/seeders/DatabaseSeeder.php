@@ -25,9 +25,9 @@ class DatabaseSeeder extends Seeder
             StockRequestSeeder::class,
             StockAdjustmentSeeder::class,
             UpdateStockRequestRejectionFieldsSeeder::class,
-            PrintMediaCategorySeeder::class,
-            PrintMediaSeeder::class,
-            PrintMediaStockMovementSeeder::class,
+            MarketingMediaCategorySeeder::class,
+            MarketingMediaSeeder::class,
+            MarketingMediaStockMovementSeeder::class,
         ]);
 
     }
