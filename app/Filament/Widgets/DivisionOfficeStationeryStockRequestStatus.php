@@ -11,6 +11,13 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
     
+    protected int | string | array $columnSpan = 'full';
+    
+    protected function getColumns(): int
+    {
+        return 5;
+    }
+    
     protected function getStats(): array
     {
         $user = Auth::user();
