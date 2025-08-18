@@ -67,9 +67,9 @@ class MarketingMediaItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('unit_of_measure')
                     ->label('Unit')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('stock_movements_count')
-                    ->counts('stockMovements')
-                    ->label('Movements'),
+                Tables\Columns\TextColumn::make('stock_requests_count')
+                    ->counts('stockRequests')
+                    ->label('Requests'),
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Current Stock')
                     ->sortable()

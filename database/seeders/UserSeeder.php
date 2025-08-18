@@ -44,15 +44,6 @@ class UserSeeder extends Seeder
                 'division_id' => $div->id
             ]);
             $admin->assignRole('Admin');
-
-            $staff = User::create([
-                'name' => $div->name.' Staff',
-                'email' => strtolower($div->initial).'.staff@medquest.co.id',
-                'initial' => 'S'.$div->initial,
-                'password' => Hash::make('Atk2025!'),
-                'division_id' => $div->id
-            ]);
-            $staff->assignRole('Staff');
         }
     }
 }

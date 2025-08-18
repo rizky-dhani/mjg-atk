@@ -22,12 +22,10 @@ class DatabaseSeeder extends Seeder
             OfficeStationeryItemSeeder::class,
             DivisionInventorySettingSeeder::class,
             OfficeStationeryStockPerDivisionSeeder::class,
-            StockRequestSeeder::class,
-            StockAdjustmentSeeder::class,
-            UpdateStockRequestRejectionFieldsSeeder::class,
+            OfficeStationeryStockRequestSeeder::class,
             MarketingMediaCategorySeeder::class,
             MarketingMediaSeeder::class,
-            MarketingMediaStockMovementSeeder::class,
+            MarketingMediaStockRequestSeeder::class,
         ]);
 
     }

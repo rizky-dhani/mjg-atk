@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\MarketingMediaResource\Pages;
 
 use App\Filament\Resources\MarketingMediaResource;
-use App\Models\MarketingMediaStockMovement;
+use App\Models\MarketingMediaStockRequest;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists\Infolist;
@@ -36,7 +36,7 @@ class ViewMarketingMedia extends ViewRecord
                             ->label('Current Stock')
                             ->formatStateUsing(fn (int $state): string => number_format($state))
                             ->color('primary'),
-                        TextEntry::make('latest_movement.quantity')
+                        TextEntry::make('latest_request.quantity')
                             ->label('Latest Stock Change')
                             ->color(fn (int $state): string => $state >= 0 ? 'success' : 'danger')
                     ])

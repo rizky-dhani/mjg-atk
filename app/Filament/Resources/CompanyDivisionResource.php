@@ -83,22 +83,22 @@ class CompanyDivisionResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Head', 'Admin', 'Staff']);
+        return auth()->user()->hasRole(['Super Admin', 'Head', 'Admin', 'Admin']);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Staff']);
+        return auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Staff']);
+        return auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Staff']);
+        return auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function getRelations(): array

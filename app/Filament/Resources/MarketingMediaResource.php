@@ -106,7 +106,7 @@ class MarketingMediaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\StockMovementsRelationManager::class,
+            RelationManagers\StockRequestsRelationManager::class,
         ];
     }
 

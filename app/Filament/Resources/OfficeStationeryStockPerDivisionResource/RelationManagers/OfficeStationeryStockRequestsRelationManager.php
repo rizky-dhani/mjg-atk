@@ -97,7 +97,7 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                                     ->label('Head Approval At')
                                     ->dateTime()
                                     ->placeholder('-'),
-                                Infolists\Components\TextEntry::make('ipcStaff.name')
+                                Infolists\Components\TextEntry::make('ipcAdmin.name')
                                     ->label('IPC Approve')
                                     ->formatStateUsing(fn ($record) => $record->approval_ipc_id ? 'Approved' : '-')
                                     ->placeholder('-'),

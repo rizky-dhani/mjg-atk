@@ -161,22 +161,22 @@ class DivisionInventorySettingResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Staff', 'Head', 'Admin']);
+        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Head', 'Admin']);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Staff']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Staff']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Staff']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
     }
 
     public static function getRelations(): array

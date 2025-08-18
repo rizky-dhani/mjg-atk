@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('office_stationery_stocks_per_division', function (Blueprint $table) {
+        Schema::create('os_stocks_per_division', function (Blueprint $table) {
             $table->id();
             $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
             $table->foreignId('item_id')->constrained('office_stationery_items')->onDelete('cascade');

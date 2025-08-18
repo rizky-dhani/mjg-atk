@@ -202,19 +202,22 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->label('Requested By')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
                     ->colors([
                         'primary' => OfficeStationeryStockRequest::TYPE_INCREASE,
                     ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         OfficeStationeryStockRequest::TYPE_INCREASE => 'Increase',
                     }),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => OfficeStationeryStockRequest::STATUS_PENDING,
-                        'success' => [OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED],
-                        'danger' => [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD],
-                    ])
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
+                        default => 'secondary',
+                    })
                     ->formatStateUsing(fn ($state) => match ($state) {
                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
@@ -227,8 +230,8 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -262,8 +265,8 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
@@ -332,7 +335,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -355,7 +358,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -435,7 +438,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('primary')
                     ->visible(fn ($record) => 
                         $record->canBeDelivered() &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->databaseTransaction()
@@ -456,38 +459,58 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
+                    ->modalHeading('Stock Request Adjustment')
+                    ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
+                    ->modalWidth('7xl')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Staff') &&
+                        auth()->user()->hasRole('Admin') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
-                    ->modalWidth('7xl')
-                    ->form([
-                        Forms\Components\Repeater::make('items')
-                            ->relationship('items')
-                            ->schema([
-                                Forms\Components\TextInput::make('item.name')
-                                    ->label('Item')
-                                    ->disabled(),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label('Requested Quantity')
-                                    ->disabled(),
-                                Forms\Components\TextInput::make('adjusted_quantity')
-                                    ->label('Adjusted Quantity')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->default(fn ($state, $record) => $record->quantity),
-                            ])
-                            ->columns(3)
-                            ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
-                    ])
+                    ->form(function ($record) {
+                        // Pre-populate the items data
+                        $itemsData = [];
+                        foreach ($record->items as $item) {
+                            $itemsData[] = [
+                                'item_name' => $item->item->name ?? '',
+                                'quantity' => $item->quantity ?? 0,
+                                'adjusted_quantity' => $item->quantity ?? 0,
+                            ];
+                        }
+                        
+                        return [
+                            Forms\Components\Repeater::make('items')
+                                ->schema([
+                                    Forms\Components\TextInput::make('item_name')
+                                        ->label('Item')
+                                        ->disabled()
+                                        ->extraInputAttributes(['class' => 'whitespace-normal']),
+                                    Forms\Components\TextInput::make('quantity')
+                                        ->label('Requested Quantity')
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('adjusted_quantity')
+                                        ->label('Adjusted Quantity')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->required(),
+                                ])
+                                ->columns(3)
+                                ->disabled(fn () => !$record->needsStockAdjustmentApproval())
+                                ->required()
+                                ->default($itemsData)
+                        ];
+                    })
                     ->action(function ($record, array $data) {
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
-                        foreach ($record->items as $item) {
-                            $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
+                        foreach ($record->items as $index => $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
                             
                             // Get current stock and maximum limit
                             $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
@@ -512,16 +535,23 @@ class OfficeStationeryStockRequestResource extends Resource
                         if (!empty($validationErrors)) {
                             Notification::make()
                                 ->title('Stock adjustment exceeds maximum limits')
-                                ->body(implode('\
-', $validationErrors))
+                                ->body(implode("
+
+", $validationErrors))
                                 ->danger()
                                 ->send();
                             return;
                         }
                         
                         // Save adjusted quantities
-                        foreach ($record->items as $item) {
-                            $item->adjusted_quantity = $item->adjusted_quantity ?? $item->quantity;
+                        foreach ($record->items as $index => $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
+                            $item->adjusted_quantity = $adjustedQuantity;
                             $item->save();
                         }
                         
@@ -588,13 +618,13 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('approve_as_ga_head')
+                Tables\Actions\Action::make('approve_as_hcg_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->needsGaHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        $record->needsHcgHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->requiresConfirmation()
@@ -602,6 +632,10 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->action(function ($record) {
                         // Update stock levels with adjusted quantities
                         foreach ($record->items as $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
                             $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
                             
                             $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
@@ -623,24 +657,27 @@ class OfficeStationeryStockRequestResource extends Resource
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
                             'approval_ga_head_id' => auth()->user()->id,
                             'approval_ga_head_at' => now()->timezone('Asia/Jakarta'),
+                            // Automatically mark as delivered
+                            'delivered_by' => auth()->user()->id,
+                            'delivered_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by GA Head and stock updated successfully')
+                            ->title('Request approved by HCG Head, stock updated, and marked as delivered successfully')
                             ->success()
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('reject_as_ga_head')
+                Tables\Actions\Action::make('reject_as_hcg_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->needsGaHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        $record->needsHcgHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->requiresConfirmation()
@@ -651,7 +688,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
                             'rejection_ga_head_id' => auth()->user()->id,
                             'rejection_ga_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
@@ -746,17 +783,16 @@ class OfficeStationeryStockRequestResource extends Resource
                                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
-                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
                                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
                                     ->badge()
-                                    ->color(fn ($state) => match ($state) {
+                                    ->color(fn (string $state): string => match ($state) {
                                         OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
-                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'success',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'danger',
-                                        OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
                                         default => 'secondary',
                                     })
                                     ->columnSpan(6),
@@ -778,7 +814,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->dateTime()
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->rejection_head_id !== null),
-                                Infolists\Components\TextEntry::make('ipcStaff.name')
+                                Infolists\Components\TextEntry::make('ipcAdmin.name')
                                     ->label('IPC Approve')
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->approval_ipc_id !== null),
@@ -814,7 +850,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->dateTime()
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->rejection_ipc_head_id !== null),
-                                Infolists\Components\TextEntry::make('approval_stock_adjustment_by.name')
+                                Infolists\Components\TextEntry::make('approvalStockAdjustmentBy.name')
                                     ->label('Stock Adjustment Approved By')
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->approval_stock_adjustment_id !== null),
@@ -870,7 +906,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD]))
+                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
                                     ->columnSpan(6),
                             ]),
                     ])

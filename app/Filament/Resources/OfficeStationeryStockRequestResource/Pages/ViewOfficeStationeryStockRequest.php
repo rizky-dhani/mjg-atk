@@ -279,7 +279,8 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                                 ->schema([
                                     TextInput::make('item_name')
                                             ->label('Item')
-                                        ->disabled(),
+                                        ->disabled()
+                                        ->extraInputAttributes(['class' => 'whitespace-normal']),
                                     TextInput::make('quantity')
                                         ->label('Requested Quantity')
                                         ->disabled(),
@@ -416,15 +417,15 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('approve_as_ga_head')
-                    ->label('Approve (GA Head)')
+                Action::make('approve_as_hcg_head')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Stock Request')
                     ->modalSubheading('Are you sure to approve the Stock Request?')
                     ->visible(fn ($record) => 
-                        $record->needsGaHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        $record->needsHcgHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->requiresConfirmation()
@@ -457,26 +458,29 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
                             'approval_ga_head_id' => auth()->user()->id,
                             'approval_ga_head_at' => now('Asia/Jakarta'),
+                            // Automatically mark as delivered
+                            'delivered_by' => auth()->user()->id,
+                            'delivered_at' => now('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by GA Head and stock updated successfully')
+                            ->title('Request approved by HCG Head, stock updated, and marked as delivered successfully')
                             ->success()
                             ->send();
                     }),
                 
-                Action::make('reject_as_ga_head')
+                Action::make('reject_as_hcg_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Stock Request')
                     ->modalSubheading('Are you sure you want to reject this Stock Request?')
                     ->visible(fn ($record) => 
-                        $record->needsGaHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
+                        $record->needsHcgHeadApproval() && 
+                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->form([
@@ -486,7 +490,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
                             'rejection_ga_head_id' => auth()->user()->id,
                             'rejection_ga_head_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
