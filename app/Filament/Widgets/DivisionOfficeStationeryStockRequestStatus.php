@@ -16,7 +16,7 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
         $user = Auth::user();
         $divisionId = $user->division_id;
         
-        // Get counts for different statuses
+        // Get counts for all statuses
         $pendingCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
             ->where('status', OfficeStationeryStockRequest::STATUS_PENDING)
             ->count();
@@ -29,8 +29,44 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
             ->where('status', OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD)
             ->count();
             
+        $approvedByIpcCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)
+            ->count();
+            
+        $rejectedByIpcCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC)
+            ->count();
+            
+        $approvedByIpcHeadCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD)
+            ->count();
+            
+        $rejectedByIpcHeadCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD)
+            ->count();
+            
         $deliveredCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
             ->where('status', OfficeStationeryStockRequest::STATUS_DELIVERED)
+            ->count();
+            
+        $approvedStockAdjustmentCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT)
+            ->count();
+            
+        $approvedByGaAdminCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN)
+            ->count();
+            
+        $rejectedByGaAdminCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN)
+            ->count();
+            
+        $approvedByHcgHeadCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD)
+            ->count();
+            
+        $rejectedByHcgHeadCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
+            ->where('status', OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD)
             ->count();
             
         $completedCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
@@ -38,8 +74,8 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
             ->count();
 
         return [
-            Stat::make('Pending Requests', $pendingCount)
-                ->description('Requests awaiting approval')
+            Stat::make('Pending', $pendingCount)
+                ->description('Awaiting division head approval')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
                 ->url(
@@ -50,7 +86,7 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
                 ->icon('heroicon-o-document-text'),
                 
             Stat::make('Approved by Head', $approvedByHeadCount)
-                ->description('Requests approved by division head')
+                ->description('Division head approved')
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('primary')
                 ->url(
@@ -61,7 +97,7 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
                 ->icon('heroicon-o-document-text'),
                 
             Stat::make('Rejected by Head', $rejectedByHeadCount)
-                ->description('Requests rejected by division head')
+                ->description('Division head rejected')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
                 ->url(
@@ -71,8 +107,52 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
                 )
                 ->icon('heroicon-o-document-text'),
                 
-            Stat::make('Delivered Requests', $deliveredCount)
-                ->description('Requests marked as delivered')
+            Stat::make('Approved by IPC', $approvedByIpcCount)
+                ->description('IPC admin approved')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color('primary')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Rejected by IPC', $rejectedByIpcCount)
+                ->description('IPC admin rejected')
+                ->descriptionIcon('heroicon-m-x-circle')
+                ->color('danger')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Approved by IPC Head', $approvedByIpcHeadCount)
+                ->description('IPC head approved')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color('primary')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Rejected by IPC Head', $rejectedByIpcHeadCount)
+                ->description('IPC head rejected')
+                ->descriptionIcon('heroicon-m-x-circle')
+                ->color('danger')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Delivered', $deliveredCount)
+                ->description('Marked as delivered')
                 ->descriptionIcon('heroicon-m-truck')
                 ->color('success')
                 ->url(
@@ -82,7 +162,62 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
                 )
                 ->icon('heroicon-o-document-text'),
                 
-            Stat::make('Completed Requests', $completedCount)
+            Stat::make('Stock Adj. Approved', $approvedStockAdjustmentCount)
+                ->description('Stock adjustment approved')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color('success')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Approved by GA Admin', $approvedByGaAdminCount)
+                ->description('GA admin approved')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color('primary')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Rejected by GA Admin', $rejectedByGaAdminCount)
+                ->description('GA admin rejected')
+                ->descriptionIcon('heroicon-m-x-circle')
+                ->color('danger')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Approved by HCG Head', $approvedByHcgHeadCount)
+                ->description('HCG head approved')
+                ->descriptionIcon('heroicon-m-check-circle')
+                ->color('success')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Rejected by HCG Head', $rejectedByHcgHeadCount)
+                ->description('HCG head rejected')
+                ->descriptionIcon('heroicon-m-x-circle')
+                ->color('danger')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+                
+            Stat::make('Completed', $completedCount)
                 ->description('Fully processed requests')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
