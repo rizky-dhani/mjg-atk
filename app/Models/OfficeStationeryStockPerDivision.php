@@ -14,7 +14,7 @@ class OfficeStationeryStockPerDivision extends Model
         'office_stationery_category_id',
         'current_stock',
     ];
-    protected $table = 'office_stationery_stocks_per_division';
+    protected $table = 'os_stocks_per_division';
     protected $casts = [
         'current_stock' => 'integer',
     ];
@@ -96,14 +96,5 @@ class OfficeStationeryStockPerDivision extends Model
     public function requests(): HasMany
     {
         return $this->hasMany(OfficeStationeryStockRequest::class, 'division_id', 'division_id');
-    }
-
-    /**
-     * Stock usages belonging to the same division.
-     * Additional item filtering will be applied in the RelationManager.
-     */
-    public function usages(): HasMany
-    {
-        return $this->hasMany(StockUsage::class, 'division_id', 'division_id');
     }
 }

@@ -76,7 +76,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the stock requests delivered by this user (IPC Staff).
+     * Get the stock requests delivered by this user (IPC Admin).
      */
     public function deliveredStockRequests(): HasMany
     {

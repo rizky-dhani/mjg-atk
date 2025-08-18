@@ -45,10 +45,10 @@ class CompanyDivision extends Model
     }
 
     /**
-     * Get the marketing media stock movements for this division.
+     * Get the marketing media stock requests for this division.
      */
-    public function marketingMediaStockMovements(): HasMany
+    public function marketingMediaStockRequests(): HasMany
     {
-        return $this->hasMany(MarketingMediaStockMovement::class, 'division_id');
+        return $this->hasMany(MarketingMediaStockRequest::class, 'division_id');
     }
 }

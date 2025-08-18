@@ -52,7 +52,7 @@ class OfficeStationeryItem extends Model
      */
     public function stockRequestItems(): HasMany
     {
-        return $this->hasMany(StockRequestItem::class, 'item_id');
+        return $this->hasMany(OfficeStationeryStockRequestItem::class, 'item_id');
     }
 
     /**

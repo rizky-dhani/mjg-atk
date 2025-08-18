@@ -51,19 +51,19 @@ class MarketingMedia extends Model
     }
 
     /**
-     * Get the stock movements for this marketing media.
+     * Get the stock requests for this marketing media.
      */
-    public function stockMovements(): HasMany
+    public function stockRequests(): HasMany
     {
-        return $this->hasMany(MarketingMediaStockMovement::class, 'marketing_media_id');
+        return $this->hasMany(MarketingMediaStockRequest::class, 'marketing_media_id');
     }
 
     /**
-     * Get the latest stock movement for this marketing media within the same division.
+     * Get the latest stock request for this marketing media within the same division.
      */
-    public function getLatestMovementAttribute()
+    public function getLatestRequestAttribute()
     {
-        return $this->stockMovements()
+        return $this->stockRequests()
             ->where('division_id', $this->division_id)
             ->orderBy('movement_date', 'desc')
             ->first();
@@ -74,38 +74,38 @@ class MarketingMedia extends Model
      */
     public function getPreviousStockAttribute()
     {
-        $lastMovement = $this->stockMovements()->latest('created_at')->first();
-        return $lastMovement ? $lastMovement->previous_stock : 0;
+        $lastRequest = $this->stockRequests()->latest('created_at')->first();
+        return $lastRequest ? $lastRequest->previous_stock : 0;
     }
 
     /**
-     * Recalculate current stock based on all movements.
+     * Recalculate current stock based on all requests.
      */
     public function recalculateStock()
     {
-        $movements = $this->stockMovements()->orderBy('created_at')->get();
+        $requests = $this->stockRequests()->orderBy('created_at')->get();
         $currentStock = 0;
 
-        foreach ($movements as $movement) {
+        foreach ($requests as $request) {
             // Store the previous stock before updating
-            $movement->previous_stock = $currentStock;
-            $movement->save();
+            $request->previous_stock = $currentStock;
+            $request->save();
 
-            // Update current stock based on movement type
-            switch ($movement->movement_type) {
+            // Update current stock based on request type
+            switch ($request->movement_type) {
                 case 'in':
                 case 'transfer':
-                    $currentStock += $movement->quantity;
+                    $currentStock += $request->quantity;
                     break;
                 case 'out':
                 case 'damaged':
                 case 'expired':
-                    $currentStock -= $movement->quantity;
+                    $currentStock -= $request->quantity;
                     break;
                 case 'adjustment':
                     // Adjustments can be positive or negative
                     // Positive quantity increases stock, negative quantity decreases stock
-                    $currentStock += $movement->quantity;
+                    $currentStock += $request->quantity;
                     break;
             }
         }
