@@ -9,7 +9,7 @@ use App\Models\OfficeStationeryStockPerDivision;
 
 class OfficeStationeryStockRequest extends Model
 {
-    protected $table = 'stock_requests';
+    protected $table = 'os_stock_requests';
     protected $fillable = [
         'request_number',
         'division_id',
@@ -45,7 +45,6 @@ class OfficeStationeryStockRequest extends Model
         'rejection_ga_head_id',
         'rejection_ga_head_at',
     ];
-
     protected $casts = [
         'approved_at' => 'datetime',
         'delivered_at' => 'datetime',
@@ -77,8 +76,8 @@ class OfficeStationeryStockRequest extends Model
     const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
-    const STATUS_APPROVED_BY_GA_HEAD = 'approved_by_ga_head';
-    const STATUS_REJECTED_BY_GA_HEAD = 'rejected_by_ga_head';
+    const STATUS_APPROVED_BY_HCG_HEAD = 'approved_by_hcg_head';
+    const STATUS_REJECTED_BY_HCG_HEAD = 'rejected_by_hcg_head';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -129,7 +128,7 @@ class OfficeStationeryStockRequest extends Model
     /**
      * Get the user who approved this.
      */
-    public function ipcStaff(): BelongsTo
+    public function ipcAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_ipc_id');
     }
@@ -207,7 +206,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the user who delivered this (IPC Staff).
+     * Get the user who delivered this (IPC Admin).
      */
     public function deliverer(): BelongsTo
     {
@@ -219,7 +218,7 @@ class OfficeStationeryStockRequest extends Model
      */
     public function items(): HasMany
     {
-        return $this->hasMany(StockRequestItem::class);
+        return $this->hasMany(OfficeStationeryStockRequestItem::class, 'stock_request_id');
     }
 
     /**
@@ -279,9 +278,9 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Check if request needs GA Head approval.
+     * Check if request needs HCG Head approval.
      */
-    public function needsGaHeadApproval(): bool
+    public function needsHcgHeadApproval(): bool
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
@@ -345,9 +344,9 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Check if reduction request needs GA Head approval.
+     * Check if reduction request needs HCG Head approval.
      */
-    public function needsGaHeadApprovalForReduction(): bool
+    public function needsHcgHeadApprovalForReduction(): bool
     {
         return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
@@ -357,7 +356,7 @@ class OfficeStationeryStockRequest extends Model
      */
     public function canProcessReduction(): bool
     {
-        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_GA_HEAD;
+        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
     }
     
 }
