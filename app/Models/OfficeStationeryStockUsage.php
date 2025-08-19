@@ -14,6 +14,7 @@ class OfficeStationeryStockUsage extends Model
         'usage_number',
         'division_id',
         'requested_by',
+        'type',
         'status',
         'notes',
         'rejection_reason',
@@ -39,7 +40,8 @@ class OfficeStationeryStockUsage extends Model
         'approval_hcg_head_at' => 'datetime',
         'rejection_hcg_head_at' => 'datetime',
     ];
-
+    const TYPE_DECREASE = 'decrease';
+    
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED_BY_HEAD = 'approved_by_head';
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
@@ -54,6 +56,11 @@ class OfficeStationeryStockUsage extends Model
         parent::boot();
         
         static::creating(function ($model) {
+            // Set default type to decrease for stock usage
+            if (empty($model->type)) {
+                $model->type = self::TYPE_DECREASE;
+            }
+            
             if (empty($model->usage_number)) {
                 // Get the division initial
                 $division = CompanyDivision::find(auth()->user()->division_id);
@@ -186,8 +193,9 @@ class OfficeStationeryStockUsage extends Model
     }
     
     /**
-     * Process stock reduction for all items in this usage.
+     * Process stock adjustment for all items in this usage.
      * This method should be called when a usage is approved by all required parties.
+     * It can either increase or decrease stock based on the usage type.
      */
     public function processStockUsage(): void
     {
@@ -205,7 +213,7 @@ class OfficeStationeryStockUsage extends Model
                 // Store previous stock level for reference
                 $item->previous_stock = $stock->current_stock;
                 
-                // Reduce the stock by the requested quantity
+                // Decrease the stock by the requested quantity (default behavior)
                 $stock->current_stock -= $item->quantity;
                 
                 // Ensure stock doesn't go below zero

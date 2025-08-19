@@ -34,6 +34,8 @@ class OfficeStationeryStockUsageResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Stock Usage Items')
                     ->schema([
+                        Forms\Components\Hidden::make('type')
+                            ->default(OfficeStationeryStockUsage::TYPE_DECREASE),
                         Forms\Components\Repeater::make('items')
                             ->relationship()
                             ->schema([
@@ -159,7 +161,10 @@ class OfficeStationeryStockUsageResource extends Resource
                                                     
                                                 $currentStock = $stock ? $stock->current_stock : 0;
                                                 
-                                                if ($value > $currentStock) {
+                                                // For decrease type, check if quantity exceeds available stock
+                                                // For increase type, no validation needed
+                                                $usageType = data_get($livewire, 'data.type') ?? OfficeStationeryStockUsage::TYPE_DECREASE;
+                                                if ($usageType === OfficeStationeryStockUsage::TYPE_DECREASE && $value > $currentStock) {
                                                     $fail("The requested quantity ({$value}) exceeds the available stock ({$currentStock}) for this item.");
                                                 }
                                             };
@@ -201,6 +206,16 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->label('Requested By')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        OfficeStationeryStockUsage::TYPE_DECREASE => 'danger',
+                        default => 'secondary',
+                    })
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
+                        default => ucfirst($state),
+                    }),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -233,6 +248,10 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('type')
+                    ->options([
+                        OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
+                    ]),
                 SelectFilter::make('status')
                     ->options([
                         OfficeStationeryStockUsage::STATUS_PENDING => 'Pending',
@@ -437,6 +456,16 @@ class OfficeStationeryStockUsageResource extends Resource
                         Infolists\Components\TextEntry::make('usage_number'),
                         Infolists\Components\TextEntry::make('requester.name')
                             ->label('Requested By'),
+                        Infolists\Components\TextEntry::make('type')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                OfficeStationeryStockUsage::TYPE_DECREASE => 'danger',
+                                default => 'secondary',
+                            })
+                            ->formatStateUsing(fn ($state) => match ($state) {
+                                OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
+                                default => ucfirst($state),
+                            }),
                         Infolists\Components\TextEntry::make('notes'),
                     ])
                     ->columns(3)

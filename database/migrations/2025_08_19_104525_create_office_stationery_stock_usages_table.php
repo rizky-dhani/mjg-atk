@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('usage_number')->unique();
             $table->foreignId('requested_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
-            $table->enum('type', ['increase']);
+            $table->enum('type', ['decrease']);
             $table->enum('status', [
                 'pending',
                 'approved_by_head',
