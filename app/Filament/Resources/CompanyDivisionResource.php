@@ -42,6 +42,7 @@ class CompanyDivisionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn($query) => $query->orderBy('name'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
