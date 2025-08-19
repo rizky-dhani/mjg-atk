@@ -27,6 +27,8 @@ return new class extends Migration
                 'rejected_by_ipc_head',
                 'delivered',
                 'approved_stock_adjustment',
+                'approved_by_second_ipc_head',
+                'rejected_by_second_ipc_head',
                 'approved_by_ga_admin',
                 'rejected_by_ga_admin',
                 'approved_by_hcg_head',

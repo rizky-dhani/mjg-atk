@@ -362,6 +362,62 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->success()
                             ->send();
                     }),
+            
+            Action::make('approve_as_second_ipc_head')
+                ->label('Approve as IPC Head (Post Adjustment)')
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->modalHeading('Approve Stock Request')
+                ->modalSubheading('Are you sure you want to approve this Stock Request after stock adjustment?')
+                ->visible(fn ($record) => 
+                    $record->needsSecondIpcHeadApproval() && 
+                    $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                    auth()->user()->hasRole('Head')
+                )
+                ->requiresConfirmation()
+                ->action(function ($record) {
+                    $record->update([
+                        'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                        'approval_ipc_head_id' => auth()->user()->id,
+                        'approval_ipc_head_at' => now('Asia/Jakarta')
+                    ]);
+                    
+                    Notification::make()
+                        ->title('Request approved successfully by IPC Head (Post Adjustment)')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('reject_as_second_ipc_head')
+                ->label('Reject as IPC Head (Post Adjustment)')
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
+                ->modalHeading('Reject Stock Request')
+                ->modalSubheading('Are you sure you want to reject this Stock Request after stock adjustment?')
+                ->visible(fn ($record) => 
+                    $record->needsSecondIpcHeadApproval() && 
+                    $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                    auth()->user()->hasRole('Head')
+                )
+                ->form([
+                    Textarea::make('rejection_reason')
+                        ->required()
+                        ->maxLength(65535),
+                ])
+                ->action(function ($record, array $data) {
+                    $record->update([
+                        'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                        'rejection_ipc_head_id' => auth()->user()->id,
+                        'rejection_ipc_head_at' => now('Asia/Jakarta'),
+                        'rejection_reason' => $data['rejection_reason'],
+                    ]);
+                    
+                    Notification::make()
+                        ->title('Request rejected successfully by IPC Head (Post Adjustment)')
+                        ->warning()
+                        ->send();
+                }),
+            
             Action::make('approve_as_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')

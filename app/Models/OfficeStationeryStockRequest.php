@@ -70,6 +70,8 @@ class OfficeStationeryStockRequest extends Model
     const STATUS_REJECTED_BY_IPC = 'rejected_by_ipc';
     const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
     const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
+    const STATUS_APPROVED_BY_SECOND_IPC_HEAD = 'approved_by_second_ipc_head';
+    const STATUS_REJECTED_BY_SECOND_IPC_HEAD = 'rejected_by_second_ipc_head';
     const STATUS_DELIVERED = 'delivered';
     const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
@@ -282,6 +284,14 @@ class OfficeStationeryStockRequest extends Model
      * Check if request needs GA Admin approval (only for increase requests).
      */
     public function needsGaAdminApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_SECOND_IPC_HEAD;
+    }
+
+    /**
+     * Check if request needs second IPC Head approval (only for increase requests).
+     */
+    public function needsSecondIpcHeadApproval(): bool
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_STOCK_ADJUSTMENT;
     }
