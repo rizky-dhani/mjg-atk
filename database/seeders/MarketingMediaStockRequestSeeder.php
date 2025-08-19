@@ -53,35 +53,64 @@ class MarketingMediaStockRequestSeeder extends Seeder
                 // Initial stock in
                 MarketingMediaStockRequest::create([
                     'marketing_media_id' => $marketingMedia->id,
-                    'movement_type' => 'in',
+                    'type' => 'increase',
                     'quantity' => rand(100, 500),
-                    'movement_date' => now()->addWeeks(1),
                     'created_by' => $divisionUsers->random()->id,
+                    'status' => MarketingMediaStockRequest::STATUS_COMPLETED,
                     'created_at' => now('Asia/Jakarta')->addWeek()
                 ]);
 
-                // Some stock out movements
-                MarketingMediaStockRequest::create([
+                // Some stock reduction movements with different statuses for testing approval workflow
+                $reductionRequest = MarketingMediaStockRequest::create([
                     'marketing_media_id' => $marketingMedia->id,
-                    'movement_type' => 'out',
-                    'quantity' => rand(-10, -50),
-                    'movement_date' => now()->addWeeks(2),
+                    'type' => 'reduction',
+                    'quantity' => rand(10, 50),
                     'created_by' => $divisionUsers->random()->id,
+                    'status' => MarketingMediaStockRequest::STATUS_PENDING,
                     'created_at' => now('Asia/Jakarta')->addWeeks(2)
                 ]);
                 
-                // An adjustment movement (could be positive or negative)
-                MarketingMediaStockRequest::create([
+                // Another reduction request that's approved by head
+                $approvedByHeadRequest = MarketingMediaStockRequest::create([
                     'marketing_media_id' => $marketingMedia->id,
-                    'movement_type' => 'adjustment',
-                    'quantity' => rand(-20, 20), // Could be negative or positive
-                    'movement_date' => now()->addWeeks(3),
+                    'type' => 'reduction',
+                    'quantity' => rand(10, 30),
                     'created_by' => $divisionUsers->random()->id,
-                    'created_at' => now('Asia/Jakarta')->addWeeks(3)
+                    'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
+                    'approval_head_id' => $divisionUsers->random()->id,
+                    'approval_head_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(1),
+                    'created_at' => now('Asia/Jakarta')->addWeeks(2)
                 ]);
                 
-                // Recalculate stock for this marketing media
-                $marketingMedia->recalculateStock();
+                // Another reduction request that's approved by GA admin
+                $approvedByGaAdminRequest = MarketingMediaStockRequest::create([
+                    'marketing_media_id' => $marketingMedia->id,
+                    'type' => 'reduction',
+                    'quantity' => rand(10, 30),
+                    'created_by' => $divisionUsers->random()->id,
+                    'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                    'approval_head_id' => $divisionUsers->random()->id,
+                    'approval_head_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(1),
+                    'approval_admin_ga_id' => $divisionUsers->random()->id,
+                    'approval_admin_ga_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(2),
+                    'created_at' => now('Asia/Jakarta')->addWeeks(2)
+                ]);
+                
+                // Another reduction request that's fully approved and completed
+                $completedRequest = MarketingMediaStockRequest::create([
+                    'marketing_media_id' => $marketingMedia->id,
+                    'type' => 'reduction',
+                    'quantity' => rand(5, 20),
+                    'created_by' => $divisionUsers->random()->id,
+                    'status' => MarketingMediaStockRequest::STATUS_COMPLETED,
+                    'approval_head_id' => $divisionUsers->random()->id,
+                    'approval_head_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(1),
+                    'approval_admin_ga_id' => $divisionUsers->random()->id,
+                    'approval_admin_ga_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(2),
+                    'approval_mkt_head_id' => $divisionUsers->random()->id,
+                    'approval_mkt_head_at' => now('Asia/Jakarta')->addWeeks(2)->addDays(3),
+                    'created_at' => now('Asia/Jakarta')->addWeeks(2)
+                ]);
             }
         }
     }
