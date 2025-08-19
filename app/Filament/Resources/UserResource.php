@@ -58,6 +58,9 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                $query->orderBy('name')->where('name', '!=', 'Super Admin');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
