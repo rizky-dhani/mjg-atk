@@ -34,18 +34,8 @@ class OfficeStationeryStockRequestResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\Section::make('Request Information')
-                    ->schema([
-                        Forms\Components\Hidden::make('type')
-                            ->default(OfficeStationeryStockRequest::TYPE_INCREASE),
-                        Forms\Components\Textarea::make('notes')
-                            ->maxLength(65535)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-                
-                Forms\Components\Section::make('Request Items')
+        ->schema([
+                Forms\Components\Section::make('Office Stationery Stock Request Items')
                     ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship()
@@ -185,6 +175,15 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
+                Forms\Components\Section::make('Office Stationery Stock Request Information (Optional)')
+                    ->schema([
+                        Forms\Components\Hidden::make('type')
+                            ->default(OfficeStationeryStockRequest::TYPE_INCREASE),
+                        Forms\Components\Textarea::make('notes')
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ]);
     }
 

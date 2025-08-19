@@ -24,11 +24,12 @@ class MarketingMediaStockRequestResource extends Resource
     protected static ?string $navigationGroup = 'Stocks';
     protected static ?string $navigationParentItem = 'Marketing Media';
     protected static ?int $navigationSort = 2;
+    
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Movement Information')
+                Forms\Components\Section::make('Request Information')
                     ->schema([
                         Forms\Components\Select::make('marketing_media_id')
                             ->label('Marketing Media')
@@ -42,30 +43,24 @@ class MarketingMediaStockRequestResource extends Resource
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->disabled(), // Disabled because it should match the print media's division
-                        Forms\Components\Select::make('movement_type')
+                            ->disabled(), // Disabled because it should match the marketing media's division
+                        Forms\Components\Select::make('type')
                             ->options([
-                                'in' => 'Stock In',
-                                'out' => 'Stock Out',
-                                'transfer' => 'Transfer',
-                                'adjustment' => 'Adjustment',
-                                'damaged' => 'Damaged',
-                                'expired' => 'Expired',
+                                'increase' => 'Stock Increase',
+                                'reduction' => 'Stock Reduction',
                             ])
-                            ->required(),
-                        Forms\Components\DatePicker::make('movement_date')
                             ->required()
-                            ->default(now()),
-                    ])
-                    ->columns(2),
-                    
-                Forms\Components\Section::make('Quantity & Reference')
-                    ->schema([
+                            ->live(),
                         Forms\Components\TextInput::make('quantity')
                             ->required()
                             ->numeric()
                             ->step(1)
-                            ->live(onBlur: true),
+                            ->minValue(1),
+                    ])
+                    ->columns(2),
+                    
+                Forms\Components\Section::make('Stock Information')
+                    ->schema([
                         Forms\Components\TextInput::make('previous_stock')
                             ->label('Previous Stock')
                             ->disabled()
@@ -73,7 +68,7 @@ class MarketingMediaStockRequestResource extends Resource
                             ->numeric()
                             ->default(0),
                     ])
-                    ->columns(3),
+                    ->columns(1),
                     
                 Forms\Components\Section::make('Additional Information')
                     ->schema([
@@ -97,29 +92,51 @@ class MarketingMediaStockRequestResource extends Resource
                     ->label('Division')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('movement_type')
+                Tables\Columns\BadgeColumn::make('type')
                     ->colors([
-                        'success' => 'in',
-                        'danger' => 'out',
-                        'warning' => ['transfer', 'adjustment'],
-                        'gray' => ['damaged', 'expired'],
+                        'success' => 'increase',
+                        'danger' => 'reduction',
+                    ])
+                    ->labels([
+                        'increase' => 'Increase',
+                        'reduction' => 'Reduction',
                     ]),
                 Tables\Columns\TextColumn::make('quantity')
                     ->numeric()
                     ->sortable()
-                    ->color(fn (int $state): string => $state >= 0 ? 'success' : 'danger')
-                    ->formatStateUsing(fn (int $state): string => ($state >= 0 ? '+' : '') . number_format($state)),
+                    ->color(fn (string $state): string => $state >= 0 ? 'success' : 'danger')
+                    ->formatStateUsing(fn (int $state): string => number_format($state)),
                 Tables\Columns\TextColumn::make('previous_stock')
                     ->label('Previous Stock')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('reference_number')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('movement_date')
-                    ->date()
-                    ->sortable(),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'warning' => MarketingMediaStockRequest::STATUS_PENDING,
+                        'success' => [
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
+                            MarketingMediaStockRequest::STATUS_COMPLETED,
+                        ],
+                        'danger' => [
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
+                        ],
+                    ])
+                    ->labels([
+                        MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Head',
+                        MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
+                    ]),
                 Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Created By')
+                    ->label('Requested By')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -137,31 +154,22 @@ class MarketingMediaStockRequestResource extends Resource
                     ->options(CompanyDivision::all()->pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
-                Tables\Filters\SelectFilter::make('movement_type')
+                Tables\Filters\SelectFilter::make('type')
                     ->options([
-                        'in' => 'Stock In',
-                        'out' => 'Stock Out',
-                        'transfer' => 'Transfer',
-                        'adjustment' => 'Adjustment (use negative quantity to reduce stock)',
-                        'damaged' => 'Damaged',
-                        'expired' => 'Expired',
+                        'increase' => 'Stock Increase',
+                        'reduction' => 'Stock Reduction',
                     ]),
-                Tables\Filters\Filter::make('movement_date')
-                    ->form([
-                        Forms\Components\DatePicker::make('from'),
-                        Forms\Components\DatePicker::make('until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('movement_date', '>=', $date),
-                            )
-                            ->when(
-                                $data['until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('movement_date', '<=', $date),
-                            );
-                    }),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Head',
+                        MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
+                    ]),
             ])
             ->headerActions([
             ])
@@ -175,7 +183,7 @@ class MarketingMediaStockRequestResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('movement_date', 'desc');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
