@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\OfficeStationeryStockPerDivision;
 
 class OfficeStationeryStockRequest extends Model
 {
@@ -63,7 +62,6 @@ class OfficeStationeryStockRequest extends Model
     ];
 
     const TYPE_INCREASE = 'increase';
-    const TYPE_REDUCTION = 'reduction';
 
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED_BY_HEAD = 'approved_by_head';
@@ -86,9 +84,28 @@ class OfficeStationeryStockRequest extends Model
         
         static::creating(function ($model) {
             if (empty($model->request_number)) {
-                $latestRequest = OfficeStationeryStockRequest::orderBy('id', 'desc')->first();
-                $nextId = $latestRequest ? $latestRequest->id + 1 : 1;
-                $model->request_number = 'REQ-' . str_pad($nextId, 8, '0', STR_PAD_LEFT);
+                // Get the division initial
+                $division = CompanyDivision::find($model->division_id);
+                $divisionInitial = $division ? $division->initial : 'DIV';
+                
+                // Get the latest request by request_number for this division to maintain proper sequence
+                $latestRequest = OfficeStationeryStockRequest::whereNotNull('request_number')
+                    ->where('division_id', $model->division_id)
+                    ->orderBy('request_number', 'desc')
+                    ->first();
+                
+                if ($latestRequest) {
+                    // Extract the numeric part from the latest request number and increment it
+                    // Format is DIV-REQ-00000001, so we need to extract the numeric part after the last dash
+                    $parts = explode('-', $latestRequest->request_number);
+                    $latestNumber = intval(end($parts));
+                    $nextNumber = $latestNumber + 1;
+                } else {
+                    // If no previous requests for this division, start with 1
+                    $nextNumber = 1;
+                }
+                
+                $model->request_number = $divisionInitial . '-REQ-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
             }
         });
     }
@@ -230,14 +247,6 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Check if this is a stock reduction request.
-     */
-    public function isReduction(): bool
-    {
-        return $this->type === self::TYPE_REDUCTION;
-    }
-
-    /**
      * Check if request needs IPC approval (only for increase requests).
      */
     public function needsIpcApproval(): bool
@@ -284,79 +293,4 @@ class OfficeStationeryStockRequest extends Model
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
-    
-    /**
-     * Process stock reduction for all items in this request.
-     * This method should be called when a reduction request is approved by all required parties.
-     */
-    public function processStockReduction(): void
-    {
-        if (!$this->canProcessReduction()) {
-            throw new \Exception('Cannot process stock reduction for this request.');
-        }
-
-        foreach ($this->items as $item) {
-            // Get the current stock for this item in this division
-            $stock = OfficeStationeryStockPerDivision::where('division_id', $this->division_id)
-                ->where('item_id', $item->item_id)
-                ->first();
-
-            if ($stock) {
-                // Store previous stock level for reference
-                $item->previous_stock = $stock->current_stock;
-                
-                // Reduce the stock by the requested quantity
-                $stock->current_stock -= $item->quantity;
-                
-                // Ensure stock doesn't go below zero
-                if ($stock->current_stock < 0) {
-                    $stock->current_stock = 0;
-                }
-                
-                // Save the new stock level
-                $stock->save();
-                
-                // Store new stock level for reference
-                $item->new_stock = $stock->current_stock;
-                $item->save();
-            }
-        }
-        
-        // Update request status to completed
-        $this->status = self::STATUS_COMPLETED;
-        $this->save();
-    }
-
-    /**
-     * Check if reduction request needs Division Head approval.
-     */
-    public function needsDivisionHeadApprovalForReduction(): bool
-    {
-        return $this->isReduction() && $this->status === self::STATUS_PENDING;
-    }
-
-    /**
-     * Check if reduction request needs GA Admin approval.
-     */
-    public function needsGaAdminApprovalForReduction(): bool
-    {
-        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_HEAD;
-    }
-
-    /**
-     * Check if reduction request needs HCG Head approval.
-     */
-    public function needsHcgHeadApprovalForReduction(): bool
-    {
-        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
-    }
-
-    /**
-     * Check if reduction request can be processed (stock reduced).
-     */
-    public function canProcessReduction(): bool
-    {
-        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
-    }
-    
 }
