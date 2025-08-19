@@ -65,7 +65,7 @@ class MarketingMedia extends Model
     {
         return $this->stockRequests()
             ->where('division_id', $this->division_id)
-            ->orderBy('movement_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->first();
     }
 
@@ -79,34 +79,23 @@ class MarketingMedia extends Model
     }
 
     /**
-     * Recalculate current stock based on all requests.
+     * Recalculate current stock based on all completed requests.
      */
     public function recalculateStock()
     {
-        $requests = $this->stockRequests()->orderBy('created_at')->get();
+        $requests = $this->stockRequests()
+            ->where('status', MarketingMediaStockRequest::STATUS_COMPLETED)
+            ->orderBy('created_at')
+            ->get();
+            
         $currentStock = 0;
 
         foreach ($requests as $request) {
-            // Store the previous stock before updating
-            $request->previous_stock = $currentStock;
-            $request->save();
-
             // Update current stock based on request type
-            switch ($request->movement_type) {
-                case 'in':
-                case 'transfer':
-                    $currentStock += $request->quantity;
-                    break;
-                case 'out':
-                case 'damaged':
-                case 'expired':
-                    $currentStock -= $request->quantity;
-                    break;
-                case 'adjustment':
-                    // Adjustments can be positive or negative
-                    // Positive quantity increases stock, negative quantity decreases stock
-                    $currentStock += $request->quantity;
-                    break;
+            if ($request->type === MarketingMediaStockRequest::TYPE_INCREASE) {
+                $currentStock += $request->quantity;
+            } elseif ($request->type === MarketingMediaStockRequest::TYPE_REDUCTION) {
+                $currentStock -= $request->quantity;
             }
         }
 
