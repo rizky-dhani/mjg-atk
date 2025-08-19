@@ -44,7 +44,7 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
                 )
                 ->icon('heroicon-o-document-text'),
 
-            Stat::make('In Progress', $pendingCount)
+            Stat::make('In Progress', $inProgressCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
