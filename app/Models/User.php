@@ -56,7 +56,7 @@ class User extends Authenticatable
      */
     public function division(): BelongsTo
     {
-        return $this->belongsTo(CompanyDivision::class);
+        return $this->belongsTo(CompanyDivision::class, 'division_id');
     }
 
     /**
