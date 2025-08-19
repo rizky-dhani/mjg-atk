@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class OfficeStationerySecondIpcHeadApproval extends BaseWidget
 {
-    protected ?string $heading = 'Office Stationery Stock Requests';
+    protected ?string $heading = 'Office Stationery';
     protected static bool $isLazy = false;
     protected static ?int $sort = 10;
     
