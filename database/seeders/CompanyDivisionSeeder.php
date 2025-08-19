@@ -17,6 +17,8 @@ class CompanyDivisionSeeder extends Seeder
             ['name' => 'Accounting', 'initial' => 'ACC'],
             ['name' => 'Business Development', 'initial' => 'BDV'],
             ['name' => 'Finance', 'initial' => 'FIN'],
+            ['name' => 'Human Capital', 'initial' => 'HC'],
+            ['name' => 'General Affairs', 'initial' => 'GA'],
             ['name' => 'Human Capital General', 'initial' => 'HCG'],
             ['name' => 'Import and Purchasing', 'initial' => 'IPC'],
             ['name' => 'Information Technology', 'initial' => 'ITD'],
