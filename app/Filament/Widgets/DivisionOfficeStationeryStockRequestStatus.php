@@ -15,7 +15,7 @@ class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
     {
         return 3;
     }
-    
+    protected static ?int $sort = 1;
     protected function getStats(): array
     {
         $user = Auth::user();
