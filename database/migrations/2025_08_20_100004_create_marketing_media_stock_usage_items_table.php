@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('mm_stock_usage_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stock_usage_id')->constrained('mm_stock_usages')->onDelete('cascade');
-            $table->foreignId('marketing_media_id')->constrained('marketing_media_items')->onDelete('cascade');
+            $table->foreignId('item_id')->constrained('marketing_media_items')->onDelete('cascade');
             $table->foreignId('category_id')->constrained('marketing_media_categories')->onDelete('cascade');
             $table->integer('quantity');
             $table->integer('previous_stock')->nullable();

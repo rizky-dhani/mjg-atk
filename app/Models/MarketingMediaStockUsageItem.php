@@ -9,7 +9,7 @@ class MarketingMediaStockUsageItem extends Model
 {
     protected $fillable = [
         'stock_usage_id',
-        'marketing_media_id',
+        'item_id',
         'category_id',
         'quantity',
         'previous_stock',
@@ -34,11 +34,11 @@ class MarketingMediaStockUsageItem extends Model
     }
 
     /**
-     * Get the marketing media item for this usage item.
+     * Get the marketing media for this usage item.
      */
-    public function marketingMediaItem(): BelongsTo
+    public function item(): BelongsTo
     {
-        return $this->belongsTo(MarketingMediaItem::class);
+        return $this->belongsTo(MarketingMediaItem::class, 'item_id');
     }
 
     /**
@@ -46,6 +46,6 @@ class MarketingMediaStockUsageItem extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(MarketingMediaCategory::class);
+        return $this->belongsTo(MarketingMediaCategory::class, 'category_id');
     }
 }
