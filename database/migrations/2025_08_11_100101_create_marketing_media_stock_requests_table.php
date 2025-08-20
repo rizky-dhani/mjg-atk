@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('previous_stock')->default(0);
             $table->text('notes')->nullable();
             $table->text('rejection_reason')->nullable();
-            $table->enum('type', ['increase', 'reduction']);
+            $table->enum('type', ['increase']);
             $table->enum('status', ['pending', 'approved_by_head', 'rejected_by_head', 'approved_by_ga_admin', 'rejected_by_ga_admin', 'approved_by_mkt_head', 'rejected_by_mkt_head', 'completed'])->default('pending');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('approval_head_id')->nullable()->constrained('users')->onDelete('cascade');
