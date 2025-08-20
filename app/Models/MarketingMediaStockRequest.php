@@ -58,6 +58,20 @@ class MarketingMediaStockRequest extends Model
         'approval_head_at',
         'rejection_head_id',
         'rejection_head_at',
+        'approval_ipc_id',
+        'approval_ipc_at',
+        'rejection_ipc_id',
+        'rejection_ipc_at',
+        'approval_ipc_head_id',
+        'approval_ipc_head_at',
+        'rejection_ipc_head_id',
+        'rejection_ipc_head_at',
+        'delivered_by',
+        'delivered_at',
+        'approval_stock_adjustment_id',
+        'approval_stock_adjustment_at',
+        'rejection_stock_adjustment_id',
+        'rejection_stock_adjustment_at',
         'approval_admin_ga_id',
         'approval_admin_ga_at',
         'rejection_admin_ga_id',
@@ -71,6 +85,13 @@ class MarketingMediaStockRequest extends Model
     protected $casts = [
         'approval_head_at' => 'datetime',
         'rejection_head_at' => 'datetime',
+        'approval_ipc_at' => 'datetime',
+        'rejection_ipc_at' => 'datetime',
+        'approval_ipc_head_at' => 'datetime',
+        'rejection_ipc_head_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'approval_stock_adjustment_at' => 'datetime',
+        'rejection_stock_adjustment_at' => 'datetime',
         'approval_admin_ga_at' => 'datetime',
         'rejection_admin_ga_at' => 'datetime',
         'approval_mkt_head_at' => 'datetime',
@@ -82,6 +103,14 @@ class MarketingMediaStockRequest extends Model
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED_BY_HEAD = 'approved_by_head';
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
+    const STATUS_APPROVED_BY_IPC = 'approved_by_ipc';
+    const STATUS_REJECTED_BY_IPC = 'rejected_by_ipc';
+    const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
+    const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
+    const STATUS_APPROVED_BY_SECOND_IPC_HEAD = 'approved_by_second_ipc_head';
+    const STATUS_REJECTED_BY_SECOND_IPC_HEAD = 'rejected_by_second_ipc_head';
+    const STATUS_DELIVERED = 'delivered';
+    const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
     const STATUS_APPROVED_BY_MKT_HEAD = 'approved_by_mkt_head';
@@ -137,7 +166,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the user who approved this by division head.
+     * Get the user who approved this.
      */
     public function divisionHead(): BelongsTo
     {
@@ -145,11 +174,59 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the user who rejected this by division head.
+     * Get the user who rejected this.
      */
     public function rejectionHead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejection_head_id');
+    }
+
+    /**
+     * Get the user who approved this.
+     */
+    public function ipcAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ipc_id');
+    }
+
+    /**
+     * Get the user who rejected this.
+     */
+    public function rejectionIpc(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ipc_id');
+    }
+
+    /**
+     * Get the IPC Head who approved this.
+     */
+    public function ipcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ipc_head_id');
+    }
+
+    /**
+     * Get the IPC Head who rejected this.
+     */
+    public function rejectionIpcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ipc_head_id');
+    }
+
+    /**
+     * Get the user who approved the stock adjustment.
+     */
+    public function approvalStockAdjustmentBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_stock_adjustment_id');
+    }
+
+    /**
+     * Get the user who rejected the stock adjustment.
+     */
+    public function rejectionStockAdjustmentBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_stock_adjustment_id');
     }
 
     /**
@@ -185,6 +262,14 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
+     * Get the user who delivered this (IPC Admin).
+     */
+    public function deliverer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'delivered_by');
+    }
+
+    /**
      * Get the items in this request.
      */
     public function items(): HasMany
@@ -209,11 +294,43 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Check if request needs GA Admin approval.
+     * Check if request needs IPC approval (only for increase requests).
+     */
+    public function needsIpcApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_HEAD;
+    }
+
+    /**
+     * Check if request needs IPC Head approval (only for increase requests).
+     */
+    public function needsIpcHeadApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC;
+    }
+
+    /**
+     * Check if request can be delivered (only for increase requests).
+     */
+    public function canBeDelivered(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
+    }
+
+    /**
+     * Check if request needs stock adjustment approval (only for increase requests).
+     */
+    public function needsStockAdjustmentApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
+    }
+
+    /**
+     * Check if request needs GA Admin approval (only for increase requests).
      */
     public function needsGaAdminApproval(): bool
     {
-        return $this->status === self::STATUS_APPROVED_BY_HEAD;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_SECOND_IPC_HEAD;
     }
 
     /**

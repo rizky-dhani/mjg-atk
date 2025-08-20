@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\MarketingMedia;
+use App\Models\MarketingMediaItem;
 use App\Models\MarketingMediaStockRequest;
 use App\Models\MarketingMediaCategory;
 use App\Models\CompanyDivision;
@@ -37,7 +38,7 @@ class MarketingMediaStockRequestSeeder extends Seeder
             // Create unique MarketingMedia items for this division
             $divisionMarketingMedia = [];
             foreach ($categories->take(3) as $category) {
-                $marketingMedia = MarketingMedia::create([
+                $marketingMedia = MarketingMediaItem::create([
                     'name' => $category->name . ' - ' . $division->name,
                     'category_id' => $category->id,
                     'division_id' => $division->id, // Set the division_id
