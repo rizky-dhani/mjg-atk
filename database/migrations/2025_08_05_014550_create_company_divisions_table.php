@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('initial', 10);
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table){
+            $table->foreignId('division_id')->after('initial')->nullable()->constrained('company_divisions')->cascadeOnDelete();
+        });
     }
 
     /**
