@@ -220,8 +220,8 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         OfficeStationeryStockUsage::STATUS_PENDING => 'warning',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING, OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING => 'danger',
+                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
+                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
@@ -230,8 +230,8 @@ class OfficeStationeryStockUsageResource extends Resource
                         OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING => 'Approved by Supervisor/Head Marketing Support',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING => 'Rejected by Supervisor/Head Marketing Support',
+                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -259,8 +259,8 @@ class OfficeStationeryStockUsageResource extends Resource
                         OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING => 'Approved by Supervisor/Head Marketing Support',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING => 'Rejected by Supervisor/Head Marketing Support',
+                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
@@ -372,7 +372,7 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('approve_as_supervisor_marketing')
+                Tables\Actions\Action::make('approve_as_hcg_head')
                     ->label('Approve & Process Stock')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -383,7 +383,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING,
+                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
                             'approval_mkt_head_id' => auth()->user()->id,
                             'approval_mkt_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
@@ -396,7 +396,7 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('reject_as_supervisor_marketing')
+                Tables\Actions\Action::make('reject_as_hcg_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -413,7 +413,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING,
+                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
                             'rejection_mkt_head_id' => auth()->user()->id,
                             'rejection_mkt_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
@@ -442,6 +442,8 @@ class OfficeStationeryStockUsageResource extends Resource
             $query->where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD);
         }elseif($user->division?->initial === 'HCG' && $user->hasRole('Head')){
             $query->where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN);
+        }else{
+            $query->where('division_id', $user->division_id)->orderByDesc('usage_number');
         }
         
         return $query;
@@ -479,8 +481,8 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 OfficeStationeryStockUsage::STATUS_PENDING => 'warning',
-                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING, OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
-                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING => 'danger',
+                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
+                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
                                 default => 'secondary',
                             })
                             ->formatStateUsing(fn ($state) => match ($state) {
@@ -489,8 +491,8 @@ class OfficeStationeryStockUsageResource extends Resource
                                 OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                                 OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                 OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING => 'Approved by Supervisor/Head Marketing Support',
-                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING => 'Rejected by Supervisor/Head Marketing Support',
+                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                                 OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
                             })
                             ->columnSpan(6),
@@ -523,22 +525,22 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->dateTime()
                             ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('supervisorMarketing.name')
-                            ->label('Supervisor/Head Marketing Support Approve')
+                            ->label('HCG Head Approve')
                             ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
                         Infolists\Components\TextEntry::make('approval_mkt_head_at')
-                            ->label('Supervisor/Head Marketing Support Approve At')
+                            ->label('HCG Head Approve At')
                             ->dateTime()
                             ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
                         Infolists\Components\TextEntry::make('rejectionSupervisorMarketing.name')
-                            ->label('Supervisor/Head Marketing Support Rejection')
+                            ->label('HCG Head Rejection')
                             ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_mkt_head_at')
-                            ->label('Supervisor/Head Marketing Support Rejection At')
+                            ->label('HCG Head Rejection At')
                             ->dateTime()
                             ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_reason')
                             ->label('Rejection Reason')
-                            ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING]))
+                            ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD]))
                             ->columnSpan(6),
                         
                     ])

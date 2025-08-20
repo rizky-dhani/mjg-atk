@@ -780,6 +780,8 @@ class OfficeStationeryStockRequestResource extends Resource
             $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC);
         }elseif($user->division?->initial === 'HCG' && $user->hasRole('Head')){
             $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN);
+        }else{
+            $query->where('division_id', $user->division_id)->orderByDesc('request_number');
         }
         
         return $query;
