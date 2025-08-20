@@ -47,8 +47,8 @@ class OfficeStationeryStockUsage extends Model
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
-    const STATUS_APPROVED_BY_SUPERVISOR_MARKETING = 'approved_by_mkt_head';
-    const STATUS_REJECTED_BY_SUPERVISOR_MARKETING = 'rejected_by_mkt_head';
+    const STATUS_APPROVED_BY_HCG_HEAD = 'approved_by_hcg_head';
+    const STATUS_REJECTED_BY_HCG_HEAD = 'rejected_by_hcg_head';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -137,17 +137,17 @@ class OfficeStationeryStockUsage extends Model
     }
 
     /**
-     * Get the Supervisor/Head Marketing Support who approved this.
+     * Get the HCG Head who approved this.
      */
-    public function supervisorMarketing(): BelongsTo
+    public function hcgHead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approval_hcg_head_id');
     }
 
     /**
-     * Get the Supervisor/Head Marketing Support who rejected this.
+     * Get the HCG Head who rejected this.
      */
-    public function rejectionSupervisorMarketing(): BelongsTo
+    public function rejectionHcgHead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejection_hcg_head_id');
     }
@@ -177,30 +177,29 @@ class OfficeStationeryStockUsage extends Model
     }
 
     /**
-     * Check if usage needs Supervisor/Head Marketing Support approval.
+     * Check if usage needs HCG Head approval.
      */
-    public function needsSupervisorMarketingApproval(): bool
+    public function needsHcgHeadApproval(): bool
     {
         return $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
 
-    /**
-     * Check if usage can be processed (stock reduced).
-     */
-    public function canProcessUsage(): bool
-    {
-        return $this->status === self::STATUS_APPROVED_BY_SUPERVISOR_MARKETING;
+    /*** Check if usage can be processed (stock reduced).*/    
+    public function canProcessUsage(): bool    
+    {        
+        return $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;    
     }
     
     /**
      * Process stock adjustment for all items in this usage.
-     * This method should be called when a usage is approved by all required parties.
+     * This method should be called when a usage is approved by all required parties:
+     * Div Admin -> Div Head -> GA Admin -> HCG Head.
      * It can either increase or decrease stock based on the usage type.
      */
     public function processStockUsage(): void
     {
         if (!$this->canProcessUsage()) {
-            throw new \Exception('Cannot process stock usage for this request.');
+            throw new \Exception('Cannot process stock usage for this request. Not approved by HCG Head.');
         }
 
         foreach ($this->items as $item) {
