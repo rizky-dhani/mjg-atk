@@ -211,17 +211,17 @@ class OfficeStationeryStockRequest extends Model
     /**
      * Get the GA Head who approved this.
      */
-    public function gaHead(): BelongsTo
+    public function hcgHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_ga_head_id');
+        return $this->belongsTo(User::class, 'approval_hcg_head_id');
     }
 
     /**
      * Get the GA Head who rejected this.
      */
-    public function rejectionGaHead(): BelongsTo
+    public function rejectionHcgHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'rejection_ga_head_id');
+        return $this->belongsTo(User::class, 'rejection_hcg_head_id');
     }
 
     /**

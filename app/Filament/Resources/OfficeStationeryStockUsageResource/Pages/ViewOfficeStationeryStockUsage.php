@@ -124,7 +124,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 }),
 
             // Supervisor/Head Marketing Approval/Rejection Actions
-            Actions\Action::make('approve_as_supervisor_marketing')
+            Actions\Action::make('approve_as_hcg_head')
                 ->label('Approve & Process Stock')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
@@ -135,7 +135,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function ($record) {
                     $record->update([
-                        'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_SUPERVISOR_MARKETING,
+                        'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
                         'approval_mkt_head_id' => Auth::user()->id,
                         'approval_mkt_head_at' => now()->timezone('Asia/Jakarta'),
                     ]);
@@ -149,7 +149,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                         ->send();
                 }),
 
-            Actions\Action::make('reject_as_supervisor_marketing')
+            Actions\Action::make('reject_as_hcg_head')
                 ->label('Reject')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
@@ -166,7 +166,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_SUPERVISOR_MARKETING,
+                        'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
                         'rejection_mkt_head_id' => Auth::user()->id,
                         'rejection_mkt_head_at' => now()->timezone('Asia/Jakarta'),
                         'rejection_reason' => $data['rejection_reason'],
