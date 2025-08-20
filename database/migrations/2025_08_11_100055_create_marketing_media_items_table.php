@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('marketing_media', function (Blueprint $table) {
+        Schema::create('marketing_media_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('division_id')->nullable()->constrained('company_divisions')->onDelete('cascade');
             $table->string('name');
@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('marketing_media_categories')->onDelete('cascade');
             $table->string('size'); // A4, A3, banner, etc.
             $table->string('unit_of_measure'); // sheet, roll, meter, etc.
-            $table->integer('current_stock')->default(0);
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('marketing_media');
+        Schema::dropIfExists('marketing_media_items');
     }
 };

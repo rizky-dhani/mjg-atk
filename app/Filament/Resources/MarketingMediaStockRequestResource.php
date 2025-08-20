@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MarketingMediaStockRequestResource\Pages;
 use App\Filament\Resources\MarketingMediaStockRequestResource\RelationManagers;
 use App\Models\MarketingMediaStockRequest;
-use App\Models\MarketingMedia;
+use App\Models\MarketingMediaItem;
 use App\Models\CompanyDivision;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -33,7 +33,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('marketing_media_id')
                             ->label('Marketing Media')
-                            ->options(MarketingMedia::all()->pluck('name', 'id'))
+                            ->options(MarketingMediaItem::all()->pluck('name', 'id'))
                             ->required()
                             ->searchable()
                             ->preload(),
@@ -146,7 +146,7 @@ class MarketingMediaStockRequestResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('marketing_media_id')
                     ->label('Marketing Media')
-                    ->options(MarketingMedia::all()->pluck('name', 'id'))
+                    ->options(MarketingMediaItem::all()->pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('division_id')

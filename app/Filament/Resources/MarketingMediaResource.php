@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
-use App\Models\MarketingMedia;
+use App\Models\MarketingMediaItem;
 use Filament\Tables\Table;
 use App\Models\CompanyDivision;
 use Filament\Resources\Resource;
@@ -17,7 +17,7 @@ use App\Filament\Resources\MarketingMediaResource\RelationManagers;
 
 class MarketingMediaResource extends Resource
 {
-    protected static ?string $model = MarketingMedia::class;
+    protected static ?string $model = MarketingMediaItem::class;
     protected static ?string $navigationIcon = 'heroicon-o-document';
     protected static ?string $navigationGroup = 'Stocks';
     protected static ?string $navigationLabel = 'Marketing Media';

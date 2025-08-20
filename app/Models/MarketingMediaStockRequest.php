@@ -4,37 +4,55 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class MarketingMediaStockRequest
  *
  * @property int $id
- * @property int $marketing_media_id
+ * @property string $request_number
  * @property int $division_id
+ * @property int $requested_by
  * @property string $type
- * @property int $quantity
- * @property int $previous_stock
- * @property string $notes
- * @property int $created_by
  * @property string $status
+ * @property string $notes
  * @property string $rejection_reason
+ * @property int $approval_head_id
+ * @property \Illuminate\Support\Carbon $approval_head_at
+ * @property int $rejection_head_id
+ * @property \Illuminate\Support\Carbon $rejection_head_at
+ * @property int $approval_admin_ga_id
+ * @property \Illuminate\Support\Carbon $approval_admin_ga_at
+ * @property int $rejection_admin_ga_id
+ * @property \Illuminate\Support\Carbon $rejection_admin_ga_at
+ * @property int $approval_mkt_head_id
+ * @property \Illuminate\Support\Carbon $approval_mkt_head_at
+ * @property int $rejection_mkt_head_id
+ * @property \Illuminate\Support\Carbon $rejection_mkt_head_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  *
- * @property-read MarketingMedia $marketingMedia
  * @property-read CompanyDivision $division
- * @property-read User $creator
+ * @property-read User $requester
+ * @property-read User $divisionHead
+ * @property-read User $rejectionHead
+ * @property-read User $gaAdmin
+ * @property-read User $rejectionGaAdmin
+ * @property-read User $marketingSupportHead
+ * @property-read User $rejectionMarketingSupportHead
+ * @property-read MarketingMediaStockRequestItem[] $items
  */
 class MarketingMediaStockRequest extends Model
 {
+    protected $table = 'mm_stock_requests';
+    
     protected $fillable = [
-        'marketing_media_id',
+        'request_number',
         'division_id',
+        'requested_by',
         'type',
-        'quantity',
-        'previous_stock',
-        'created_by',
         'status',
+        'notes',
         'rejection_reason',
         'approval_head_id',
         'approval_head_at',
@@ -51,8 +69,6 @@ class MarketingMediaStockRequest extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
-        'previous_stock' => 'integer',
         'approval_head_at' => 'datetime',
         'rejection_head_at' => 'datetime',
         'approval_admin_ga_at' => 'datetime',
@@ -62,7 +78,6 @@ class MarketingMediaStockRequest extends Model
     ];
 
     const TYPE_INCREASE = 'increase';
-    const TYPE_REDUCTION = 'reduction';
 
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED_BY_HEAD = 'approved_by_head';
@@ -78,64 +93,47 @@ class MarketingMediaStockRequest extends Model
         parent::boot();
         
         static::creating(function ($model) {
-            // Set default status
-            if (empty($model->status)) {
-                $model->status = self::STATUS_PENDING;
-            }
-            
-            // Get the marketing media
-            $marketingMedia = MarketingMedia::find($model->marketing_media_id);
-            if ($marketingMedia) {
-                // Ensure the division_id matches the marketing media's division
-                $model->division_id = $marketingMedia->division_id;
+            if (empty($model->request_number)) {
+                // Get the division initial
+                $division = CompanyDivision::find($model->division_id);
+                $divisionInitial = $division ? $division->initial : 'DIV';
                 
-                // Store the previous stock before updating
-                $model->previous_stock = $marketingMedia->current_stock;
+                // Get the latest request by request_number for this division to maintain proper sequence
+                $latestRequest = MarketingMediaStockRequest::whereNotNull('request_number')
+                    ->where('division_id', $model->division_id)
+                    ->orderBy('request_number', 'desc')
+                    ->first();
                 
-                // For stock reduction, we don't update the stock immediately
-                // Stock will be updated only when the request is fully approved
-                if ($model->type !== self::TYPE_REDUCTION) {
-                    // Update the current stock based on movement type for non-reduction movements
-                    switch ($model->type) {
-                        case self::TYPE_INCREASE:
-                            $marketingMedia->current_stock += $model->quantity;
-                            break;
-                    }
-                    
-                    $marketingMedia->save();
+                if ($latestRequest) {
+                    // Extract the numeric part from the latest request number and increment it
+                    // Format is DIV-REQ-00000001, so we need to extract the numeric part after the last dash
+                    $parts = explode('-', $latestRequest->request_number);
+                    $latestNumber = intval(end($parts));
+                    $nextNumber = $latestNumber + 1;
+                } else {
+                    // If no previous requests for this division, start with 1
+                    $nextNumber = 1;
                 }
-            }
-            
-            // If we couldn't find the marketing media or it doesn't have a division_id,
-            // we should not allow the creation to proceed
-            if (!$model->division_id) {
-                throw new \Exception('Division ID is required for stock movements');
+                
+                $model->request_number = $divisionInitial . '-MM-REQ-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
             }
         });
     }
 
     /**
-     * Get the marketing media that this movement belongs to.
-     */
-    public function marketingMedia(): BelongsTo
-    {
-        return $this->belongsTo(MarketingMedia::class, 'marketing_media_id');
-    }
-
-    /**
-     * Get the division that this movement belongs to.
+     * Get the division that owns this request.
      */
     public function division(): BelongsTo
     {
-        return $this->belongsTo(CompanyDivision::class, 'division_id');
+        return $this->belongsTo(CompanyDivision::class);
     }
 
     /**
-     * Get the user who created this movement.
+     * Get the user who requested this.
      */
-    public function creator(): BelongsTo
+    public function requester(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'requested_by');
     }
 
     /**
@@ -187,11 +185,11 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Check if this is a stock reduction request.
+     * Get the items in this request.
      */
-    public function isReduction(): bool
+    public function items(): HasMany
     {
-        return $this->type === self::TYPE_REDUCTION;
+        return $this->hasMany(MarketingMediaStockRequestItem::class, 'stock_request_id');
     }
 
     /**
@@ -227,29 +225,38 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Process stock reduction.
-     * This method should be called when a reduction request is approved by all required parties.
+     * Process stock adjustment for all items in this request.
+     * This method should be called when a request is approved by all required parties.
+     * This model is only for adding new stock (increase requests).
+     * It updates the stock in MarketingMediaStockPerDivision table.
      */
-    public function processStockReduction(): void
+    public function processStockAdjustment(): void
     {
-        if (!$this->canProcessReduction()) {
-            throw new \Exception('Cannot process stock reduction for this request.');
+        if (!$this->canProcessAdjustment()) {
+            throw new \Exception('Cannot process stock adjustment for this request. Not fully approved.');
         }
 
-        // Get the marketing media
-        $marketingMedia = $this->marketingMedia;
-        
-        if ($marketingMedia) {
-            // Reduce the stock by the requested quantity
-            $marketingMedia->current_stock -= $this->quantity;
+        foreach ($this->items as $item) {
+            // Get or create the stock record for this media in this division
+            $stock = MarketingMediaStockPerDivision::firstOrCreate([
+                'marketing_media_id' => $item->marketing_media_id,
+                'division_id' => $this->division_id
+            ], [
+                'current_stock' => 0
+            ]);
             
-            // Ensure stock doesn't go below zero
-            if ($marketingMedia->current_stock < 0) {
-                $marketingMedia->current_stock = 0;
-            }
+            // Store previous stock level for reference
+            $item->previous_stock = $stock->current_stock;
+            
+            // Increase the stock by the requested quantity
+            $stock->current_stock += $item->quantity;
             
             // Save the new stock level
-            $marketingMedia->save();
+            $stock->save();
+            
+            // Store new stock level for reference
+            $item->new_stock = $stock->current_stock;
+            $item->save();
         }
         
         // Update request status to completed
@@ -258,10 +265,10 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Check if reduction request can be processed (stock reduced).
+     * Check if request can be processed (stock adjusted).
      */
-    public function canProcessReduction(): bool
+    public function canProcessAdjustment(): bool
     {
-        return $this->isReduction() && $this->status === self::STATUS_APPROVED_BY_MKT_HEAD;
+        return $this->status === self::STATUS_APPROVED_BY_MKT_HEAD;
     }
 }

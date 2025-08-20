@@ -29,6 +29,6 @@ class MarketingMediaCategory extends Model
      */
     public function marketingMediaItems(): HasMany
     {
-        return $this->hasMany(MarketingMedia::class, 'category_id');
+        return $this->hasMany(MarketingMediaItem::class, 'category_id');
     }
 }
