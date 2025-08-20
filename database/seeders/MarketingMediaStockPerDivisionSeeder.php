@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\MarketingMediaItem;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\MarketingMedia;
@@ -15,7 +16,7 @@ class MarketingMediaStockPerDivisionSeeder extends Seeder
     public function run(): void
     {
         // Get all marketing media items
-        $marketingMediaItems = MarketingMedia::all();
+        $marketingMediaItems = MarketingMediaItem::all();
         
         foreach ($marketingMediaItems as $media) {
             // Create a stock record for each media item in its division

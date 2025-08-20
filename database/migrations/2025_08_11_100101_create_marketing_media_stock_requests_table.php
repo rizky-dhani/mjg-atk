@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('mm_stock_requests', function (Blueprint $table) {
             $table->id();
             $table->string('request_number')->unique();
-            $table->foreignId('marketing_media_id')->constrained('marketing_media_items')->onDelete('cascade');
+            $table->foreignId('requested_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
-            $table->integer('quantity');
-            $table->integer('previous_stock')->default(0);
             $table->text('notes')->nullable();
             $table->text('rejection_reason')->nullable();
             $table->enum('type', ['increase']);
@@ -38,7 +36,6 @@ return new class extends Migration
                 'approved_by_mkt_head', 
                 'rejected_by_mkt_head', 
                 'completed'])->default('pending');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('approval_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('approval_head_at')->nullable();
             $table->foreignId('rejection_head_id')->nullable()->constrained('users')->cascadeOnDelete();
@@ -51,6 +48,8 @@ return new class extends Migration
             $table->timestamp('approval_ipc_head_at')->nullable();
             $table->foreignId('rejection_ipc_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('rejection_ipc_head_at')->nullable();
+            $table->foreignId('delivered_by')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('delivered_at')->nullable();
             $table->foreignId('approval_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('approval_stock_adjustment_at')->nullable();
             $table->foreignId('rejection_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();

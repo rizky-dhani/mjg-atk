@@ -45,6 +45,14 @@ class OfficeStationeryStockRequestSeeder extends Seeder
             $query->where('initial', 'GA');
         })
         ->get();
+        $userHcg = User::with(['roles', 'division'])
+        ->whereHas('roles', function ($query) {
+            $query->where('name', 'Head');
+        })
+        ->whereHas('division', function ($query) {
+            $query->where('initial', 'HCG');
+        })
+        ->get();
         $divisions = CompanyDivision::all();
         $items = OfficeStationeryItem::all();
 
@@ -80,7 +88,7 @@ class OfficeStationeryStockRequestSeeder extends Seeder
             
             // Pick a random GA admin
             $gaAdmin = $userGA->isNotEmpty() ? $userGA->random() : $admin; // Fallback to regular admin if no GA admin
-
+            $hcgHead = $userHcg->isNotEmpty() ? $userHcg->random() : $head;
             $request = OfficeStationeryStockRequest::create([
                 'request_number' => 'REQ-' . str_pad((string)($i + 1), 8, '0', STR_PAD_LEFT),
                 'requested_by' => $admin->id,
@@ -173,8 +181,8 @@ class OfficeStationeryStockRequestSeeder extends Seeder
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
                 $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_head_id = $gaAdmin->id;
-                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_hcg_head_id = $hcgHead->id;
+                $request->approval_hcg_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === OfficeStationeryStockRequest::STATUS_COMPLETED) {
                 $request->approval_head_id = $head->id;
@@ -189,8 +197,8 @@ class OfficeStationeryStockRequestSeeder extends Seeder
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
                 $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_ga_head_id = $gaAdmin->id;
-                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_hcg_head_id = $hcgHead->id;
+                $request->approval_hcg_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD) {
                 $request->rejection_head_id = $head->id;
@@ -241,8 +249,8 @@ class OfficeStationeryStockRequestSeeder extends Seeder
                 $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
                 $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->rejection_ga_head_id = $gaAdmin->id;
-                $request->rejection_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_hcg_head_id = $hcgHead->id;
+                $request->rejection_hcg_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by GA Head due to budget approval';
                 $request->save();
             }
