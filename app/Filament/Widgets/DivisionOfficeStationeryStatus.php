@@ -8,7 +8,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
 
-class DivisionOfficeStationeryStockRequestStatus extends BaseWidget
+class DivisionOfficeStationeryStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
     protected ?string $heading = 'Office Stationery';
