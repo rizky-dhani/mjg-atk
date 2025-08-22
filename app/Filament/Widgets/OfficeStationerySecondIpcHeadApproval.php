@@ -31,7 +31,7 @@ class OfficeStationerySecondIpcHeadApproval extends BaseWidget
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('purple')
                 ->url(
-                    route('filament.admin.resources.office-stationery-stock-requests.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
                         'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
                     ])
                 )

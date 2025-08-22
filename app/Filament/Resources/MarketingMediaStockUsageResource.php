@@ -65,7 +65,7 @@ class MarketingMediaStockUsageResource extends Resource
                                                 
                                                 // Get division_id from the form or from the record
                                                 $divisionId = null;
-                                                if (request()->routeIs('filament.admin.resources.marketing-media-stock-usages.create')) {
+                                                if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
                                                     $divisionId = auth()->user()->division_id;
                                                 } else {
                                                     $record = MarketingMediaStockUsage::find(request()->route('record'));
@@ -96,7 +96,7 @@ class MarketingMediaStockUsageResource extends Resource
                                         
                                         // Get division_id from the form or from the record
                                         $divisionId = null;
-                                        if (request()->routeIs('filament.admin.resources.marketing-media-stock-usages.create')) {
+                                        if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
                                             $divisionId = auth()->user()->division_id;
                                         } else {
                                             $record = MarketingMediaStockUsage::find(request()->route('record'));
@@ -133,7 +133,7 @@ class MarketingMediaStockUsageResource extends Resource
                                                 
                                                 // Get division_id from the form or from the record
                                                 $divisionId = null;
-                                                if (request()->routeIs('filament.admin.resources.marketing-media-stock-usages.create')) {
+                                                if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
                                                     $divisionId = auth()->user()->division_id;
                                                 } else {
                                                     $record = MarketingMediaStockUsage::find(request()->route('record'));

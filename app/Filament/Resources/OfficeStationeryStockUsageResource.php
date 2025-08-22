@@ -80,7 +80,7 @@ class OfficeStationeryStockUsageResource extends Resource
                                                 
                                                 // Get division_id from the form or from the record
                                                 $divisionId = null;
-                                                if (request()->routeIs('filament.admin.resources.office-stationery-stock-usages.create')) {
+                                                if (request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.create')) {
                                                     $divisionId = auth()->user()->division_id;
                                                 } else {
                                                     $record = OfficeStationeryStockUsage::find(request()->route('record'));
@@ -111,7 +111,7 @@ class OfficeStationeryStockUsageResource extends Resource
                                         
                                         // Get division_id from the form or from the record
                                         $divisionId = null;
-                                        if (request()->routeIs('filament.admin.resources.office-stationery-stock-usages.create')) {
+                                        if (request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.create')) {
                                             $divisionId = auth()->user()->division_id;
                                         } else {
                                             $record = OfficeStationeryStockUsage::find(request()->route('record'));
@@ -148,7 +148,7 @@ class OfficeStationeryStockUsageResource extends Resource
                                                 
                                                 // Get division_id from the form or from the record
                                                 $divisionId = null;
-                                                if (request()->routeIs('filament.admin.resources.office-stationery-stock-usages.create')) {
+                                                if (request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.create')) {
                                                     $divisionId = auth()->user()->division_id;
                                                 } else {
                                                     $record = OfficeStationeryStockUsage::find(request()->route('record'));
