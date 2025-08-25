@@ -28,7 +28,7 @@ class OfficeStationeryIpcAdminApproval extends BaseWidget
                     ])
                 )
                 ->description('Stock Requests')
-->color('primary')
+                ->color('primary')
                 ->icon('heroicon-o-document-text'),
         ];
     }
@@ -37,6 +37,6 @@ class OfficeStationeryIpcAdminApproval extends BaseWidget
     {
         $user = Auth::user();
         // Only show to GA Admins
-        return $user && $user->hasRole('Admin') && $user->division_id && $user->division?->name == 'Import and Purchasing';
+        return $user && $user->hasRole('Admin') && $user->division_id && $user->division->initial === 'IPC';
     }
 }

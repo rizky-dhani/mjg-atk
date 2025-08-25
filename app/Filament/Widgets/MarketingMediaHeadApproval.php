@@ -70,6 +70,6 @@ class MarketingMediaHeadApproval extends BaseWidget
             'Marketing Support'
         ];
         
-        return $user->division && in_array($user->division->name, $marketingDivisions);
+        return $user->division && $user->hasRole('Head') && in_array($user->division->name, $marketingDivisions);
     }
 }

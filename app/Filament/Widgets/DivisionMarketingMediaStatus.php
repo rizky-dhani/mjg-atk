@@ -57,7 +57,7 @@ class DivisionMarketingMediaStatus extends BaseWidget
             Stat::make('Stock Request', $pendingStockRequestCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('primary')
+                ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-requests.index', [
                         'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_PENDING
@@ -68,7 +68,7 @@ class DivisionMarketingMediaStatus extends BaseWidget
             Stat::make('Stock Request', $inProgressStockRequestCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('warning')
+                ->color('primary')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-requests.index')
                 )
@@ -98,7 +98,7 @@ class DivisionMarketingMediaStatus extends BaseWidget
             Stat::make('Stock Usage', $pendingStockUsageCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('primary')
+                ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-usages.index', [
                         'tableFilters[status][value]' => MarketingMediaStockUsage::STATUS_PENDING
@@ -109,7 +109,7 @@ class DivisionMarketingMediaStatus extends BaseWidget
             Stat::make('Stock Usage', $inProgressStockUsageCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('warning')
+                ->color('primary')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-usages.index')
                 )

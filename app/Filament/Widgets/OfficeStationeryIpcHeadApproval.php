@@ -24,15 +24,34 @@ class OfficeStationeryIpcHeadApproval extends BaseWidget
                 $query->where('initial', 'IPC');
             })
             ->count();
+        
+        
+        // Get requests that need second IPC Head approval (after stock adjustment)
+        $secondRequestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT)
+            ->where('type', OfficeStationeryStockRequest::TYPE_INCREASE)
+            ->whereHas('division', function ($query) {
+                $query->where('initial', 'IPC');
+            })
+            ->count();
 
         return [
-            Stat::make('Stock Requests waiting for First IPC Head Approval', $requestsCount)
+            Stat::make('Stock Requests before Stock Adjustment', $requestsCount)
                 ->description('IPC Admin Approved Requests')
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('info')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
                         'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC
+                    ])
+                )
+                ->icon('heroicon-o-document-text'),
+            Stat::make('Stock Requests After Stock Adjustment', $secondRequestsCount)
+                ->description('Stock Adjustment Approved Requests')
+                ->descriptionIcon('heroicon-m-user-group')
+                ->color('purple')
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
                     ])
                 )
                 ->icon('heroicon-o-document-text'),

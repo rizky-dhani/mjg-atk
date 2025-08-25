@@ -36,7 +36,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
                     ])
                 )
                 ->description('Stock Requests')
-->color('primary')
+                ->color('primary')
                 ->icon('heroicon-o-document-text'),
                 
             Stat::make('Waiting for Approval', $usagesCount)
@@ -46,7 +46,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
                     ])
                 )
                 ->description('Stock Usages')
-->color('warning')
+                ->color('warning')
                 ->icon('heroicon-o-document-text'),
         ];
     }
