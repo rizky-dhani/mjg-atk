@@ -55,7 +55,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             Stat::make('Stock Request', $pendingStockRequestCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('primary')
+                ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
                         'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_PENDING
@@ -66,7 +66,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             Stat::make('Stock Request', $inProgressStockRequestCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('warning')
+                ->color('primary')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index')
                 )
@@ -96,7 +96,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             Stat::make('Stock Usage', $pendingStockUsageCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('primary')
+                ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-usages.index', [
                         'tableFilters[status][value]' => OfficeStationeryStockUsage::STATUS_PENDING
@@ -107,7 +107,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             Stat::make('Stock Usage', $inProgressStockUsageCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
-                ->color('warning')
+                ->color('primary')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-usages.index')
                 )
