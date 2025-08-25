@@ -10,6 +10,8 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\CompanyDivision;
 use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\BulkAction;
 use App\Models\OfficeStationeryItem;
 use App\Models\DivisionInventorySetting;
 use Illuminate\Database\Eloquent\Builder;
@@ -140,10 +142,49 @@ class DivisionInventorySettingResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('set_max_limit')
+                        ->label('Set Max Limit')
+                        ->icon('heroicon-o-adjustments-horizontal')
+                        ->form([
+                            Forms\Components\TextInput::make('max_limit')
+                                ->label('Maximum Limit')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0),
+                        ])
+                        ->action(function (array $data, $records) {
+                            foreach ($records as $record) {
+                                $record->update(['max_limit' => $data['max_limit']]);
+                            }
+                            
+                            Notification::make()
+                                ->title('Maximum limit updated successfully for selected items.')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ])
             ->headerActions([
-                
+                Tables\Actions\Action::make('set_global_max_limit')
+                    ->label('Set Global Max Limit')
+                    ->icon('heroicon-o-globe-alt')
+                    ->form([
+                        Forms\Components\TextInput::make('max_limit')
+                            ->label('Maximum Limit')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0),
+                    ])
+                    ->action(function (array $data) {
+                        // Update all inventory settings for the current division
+                        DivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                            ->update(['max_limit' => $data['max_limit']]);
+                        
+                        Notification::make()
+                            ->title('Global maximum limit updated successfully.')
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
     
