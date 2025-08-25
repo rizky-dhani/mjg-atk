@@ -158,7 +158,7 @@ class DivisionInventorySettingResource extends Resource
                             }
                             
                             Notification::make()
-                                ->title('Maximum limit updated successfully for selected items.')
+                                ->title('Maximum limit updated successfully for selected items')
                                 ->success()
                                 ->send();
                         }),
@@ -181,7 +181,7 @@ class DivisionInventorySettingResource extends Resource
                             ->update(['max_limit' => $data['max_limit']]);
                         
                         Notification::make()
-                            ->title('Global maximum limit updated successfully.')
+                            ->title('Global maximum limit updated successfully')
                             ->success()
                             ->send();
                     }),
