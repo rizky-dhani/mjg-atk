@@ -538,9 +538,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         if (!empty($validationErrors)) {
                             Notification::make()
                                 ->title('Stock adjustment exceeds maximum limits')
-                                ->body(implode("
-
-", $validationErrors))
+                                ->body(implode("", $validationErrors))
                                 ->danger()
                                 ->send();
                             return;
@@ -773,15 +771,15 @@ class OfficeStationeryStockRequestResource extends Resource
         // Filter based on user role        
         $user = auth()->user();
         if($user->division?->initial === 'GA' && $user->hasRole('Admin')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD);
+            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD)->orderByDesc('created_at')->orderByDesc('request_number');
         }elseif($user->division?->initial === 'IPC' && $user->hasRole('Admin')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD);
+            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)->orderByDesc('created_at')->orderByDesc('request_number');
         }elseif($user->division?->initial === 'IPC' && $user->hasRole('Head')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC);
+            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)->orderByDesc('created_at')->orderByDesc('request_number');
         }elseif($user->division?->initial === 'HCG' && $user->hasRole('Head')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN);
+            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN)->orderByDesc('created_at')->orderByDesc('request_number');
         }else{
-            $query->where('division_id', $user->division_id)->orderByDesc('request_number');
+            $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
         }
         
         return $query;

@@ -78,36 +78,6 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('reject_as_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->modalHeading('Reject Stock Request')
-                    ->modalSubheading('Are you sure to reject the Stock Request?')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
-                    )
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Request rejected successfully')
-                            ->warning()
-                            ->send();
-                    }),
-                
                 Action::make('approve_as_ipc')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
