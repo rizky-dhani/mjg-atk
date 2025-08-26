@@ -19,7 +19,8 @@ class ListOfficeStationeryStockUsages extends ListRecords
                     $data['division_id'] = auth()->user()->division_id;
                     return $data;
                 })
-                ->modalWidth('7xl'),
+                ->modalWidth('7xl')
+                ->label('New Stock Usage'),
         ];
     }
 }

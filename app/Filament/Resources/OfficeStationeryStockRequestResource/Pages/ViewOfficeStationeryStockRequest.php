@@ -213,7 +213,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                                Action::make('adjust_and_approve_stock')
+                    Action::make('adjust_and_approve_stock')
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
@@ -334,7 +334,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     }),
             
             Action::make('approve_as_second_ipc_head')
-                ->label('Approve as IPC Head (Post Adjustment)')
+                ->label('Approve (Post Adjustment)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->modalHeading('Approve Stock Request')
@@ -359,7 +359,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 }),
 
             Action::make('reject_as_second_ipc_head')
-                ->label('Reject as IPC Head (Post Adjustment)')
+                ->label('Reject (Post Adjustment)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->modalHeading('Reject Stock Request')
