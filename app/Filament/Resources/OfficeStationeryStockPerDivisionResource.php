@@ -239,12 +239,12 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                             $requestItem = $latestRequest->items()
                                                 ->where('item_id', $record->item_id)
                                                 ->first();
-                                            return $requestItem ? $requestItem->quantity : 0;
+                                            return $requestItem ? $requestItem->adjusted_quantity : 0;
                                         }
                                         
                                         return 0;
                                     })
-                                    ->icon('heroicon-o-arrow-up-tray'),
+                                    ->icon('heroicon-o-arrow-down-tray'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
                                     ->label('Latest Stock Requests Requester')
@@ -287,7 +287,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                         
                                         return 0;
                                     })
-                                    ->icon('heroicon-o-arrow-down-tray'),
+                                    ->icon('heroicon-o-arrow-up-tray'),
                                 
                                 Infolists\Components\TextEntry::make('usages')
                                     ->label('Latest Stock Usages Date')
