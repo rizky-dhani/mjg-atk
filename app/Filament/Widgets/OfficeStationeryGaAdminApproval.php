@@ -23,9 +23,6 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
             
         // Get usages that need GA Admin approval
         $usagesCount = OfficeStationeryStockUsage::where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD)
-            ->whereHas('division', function ($query) {
-                $query->where('initial', 'GA');
-            })
             ->count();
 
         return [

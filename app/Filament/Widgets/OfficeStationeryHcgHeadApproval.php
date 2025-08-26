@@ -21,9 +21,6 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
             
         // Get usages that need GA Admin approval
         $usagesCount = OfficeStationeryStockUsage::where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN)
-            ->whereHas('division', function ($query) {
-                $query->where('initial', 'GA');
-            })
             ->count();
         return [
             Stat::make('Waiting for Approval', $requestsCount)
@@ -52,6 +49,6 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
     {
         $user = Auth::user();
         // Only show to GA Admins
-        return $user && $user->hasRole('Admin') && $user->division_id && $user->division?->name == 'Human Capital General';
+        return $user && $user->hasRole('Head') && $user->division_id && $user->division?->initial == 'HCG';
     }
 }
