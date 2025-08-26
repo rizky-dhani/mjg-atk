@@ -32,7 +32,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD
                     ])
                 )
                 ->description('Stock Requests')
@@ -42,7 +42,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
             Stat::make('Waiting for Approval', $usagesCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-usages.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD
+                        'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD
                     ])
                 )
                 ->description('Stock Usages')

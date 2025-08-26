@@ -20,18 +20,12 @@ class OfficeStationeryIpcHeadApproval extends BaseWidget
         // Get requests that need IPC Head approval (IPC Admin approved)
         $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)
             ->where('type', OfficeStationeryStockRequest::TYPE_INCREASE)
-            ->whereHas('division', function ($query) {
-                $query->where('initial', 'IPC');
-            })
             ->count();
         
         
         // Get requests that need second IPC Head approval (after stock adjustment)
         $secondRequestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT)
             ->where('type', OfficeStationeryStockRequest::TYPE_INCREASE)
-            ->whereHas('division', function ($query) {
-                $query->where('initial', 'IPC');
-            })
             ->count();
 
         return [
@@ -41,7 +35,7 @@ class OfficeStationeryIpcHeadApproval extends BaseWidget
                 ->color('info')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
                     ])
                 )
                 ->icon('heroicon-o-document-text'),
@@ -51,7 +45,7 @@ class OfficeStationeryIpcHeadApproval extends BaseWidget
                 ->color('purple')
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
                     ])
                 )
                 ->icon('heroicon-o-document-text'),

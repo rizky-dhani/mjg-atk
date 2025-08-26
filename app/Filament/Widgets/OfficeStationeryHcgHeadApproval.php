@@ -29,7 +29,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN
                     ])
                 )
                 ->description('Stock Requests')
@@ -39,7 +39,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
             Stat::make('Waiting for Approval', $usagesCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-usages.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN
+                        'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN
                     ])
                 )
                 ->description('Stock Usages')

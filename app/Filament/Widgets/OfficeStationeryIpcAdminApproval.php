@@ -19,15 +19,26 @@ class OfficeStationeryIpcAdminApproval extends BaseWidget
         // Get requests that need IPC Admin approval
         $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)
             ->count();
+        $stockAdjustmentCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD)
+            ->count();
 
         return [
-            Stat::make('Waiting for Approval', $requestsCount)
+            Stat::make('Stock Requests', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD
                     ])
                 )
-                ->description('Stock Requests')
+                ->description('Waiting for Approval')
+                ->color('primary')
+                ->icon('heroicon-o-document-text'),
+            Stat::make('Stock Requests', $stockAdjustmentCount)
+                ->url(
+                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD
+                    ])
+                )
+                ->description('Stock Adjustments')
                 ->color('primary')
                 ->icon('heroicon-o-document-text'),
         ];

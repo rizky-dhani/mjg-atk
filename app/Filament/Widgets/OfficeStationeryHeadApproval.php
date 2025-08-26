@@ -28,16 +28,11 @@ class OfficeStationeryHeadApproval extends BaseWidget
             ->where('division_id', $user->division_id)
             ->count();
 
-        // Get Marketing Media that need Head approval for the user's division
-        $marketingMediaRequestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_PENDING)
-            ->where('division_id', $user->division_id)
-            ->count();
-
         return [
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockRequest::STATUS_PENDING
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_PENDING
                     ])
                 )
                 ->description('Stock Requests')
@@ -47,7 +42,7 @@ class OfficeStationeryHeadApproval extends BaseWidget
             Stat::make('Waiting for Approval', $usagesCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-usages.index', [
-                        'tableFilters[status][value]' => OfficeStationeryStockUsage::STATUS_PENDING
+                        'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_PENDING
                     ])
                 )
                 ->description('Stock Usages')
