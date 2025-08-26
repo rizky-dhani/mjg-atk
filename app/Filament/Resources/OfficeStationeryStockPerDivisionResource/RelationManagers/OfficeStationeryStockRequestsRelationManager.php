@@ -116,14 +116,16 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([
-                                Infolists\Components\Grid::make(4)
+                                Infolists\Components\Grid::make(5)
                                     ->schema([
                                         Infolists\Components\TextEntry::make('item.name')
                                             ->label('Name'),
                                         Infolists\Components\TextEntry::make('category.name')
                                             ->label('Category'),
                                         Infolists\Components\TextEntry::make('quantity')
-                                            ->label('Quantity'),
+                                            ->label('Qty'),
+                                        Infolists\Components\TextEntry::make('adjusted_quantity')
+                                            ->label('Adj. Qty'),
                                         Infolists\Components\TextEntry::make('notes')
                                             ->label('Notes')
                                             ->placeholder('-'),

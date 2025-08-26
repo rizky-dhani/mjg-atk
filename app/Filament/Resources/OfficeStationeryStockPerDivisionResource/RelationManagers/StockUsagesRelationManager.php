@@ -76,12 +76,12 @@ class StockUsagesRelationManager extends RelationManager
                             ->schema([
                                 Infolists\Components\RepeatableEntry::make('items')
                                     ->schema([
-                                        Infolists\Components\Grid::make(3)
+                                        Infolists\Components\Grid::make(4)
                                             ->schema([
                                                 Infolists\Components\TextEntry::make('item.name')
                                                     ->label('Item Name'),
                                                 Infolists\Components\TextEntry::make('quantity')
-                                                    ->label('Quantity'),
+                                                    ->label('Qty'),
                                                 Infolists\Components\TextEntry::make('notes')
                                                     ->label('Notes')
                                                     ->placeholder('-'),
