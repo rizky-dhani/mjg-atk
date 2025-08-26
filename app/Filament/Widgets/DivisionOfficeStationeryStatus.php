@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class DivisionOfficeStationeryStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
-    protected ?string $heading = 'Office Stationery';
+    protected ?string $heading = 'Office Stationery (My Division)';
     protected function getColumns(): int
     {
         return 4;
@@ -95,8 +95,10 @@ class DivisionOfficeStationeryStatus extends BaseWidget
         $rejectedStockRequestUrl = $stockRequestUrl . '?' . http_build_query($rejectedStockRequestFilters);
         $inProgressStockUsageUrl = $stockUsageUrl . '?' . http_build_query($approvedStockUsageFilters);
         $rejectedStockUsageUrl = $stockUsageUrl . '?' . http_build_query($rejectedStockUsageFilters);
+
         // All Admin users see only their division's StockRequests
         // Get counts for all Stock Request statuses
+
         $pendingStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
             ->where('status', OfficeStationeryStockRequest::STATUS_PENDING)
             ->count();
@@ -111,11 +113,12 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             ->count();
 
         // Get counts for all Stock Usage statuses
+
         $pendingStockUsageCount = OfficeStationeryStockUsage::where('division_id', $divisionId)
             ->where('status', OfficeStationeryStockUsage::STATUS_PENDING)
             ->count();
         $inProgressStockUsageCount = OfficeStationeryStockUsage::where('division_id', $divisionId)
-            ->whereNotIn('status', [OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD])
+            ->whereNotIn('status', [OfficeStationeryStockUsage::STATUS_PENDING, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD, OfficeStationeryStockUsage::STATUS_COMPLETED])
             ->count();
         $rejectedStockUsageCount = OfficeStationeryStockUsage::where('division_id', $divisionId)
             ->whereIn('status', [OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD])
@@ -208,6 +211,6 @@ class DivisionOfficeStationeryStatus extends BaseWidget
     public static function canView(): bool
     {
         $user = Auth::user();
-        return $user && $user->hasRole('Admin') && $user->division_id;
+        return $user && $user->hasRole(['Admin', 'Head']) && $user->division_id;
     }
 }
