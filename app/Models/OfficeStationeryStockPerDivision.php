@@ -90,11 +90,15 @@ class OfficeStationeryStockPerDivision extends Model
     }
 
     /**
-     * Stock requests belonging to the same division.
+     * Stock usages belonging to the same division.
      * Additional item filtering will be applied in the RelationManager.
      */
     public function requests(): HasMany
     {
         return $this->hasMany(OfficeStationeryStockRequest::class, 'division_id', 'division_id');
+    }
+    public function usages(): HasMany
+    {
+        return $this->hasMany(OfficeStationeryStockUsage::class, 'division_id', 'division_id');
     }
 }
