@@ -116,7 +116,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                             $set('quantity', $availableSpace);
                                             
                                             // Show notification to user
-                                            \Filament\Notifications\Notification::make()
+                                            Notification::make()
                                                 ->title('Quantity adjusted')
                                                 ->body("The requested quantity has been adjusted to the maximum available space: {$availableSpace}")
                                                 ->warning()
@@ -227,8 +227,8 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
                         OfficeStationeryStockRequest::STATUS_DELIVERED => 'Delivered',
                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head (Post Adjustment)',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head (Post Adjustment)',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
@@ -254,6 +254,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::TYPE_INCREASE => 'Stock Increase',
                     ]),
                 SelectFilter::make('status')
+                    ->multiple()
                     ->options([
                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
@@ -264,14 +265,16 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
                         OfficeStationeryStockRequest::STATUS_DELIVERED => 'Delivered',
                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head (Post Adjustment)',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head (Post Adjustment)',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
-                    ]),
+                        'in_progress' => 'In Progress',
+                        'rejected' => 'Rejected'
+                    ])
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -569,7 +572,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     }),
                 
                 Tables\Actions\Action::make('approve_as_second_ipc_head')
-                    ->label('Approve as IPC Head (Post Adjustment)')
+                    ->label('Approve (Post Adjustment)')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
@@ -586,13 +589,13 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by IPC Head (Post Adjustment) successfully')
+                            ->title('Request approved (Post Adjustment) successfully')
                             ->success()
                             ->send();
                     }),
 
                 Tables\Actions\Action::make('reject_as_second_ipc_head')
-                    ->label('Reject as IPC Head (Post Adjustment)')
+                    ->label('Reject (Post Adjustment)')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
@@ -615,7 +618,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected by IPC Head (Post Adjustment) successfully')
+                            ->title('Request rejected (Post Adjustment) successfully')
                             ->warning()
                             ->send();
                     }),
@@ -770,15 +773,16 @@ class OfficeStationeryStockRequestResource extends Resource
         
         // Filter based on user role        
         $user = auth()->user();
-        if($user->division?->initial === 'GA' && $user->hasRole('Admin')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD)->orderByDesc('created_at')->orderByDesc('request_number');
-        }elseif($user->division?->initial === 'IPC' && $user->hasRole('Admin')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)->orderByDesc('created_at')->orderByDesc('request_number');
-        }elseif($user->division?->initial === 'IPC' && $user->hasRole('Head')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)->orderByDesc('created_at')->orderByDesc('request_number');
-        }elseif($user->division?->initial === 'HCG' && $user->hasRole('Head')){
-            $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN)->orderByDesc('created_at')->orderByDesc('request_number');
-        }else{
+        
+        // IPC & HCG Admins & Heads can see all requests (for approval workflow)
+        if (($user->division?->initial === 'IPC' && ($user->hasRole('Admin') || $user->hasRole('Head'))) ||
+            ($user->division?->initial === 'GA' && ($user->hasRole('Admin'))) ||
+            ($user->division?->initial === 'HCG' && ($user->hasRole('Admin') || $user->hasRole('Head')))) {
+            // No additional filtering needed, show all requests
+            $query->orderByDesc('created_at')->orderByDesc('request_number');
+        }
+        // All other Admin users (including GA) only see requests from their own division
+        elseif ($user->hasRole('Admin')) {
             $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
         }
         

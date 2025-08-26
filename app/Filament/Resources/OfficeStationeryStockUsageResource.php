@@ -253,6 +253,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
                     ]),
                 SelectFilter::make('status')
+                    ->multiple()
                     ->options([
                         OfficeStationeryStockUsage::STATUS_PENDING => 'Pending',
                         OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
