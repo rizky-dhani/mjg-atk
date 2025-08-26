@@ -301,7 +301,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Stock Request approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -329,7 +329,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -381,7 +381,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -433,7 +433,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -670,7 +670,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -714,16 +714,16 @@ class OfficeStationeryStockRequestResource extends Resource
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
-                            'approval_ga_head_id' => auth()->user()->id,
-                            'approval_ga_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
+                            'approval_hcg_head_id' => auth()->user()->id,
+                            'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                             // Automatically mark as delivered
                             'delivered_by' => auth()->user()->id,
                             'delivered_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by HCG Head, stock updated, and marked as delivered successfully')
+                            ->title('Stock Request approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -746,13 +746,13 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
-                            'rejection_ga_head_id' => auth()->user()->id,
-                            'rejection_ga_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_hcg_head_id' => auth()->user()->id,
+                            'rejection_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),

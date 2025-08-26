@@ -43,7 +43,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Stock Request approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -73,7 +73,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -98,7 +98,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Stock Request approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -128,7 +128,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -153,7 +153,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Stock Request approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -183,7 +183,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -353,7 +353,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Request approved successfully by IPC Head (Post Adjustment)')
+                        ->title('Stock Request approved successfully by IPC Head (Post Adjustment)')
                         ->success()
                         ->send();
                 }),
@@ -383,7 +383,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Request rejected successfully by IPC Head (Post Adjustment)')
+                        ->title('Stock Request rejected successfully by IPC Head (Post Adjustment)')
                         ->warning()
                         ->send();
                 }),
@@ -408,7 +408,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Stock Request approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -438,7 +438,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -485,8 +485,8 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         
                         $record->update([
                             'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
-                            'approval_ga_head_id' => auth()->user()->id,
-                            'approval_ga_head_at' => now('Asia/Jakarta'),
+                            'approval_hcg_head_id' => auth()->user()->id,
+                            'approval_hcg_head_at' => now('Asia/Jakarta'),
                             // Automatically mark as delivered
                             'delivered_by' => auth()->user()->id,
                             'delivered_at' => now('Asia/Jakarta'),
@@ -517,13 +517,13 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
-                            'rejection_ga_head_id' => auth()->user()->id,
-                            'rejection_ga_head_at' => now('Asia/Jakarta'),
+                            'rejection_hcg_head_id' => auth()->user()->id,
+                            'rejection_hcg_head_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Stock Request rejected successfully')
                             ->warning()
                             ->send();
                     }),

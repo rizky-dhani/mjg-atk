@@ -374,26 +374,26 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->send();
                     }),
                 Tables\Actions\Action::make('approve_as_hcg_head')
-                    ->label('Approve & Process Stock')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->name === 'Marketing Support')
+                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->initial === 'HCG')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
                             'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
-                            'approval_mkt_head_id' => auth()->user()->id,
-                            'approval_mkt_head_at' => now()->timezone('Asia/Jakarta'),
+                            'approval_hcg_head_id' => auth()->user()->id,
+                            'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         // Process the stock usage
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Usage approved and stock processed successfully')
+                            ->title('Stock Usage approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -415,8 +415,8 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
-                            'rejection_mkt_head_id' => auth()->user()->id,
-                            'rejection_mkt_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_hcg_head_id' => auth()->user()->id,
+                            'rejection_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         

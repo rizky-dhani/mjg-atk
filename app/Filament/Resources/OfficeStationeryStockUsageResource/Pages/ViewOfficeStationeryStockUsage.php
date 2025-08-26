@@ -136,12 +136,16 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->action(function ($record) {
                     $record->update([
                         'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
-                        'approval_mkt_head_id' => Auth::user()->id,
-                        'approval_mkt_head_at' => now()->timezone('Asia/Jakarta'),
+                        'approval_hcg_head_id' => Auth::user()->id,
+                        'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                     ]);
                     
                     // Process the stock usage
                     $record->processStockUsage();
+
+                    // $record->update([
+                    //     'status' => OfficeStationeryStockUsage::STATUS_COMPLETED,
+                    // ]);
                     
                     Notification::make()
                         ->title('Stock Usage approved and stock processed successfully')
@@ -167,8 +171,8 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->action(function ($record, array $data) {
                     $record->update([
                         'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
-                        'rejection_mkt_head_id' => Auth::user()->id,
-                        'rejection_mkt_head_at' => now()->timezone('Asia/Jakarta'),
+                        'rejection_hcg_head_id' => Auth::user()->id,
+                        'rejection_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                         'rejection_reason' => $data['rejection_reason'],
                     ]);
                     
