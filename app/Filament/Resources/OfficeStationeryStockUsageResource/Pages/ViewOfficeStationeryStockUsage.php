@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
 
 use Filament\Actions;
+use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use App\Models\OfficeStationeryStockUsage;
+use App\Models\OfficeStationeryStockRequest;
 use App\Filament\Resources\OfficeStationeryStockUsageResource;
 
 class ViewOfficeStationeryStockUsage extends ViewRecord
@@ -17,6 +19,9 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\EditAction::make()
+                ->modalWidth(MaxWidth::SevenExtraLarge)
+                ->disabled(fn($record) => $record->status !== OfficeStationeryStockUsage::STATUS_PENDING),
             // Division Head Approval/Rejection Actions
             Actions\Action::make('approve_as_head')
                 ->label('Approve')

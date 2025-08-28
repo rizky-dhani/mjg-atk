@@ -2,23 +2,25 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages;
-use App\Filament\Resources\OfficeStationeryStockRequestResource\RelationManagers;
-use App\Models\OfficeStationeryStockRequest;
-use App\Models\CompanyDivision;
+use Filament\Forms;
 use App\Models\item;
 use App\Models\User;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Tables;
 use Filament\Infolists;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\CompanyDivision;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Forms\Components\Repeater;
+use Filament\Notifications\Notification;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\OfficeStationeryStockRequest;
+use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Notifications\Notification;
+use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages;
+use App\Filament\Resources\OfficeStationeryStockRequestResource\RelationManagers;
 
 class OfficeStationeryStockRequestResource extends Resource
 {
@@ -26,19 +28,50 @@ class OfficeStationeryStockRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Stock Requests';
-    protected static ?string $navigationParentItem = 'Office Stationery';
+    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
+    protected static ?string $navigationLabel = 'Pemasukan Barang';
+    protected static ?string $modelLabel = 'Pemasukan Barang';
+    protected static ?string $pluralModelLabel = 'Pemasukan Barang';
+    protected static ?string $navigationParentItem = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
         ->schema([
-                Forms\Components\Section::make('Office Stationery Stock Request Items')
+                Forms\Components\Grid::make(1)
                     ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship()
+                            ->cloneable()
+                            ->extraItemActions([
+                                Action::make('add_new_after')
+                                    ->icon('heroicon-m-plus')
+                                    ->color('primary')
+                                    ->action(function (array $arguments, Repeater $component) {
+                                        $state = $component->getState();
+                                        $currentKey = $arguments['item'];
+                                        
+                                        $newKey = uniqid('item_');
+                                        // Pre-populate with empty values for proper binding
+                                        $newItem = [
+                                            'category_id' => null,
+                                            'item_id' => null,
+                                            'quantity' => null,
+                                            'notes' => null,
+                                        ];
+                                        
+                                        // Insert at correct position
+                                        $keys = array_keys($state);
+                                        $currentIndex = array_search($currentKey, $keys);
+                                        
+                                        $newState = array_slice($state, 0, $currentIndex + 1, true) +
+                                                [$newKey => $newItem] +
+                                                array_slice($state, $currentIndex + 1, null, true);
+                                        
+                                        $component->state($newState);
+                                    }),
+                            ])
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->label('Category')
@@ -86,7 +119,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                         $maxLimit = $setting->max_limit;
                                         $availableSpace = $maxLimit - $currentStock;
                                         
-                                        return "Current stock: {$currentStock}, Max limit: {$maxLimit}, Available space: {$availableSpace}";
+                                        return "Current: {$currentStock} | Max: {$maxLimit} | Available: {$availableSpace}";
                                     })
                                     ->live()
                                     ->afterStateUpdated(function (callable $get, callable $set, $state) {
@@ -175,7 +208,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
-                Forms\Components\Section::make('Office Stationery Stock Request Information (Optional)')
+                Forms\Components\Section::make('Office Stationery Pemasukan Barang Information (Optional)')
                     ->schema([
                         Forms\Components\Hidden::make('type')
                             ->default(OfficeStationeryStockRequest::TYPE_INCREASE),
@@ -301,7 +334,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request approved successfully')
+                            ->title('Pemasukan Barang approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -329,7 +362,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request rejected successfully')
+                            ->title('Pemasukan Barang rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -381,7 +414,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request rejected successfully')
+                            ->title('Pemasukan Barang rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -433,7 +466,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request rejected successfully')
+                            ->title('Pemasukan Barang rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -465,8 +498,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
-                    ->modalHeading('Stock Request Adjustment')
-                    ->modalSubheading('Are you sure to make the adjustment to the Stock Request?')
+                    ->modalHeading('Pemasukan Barang Adjustment')
+                    ->modalSubheading('Are you sure to make the adjustment to this Pemasukan Barang?')
                     ->modalWidth('7xl')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
@@ -518,7 +551,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             // Get adjusted quantity from form data
                             $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
                             
-                            // Get current stock and maximum limit
+                            // Get Current and maximum limit
                             $officeStationeryStockPerDivision = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
                                 ->where('item_id', $item->item_id)
                                 ->first();
@@ -670,7 +703,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request rejected successfully')
+                            ->title('Pemasukan Barang rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -723,7 +756,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request approved and stock updated successfully')
+                            ->title('Pemasukan Barang approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -752,7 +785,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Request rejected successfully')
+                            ->title('Pemasukan Barang rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -800,7 +833,7 @@ class OfficeStationeryStockRequestResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Stock Request Detail')
+                Infolists\Components\Section::make('Pemasukan Barang Detail')
                     ->schema([
                         Infolists\Components\Grid::make(5)
                             ->schema([
@@ -830,7 +863,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-request-detail'),
                     
-                Infolists\Components\Section::make('Stock Request Status')
+                Infolists\Components\Section::make('Pemasukan Barang Status')
                     ->schema([
                         Infolists\Components\Grid::make(6)
                             ->schema([
@@ -983,7 +1016,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-request-status'),
 
-                Infolists\Components\Section::make('Stock Request Items')
+                Infolists\Components\Section::make('Pemasukan Barang Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

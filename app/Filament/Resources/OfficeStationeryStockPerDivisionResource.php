@@ -20,10 +20,10 @@ class OfficeStationeryStockPerDivisionResource extends Resource
     protected static ?string $model = OfficeStationeryStockPerDivision::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Office Stationery';
-    protected static ?string $modelLabel = 'Office Stationery';
-    protected static ?string $pluralModelLabel = 'Office Stationeries';
+    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
+    protected static ?string $navigationLabel = 'Alat Tulis Kantor';
+    protected static ?string $modelLabel = 'Alat Tulis Kantor';
+    protected static ?string $pluralModelLabel = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -74,12 +74,12 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('current_stock')
-                    ->label('Current Stock')
+                    ->label('Current')
                     ->numeric()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('max_limit')
-                    ->label('Max Limit')
+                    ->label('Max')
                     ->getStateUsing(function ($record) {
                         $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
@@ -178,13 +178,13 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                         Infolists\Components\Grid::make(4)
                             ->schema([
                                 Infolists\Components\TextEntry::make('current_stock')
-                                    ->label('Current Stock')
+                                    ->label('Current')
                                     ->badge()
                                     ->color(fn ($state) => $state > 10 ? 'success' : ($state > 0 ? 'warning' : 'danger'))
                                     ->icon('heroicon-o-archive-box'),
                                 
                                 Infolists\Components\TextEntry::make('max_limit')
-                                    ->label('Max Limit')
+                                    ->label('Max')
                                     ->getStateUsing(function ($record) {
                                         $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
                                             ->where('item_id', $record->item_id)
@@ -228,7 +228,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-exclamation-triangle'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Stock Requests Quantity')
+                                    ->label('Latest Pemasukan Barangs Quantity')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -247,7 +247,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-arrow-down-tray'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Stock Requests Requester')
+                                    ->label('Latest Pemasukan Barangs Requester')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -259,7 +259,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-user'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Stock Requests Date')
+                                    ->label('Latest Pemasukan Barangs Date')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class OfficeStationeryStockRequest extends Model
 {
@@ -90,24 +91,27 @@ class OfficeStationeryStockRequest extends Model
                 $division = CompanyDivision::find($model->division_id);
                 $divisionInitial = $division ? $division->initial : 'DIV';
                 
-                // Get the latest request by request_number for this division to maintain proper sequence
-                $latestRequest = OfficeStationeryStockRequest::whereNotNull('request_number')
-                    ->where('division_id', $model->division_id)
-                    ->orderBy('request_number', 'desc')
-                    ->first();
-                
-                if ($latestRequest) {
-                    // Extract the numeric part from the latest request number and increment it
-                    // Format is DIV-REQ-00000001, so we need to extract the numeric part after the last dash
-                    $parts = explode('-', $latestRequest->request_number);
-                    $latestNumber = intval(end($parts));
-                    $nextNumber = $latestNumber + 1;
-                } else {
-                    // If no previous requests for this division, start with 1
-                    $nextNumber = 1;
-                }
-                
-                $model->request_number = $divisionInitial . '-REQ-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+                // Use database locking to ensure we get a unique sequential number
+                DB::transaction(function () use ($model, $divisionInitial) {
+                    // Lock the table to prevent race conditions
+                    $latestRequest = OfficeStationeryStockRequest::whereNotNull('request_number')
+                        ->where('division_id', $model->division_id)
+                        ->orderByDesc('id')
+                        ->lockForUpdate() // This will lock the rows until transaction completes
+                        ->first();
+                    
+                    if ($latestRequest) {
+                        // Extract the numeric part from the latest request number and increment it
+                        $parts = explode('-', $latestRequest->request_number);
+                        $latestNumber = intval(end($parts));
+                        $nextNumber = $latestNumber + 1;
+                    } else {
+                        // If no previous requests for this division, start with 1
+                        $nextNumber = 1;
+                    }
+                    
+                    $model->request_number = $divisionInitial . '-REQ-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+                });
             }
         });
     }

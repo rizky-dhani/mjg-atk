@@ -48,7 +48,7 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->maxContentWidth(MaxWidth::Full)
             ->navigationGroups([
-                NavigationGroup::make('Stocks'),
+                NavigationGroup::make('Alat Tulis Kantor'),
                 NavigationGroup::make('Settings'),
 
             ])

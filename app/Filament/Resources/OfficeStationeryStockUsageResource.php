@@ -2,42 +2,72 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
-use App\Filament\Resources\OfficeStationeryStockUsageResource\RelationManagers;
-use App\Models\OfficeStationeryStockUsage;
-use App\Models\CompanyDivision;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Tables;
 use Filament\Infolists;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\CompanyDivision;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Forms\Components\Repeater;
+use Filament\Notifications\Notification;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\OfficeStationeryStockUsage;
+use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Notifications\Notification;
+use App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
+use App\Filament\Resources\OfficeStationeryStockUsageResource\RelationManagers;
 
 class OfficeStationeryStockUsageResource extends Resource
 {
     protected static ?string $model = OfficeStationeryStockUsage::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Stock Usages';
-    protected static ?string $navigationParentItem = 'Office Stationery';
+    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
+    protected static ?string $navigationLabel = 'Pengeluaran Barang';
+    protected static ?string $modelLabel = 'Pengeluaran Barang';
+    protected static ?string $pluralModelLabel = 'Pengeluaran Barang';
+    protected static ?string $navigationParentItem = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Stock Usage Items')
+                Forms\Components\Grid::make(1)
                     ->schema([
                         Forms\Components\Hidden::make('type')
                             ->default(OfficeStationeryStockUsage::TYPE_DECREASE),
                         Forms\Components\Repeater::make('items')
                             ->relationship()
+                            ->addable(false)
+                            ->cloneable()
+                            ->extraItemActions([
+                                Action::make('add_new_after')
+                                    ->icon('heroicon-m-plus')
+                                    ->color('primary')
+                                    ->action(function (array $arguments, Repeater $component) {
+                                        $items = $component->getState();
+                                        $currentKey = $arguments['item'];
+                                        
+                                        // Create new item
+                                        $newItem = [];
+                                        $newKey = uniqid();
+                                        
+                                        // Insert after current item
+                                        $newItems = [];
+                                        foreach ($items as $key => $item) {
+                                            $newItems[$key] = $item;
+                                            if ($key === $currentKey) {
+                                                $newItems[$newKey] = $newItem;
+                                            }
+                                        }
+                                        
+                                        $component->state($newItems);
+                                    }),
+                            ])
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->label('Category')
@@ -124,7 +154,7 @@ class OfficeStationeryStockUsageResource extends Resource
                                             
                                         $currentStock = $stock ? $stock->current_stock : 0;
                                         
-                                        return "Current stock: {$currentStock}";
+                                        return "Current: {$currentStock}";
                                     })
                                     ->live()
                                     ->rules([
@@ -471,7 +501,7 @@ class OfficeStationeryStockUsageResource extends Resource
                             }),
                         Infolists\Components\TextEntry::make('notes'),
                     ])
-                    ->columns(3)
+                    ->columns(4)
                     ->collapsible()
                     ->collapsed()
                     ->persistCollapsed()
@@ -551,7 +581,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-usage-status'),
                     
-                Infolists\Components\Section::make('Stock Request Items')
+                Infolists\Components\Section::make('Pemasukan Barang Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

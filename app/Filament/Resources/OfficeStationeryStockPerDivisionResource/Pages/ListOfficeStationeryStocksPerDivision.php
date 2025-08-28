@@ -5,6 +5,7 @@ namespace App\Filament\Resources\OfficeStationeryStockPerDivisionResource\Pages;
 use App\Filament\Resources\OfficeStationeryStockPerDivisionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\MaxWidth;
 
 class ListOfficeStationeryStocksPerDivision extends ListRecords
 {
@@ -14,7 +15,8 @@ class ListOfficeStationeryStocksPerDivision extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                    ->label('New Item'),
+                ->label('New Item')
+                ->modalWidth(MaxWidth::SevenExtraLarge),
         ];
     }
 }

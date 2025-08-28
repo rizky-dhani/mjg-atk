@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
 
-use App\Filament\Resources\OfficeStationeryStockUsageResource;
 use Filament\Actions;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\OfficeStationeryStockUsageResource;
 
 class ListOfficeStationeryStockUsages extends ListRecords
 {
@@ -19,7 +20,7 @@ class ListOfficeStationeryStockUsages extends ListRecords
                     $data['division_id'] = auth()->user()->division_id;
                     return $data;
                 })
-                ->modalWidth('7xl')
+                ->modalWidth(MaxWidth::SevenExtraLarge)
                 ->label('New Stock Usage'),
         ];
     }
