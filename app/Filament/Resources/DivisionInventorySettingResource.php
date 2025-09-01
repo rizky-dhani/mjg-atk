@@ -82,11 +82,11 @@ class DivisionInventorySettingResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('max_limit')
-                    ->label('Max Limit')
+                    ->label('Max')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('current_stock')
-                    ->label('Current Stock')
+                    ->label('Current')
                     ->getStateUsing(function ($record) {
                         $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
@@ -143,7 +143,7 @@ class DivisionInventorySettingResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     BulkAction::make('set_max_limit')
-                        ->label('Set Max Limit')
+                        ->label('Set Max')
                         ->icon('heroicon-o-adjustments-horizontal')
                         ->form([
                             Forms\Components\TextInput::make('max_limit')
@@ -166,7 +166,7 @@ class DivisionInventorySettingResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\Action::make('set_global_max_limit')
-                    ->label('Set Global Max Limit')
+                    ->label('Set Global Max')
                     ->icon('heroicon-o-globe-alt')
                     ->form([
                         Forms\Components\TextInput::make('max_limit')
