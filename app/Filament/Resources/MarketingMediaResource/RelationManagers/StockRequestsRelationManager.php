@@ -14,7 +14,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 class StockRequestsRelationManager extends RelationManager
 {
     protected static string $relationship = 'stockRequests';
-    protected static ?string $title = 'Stock Requests';
+    protected static ?string $title = 'Pemasukan Barang';
     public function isReadOnly(): bool
     {
         return false;
@@ -119,7 +119,7 @@ class StockRequestsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('New Stock Request')
+                    ->label('New Pemasukan Barang')
                     ->visible(fn () => true)
                     ->hidden(false)
                     ->mutateFormDataUsing(function (array $data): array {

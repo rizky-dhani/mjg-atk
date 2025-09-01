@@ -19,8 +19,8 @@ class MarketingMediaResource extends Resource
 {
     protected static ?string $model = MarketingMediaItem::class;
     protected static ?string $navigationIcon = 'heroicon-o-document';
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Marketing Media';
+    protected static ?string $navigationGroup = 'Media Marketing';
+    protected static ?string $navigationLabel = 'Media Cetak';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -66,12 +66,8 @@ class MarketingMediaResource extends Resource
                     ->label('Category')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('division.name')
-                    ->label('Division')
-                    ->sortable()
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('current_stock')
-                    ->label('Current Stock')
+                    ->label('Current')
                     ->sortable()
                     ->alignCenter()
                     ->formatStateUsing(fn (int $state): string => number_format($state))

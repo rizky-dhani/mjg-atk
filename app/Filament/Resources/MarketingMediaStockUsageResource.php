@@ -21,9 +21,9 @@ class MarketingMediaStockUsageResource extends Resource
     protected static ?string $model = MarketingMediaStockUsage::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Stock Usages';
-    protected static ?string $navigationParentItem = 'Marketing Media';
+    protected static ?string $navigationGroup = 'Media Marketing';
+    protected static ?string $navigationLabel = 'Pengurangan Barang';
+    protected static ?string $navigationParentItem = 'Media Cetak';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -109,7 +109,7 @@ class MarketingMediaStockUsageResource extends Resource
                                             
                                         $currentStock = $stock ? $stock->current_stock : 0;
                                         
-                                        return "Current stock: {$currentStock}";
+                                        return "Current: {$currentStock}";
                                     })
                                     ->live()
                                     ->rules([

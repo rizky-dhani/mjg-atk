@@ -33,7 +33,7 @@ class ViewMarketingMedia extends ViewRecord
                             ->label('Division'),
                         TextEntry::make('size'),
                         TextEntry::make('current_stock')
-                            ->label('Current Stock')
+                            ->label('Current')
                             ->formatStateUsing(fn (int $state): string => number_format($state))
                             ->color('primary'),
                         TextEntry::make('latest_request.quantity')

@@ -17,9 +17,9 @@ class MarketingMediaCategoryResource extends Resource
 {
     protected static ?string $model = MarketingMediaCategory::class;
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Stocks';
-    protected static ?string $navigationLabel = 'Categories';
-    protected static ?string $navigationParentItem = 'Marketing Media';
+    protected static ?string $navigationGroup = 'Media Marketing';
+    protected static ?string $navigationLabel = 'Kategori';
+    protected static ?string $navigationParentItem = 'Media Cetak';
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
