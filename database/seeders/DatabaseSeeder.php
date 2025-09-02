@@ -23,9 +23,6 @@ class DatabaseSeeder extends Seeder
             DivisionInventorySettingSeeder::class,
             OfficeStationeryStockPerDivisionSeeder::class,
             OfficeStationeryStockRequestSeeder::class,
-            MarketingMediaCategorySeeder::class,
-            MarketingMediaSeeder::class,
-            MarketingMediaStockRequestSeeder::class,
         ]);
 
     }
