@@ -89,8 +89,8 @@ class MarketingMediaStockRequest extends Model
     const STATUS_REJECTED_BY_SECOND_IPC_HEAD = 'rejected_by_second_ipc_head';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
-    const STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD = 'approved_by_marketing_support_head';
-    const STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD = 'rejected_by_marketing_support_head';
+    const STATUS_APPROVED_BY_MKT_HEAD = 'approved_by_MKT_HEAD';
+    const STATUS_REJECTED_BY_MKT_HEAD = 'rejected_by_MKT_HEAD';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -99,31 +99,8 @@ class MarketingMediaStockRequest extends Model
         
         static::creating(function ($model) {
             if (empty($model->request_number)) {
-                // Get the division initial
-                $division = CompanyDivision::find($model->division_id);
-                $divisionInitial = $division ? $division->initial : 'DIV';
-                
-                // Use database locking to ensure we get a unique sequential number
-                DB::transaction(function () use ($model, $divisionInitial) {
-                    // Lock the table to prevent race conditions
-                    $latestRequest = MarketingMediaStockRequest::whereNotNull('request_number')
-                        ->where('division_id', $model->division_id)
-                        ->orderByDesc('id')
-                        ->lockForUpdate() // This will lock the rows until transaction completes
-                        ->first();
-                    
-                    if ($latestRequest) {
-                        // Extract the numeric part from the latest request number and increment it
-                        $parts = explode('-', $latestRequest->request_number);
-                        $latestNumber = intval(end($parts));
-                        $nextNumber = $latestNumber + 1;
-                    } else {
-                        // If no previous requests for this division, start with 1
-                        $nextNumber = 1;
-                    }
-                    
-                    $model->request_number = 'MM' . $divisionInitial . '-REQ-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
-                });
+                // Generate request number using the helper
+                $model->request_number = \App\Helpers\StockNumberGenerator::generateMarketingMediaRequestNumber($model->division_id);
             }
         });
     }

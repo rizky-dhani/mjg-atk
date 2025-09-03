@@ -62,28 +62,8 @@ class OfficeStationeryStockUsage extends Model
             }
             
             if (empty($model->usage_number)) {
-                // Get the division initial
-                $division = CompanyDivision::find(auth()->user()->division_id);
-                $divisionInitial = $division ? $division->initial : 'DIV';
-                
-                // Get the latest usage by usage_number for this division to maintain proper sequence
-                $latestUsage = OfficeStationeryStockUsage::whereNotNull('usage_number')
-                    ->where('division_id', auth()->user()->division_id)
-                    ->orderBy('usage_number', 'desc')
-                    ->first();
-                
-                if ($latestUsage) {
-                    // Extract the numeric part from the latest usage number and increment it
-                    // Format is DIV-USE-00000001, so we need to extract the numeric part after the last dash
-                    $parts = explode('-', $latestUsage->usage_number);
-                    $latestNumber = intval(end($parts));
-                    $nextNumber = $latestNumber + 1;
-                } else {
-                    // If no previous usages for this division, start with 1
-                    $nextNumber = 1;
-                }
-                
-                $model->usage_number = $divisionInitial . '-USAGE-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+                // Generate usage number using the helper
+                $model->usage_number = \App\Helpers\StockNumberGenerator::generateOfficeStationeryUsageNumber($model->division_id);
             }
         });
     }

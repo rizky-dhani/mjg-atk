@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Helpers\StockNumberGenerator;
 
 class MarketingMediaStockUsage extends Model
 {
-    protected $table = 'os_stock_usages';
+    protected $table = 'mm_stock_usages';
     
     protected $fillable = [
         'usage_number',
@@ -26,10 +27,10 @@ class MarketingMediaStockUsage extends Model
         'approval_ga_admin_at',
         'rejection_ga_admin_id',
         'rejection_ga_admin_at',
-        'approval_hcg_head_id',
-        'approval_hcg_head_at',
-        'rejection_hcg_head_id',
-        'rejection_hcg_head_at',
+        'approval_marketing_head_id',
+        'approval_marketing_head_at',
+        'rejection_marketing_head_id',
+        'rejection_marketing_head_at',
     ];
     
     protected $casts = [
@@ -37,9 +38,10 @@ class MarketingMediaStockUsage extends Model
         'rejection_head_at' => 'datetime',
         'approval_ga_admin_at' => 'datetime',
         'rejection_ga_admin_at' => 'datetime',
-        'approval_hcg_head_at' => 'datetime',
-        'rejection_hcg_head_at' => 'datetime',
+        'approval_marketing_head_at' => 'datetime',
+        'rejection_marketing_head_at' => 'datetime',
     ];
+    
     const TYPE_DECREASE = 'decrease';
 
     const STATUS_PENDING = 'pending';
@@ -47,8 +49,8 @@ class MarketingMediaStockUsage extends Model
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
-    const STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD = 'rejected_by_marketing_support_head';
-    const STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD = 'approved_by_marketing_support_head';
+    const STATUS_REJECTED_BY_MKT_HEAD = 'rejected_by_marketing_support_head';
+    const STATUS_APPROVED_BY_MKT_HEAD = 'approved_by_marketing_support_head';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -62,28 +64,8 @@ class MarketingMediaStockUsage extends Model
             }
             
             if (empty($model->usage_number)) {
-                // Get the division initial
-                $division = CompanyDivision::find(auth()->user()->division_id);
-                $divisionInitial = $division ? $division->initial : 'DIV';
-                
-                // Get the latest usage by usage_number for this division to maintain proper sequence
-                $latestUsage = OfficeStationeryStockUsage::whereNotNull('usage_number')
-                    ->where('division_id', auth()->user()->division_id)
-                    ->orderBy('usage_number', 'desc')
-                    ->first();
-                
-                if ($latestUsage) {
-                    // Extract the numeric part from the latest usage number and increment it
-                    // Format is DIV-USE-00000001, so we need to extract the numeric part after the last dash
-                    $parts = explode('-', $latestUsage->usage_number);
-                    $latestNumber = intval(end($parts));
-                    $nextNumber = $latestNumber + 1;
-                } else {
-                    // If no previous usages for this division, start with 1
-                    $nextNumber = 1;
-                }
-                
-                $model->usage_number = $divisionInitial . '-USAGE-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+                // Generate usage number using the helper
+                $model->usage_number = StockNumberGenerator::generateMarketingMediaUsageNumber($model->division_id);
             }
         });
     }
@@ -121,11 +103,27 @@ class MarketingMediaStockUsage extends Model
     }
 
     /**
+     * Get the GA Admin who approved this.
+     */
+    public function gaAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ga_admin_id');
+    }
+
+    /**
+     * Get the GA Admin who rejected this.
+     */
+    public function rejectionGaAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ga_admin_id');
+    }
+
+    /**
      * Get the Marketing Support Head who approved this.
      */
     public function marketingSupportHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_ga_head_id');
+        return $this->belongsTo(User::class, 'approval_marketing_head_id');
     }
 
     /**
@@ -133,23 +131,7 @@ class MarketingMediaStockUsage extends Model
      */
     public function rejectionMarketingSupportHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'rejection_ga_head_id');
-    }
-
-    /**
-     * Get the HCG Head who approved this.
-     */
-    public function hcgHead(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'approval_hcg_head_id');
-    }
-
-    /**
-     * Get the HCG Head who rejected this.
-     */
-    public function rejectionHcgHead(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'rejection_hcg_head_id');
+        return $this->belongsTo(User::class, 'rejection_marketing_head_id');
     }
 
     /**
@@ -157,7 +139,7 @@ class MarketingMediaStockUsage extends Model
      */
     public function items(): HasMany
     {
-        return $this->hasMany(OfficeStationeryStockUsageItem::class, 'stock_usage_id');
+        return $this->hasMany(MarketingMediaStockUsageItem::class, 'stock_usage_id');
     }
 
     /**
@@ -177,9 +159,9 @@ class MarketingMediaStockUsage extends Model
     }
 
     /**
-     * Check if usage needs HCG Head approval.
+     * Check if usage needs Marketing Support Head approval.
      */
-    public function needsHcgHeadApproval(): bool
+    public function needsMarketingHeadApproval(): bool
     {
         return $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
@@ -187,24 +169,24 @@ class MarketingMediaStockUsage extends Model
     /*** Check if usage can be processed (stock reduced).*/    
     public function canProcessUsage(): bool    
     {        
-        return $this->status === self::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD;    
+        return $this->status === self::STATUS_APPROVED_BY_MKT_HEAD;    
     }
     
     /**
      * Process stock adjustment for all items in this usage.
      * This method should be called when a usage is approved by all required parties:
-     * Div Admin -> Div Head -> GA Admin -> HCG Head.
+     * Div Admin -> Div Head -> GA Admin -> Marketing Support Head.
      * It can either increase or decrease stock based on the usage type.
      */
     public function processStockUsage(): void
     {
         if (!$this->canProcessUsage()) {
-            throw new \Exception('Cannot process stock usage for this request. Not approved by HCG Head.');
+            throw new \Exception('Cannot process stock usage for this request. Not approved by Marketing Support Head.');
         }
 
         foreach ($this->items as $item) {
             // Get the current stock for this item in this division
-            $stock = OfficeStationeryStockPerDivision::where('division_id', $this->division_id)
+            $stock = MarketingMediaStockPerDivision::where('division_id', $this->division_id)
                 ->where('item_id', $item->item_id)
                 ->first();
 
