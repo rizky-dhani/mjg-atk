@@ -316,25 +316,62 @@ class MarketingMediaStockPerDivisionResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']);
+        }
+        
+        return false;
     }
 
     public static function canView($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin']) || 
-            (auth()->user()->division_id === $record->division_id);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->division_id === $record->division_id;
+        }
+        
+        return false;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']) &&
-            (auth()->user()->division_id === $record->division_id);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']) && ($user->division_id === $record->division_id);
+        }
+        
+        return false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']) &&
-            (auth()->user()->division_id === $record->division_id);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']) && ($user->division_id === $record->division_id);
+        }
+        
+        return false;
     }
 
     public static function getPages(): array

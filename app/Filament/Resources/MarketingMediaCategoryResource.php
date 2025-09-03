@@ -74,22 +74,62 @@ class MarketingMediaCategoryResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Head']);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head']);
+        }
+        
+        return false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']);
+        }
+        
+        return false;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']);
+        }
+        
+        return false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Check if user's division name contains 'Marketing'
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']);
+        }
+        
+        return false;
     }
 
     public static function getRelations(): array

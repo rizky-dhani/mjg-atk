@@ -649,11 +649,95 @@ class MarketingMediaStockRequestResource extends Resource
         $query = parent::getEloquentQuery();
         
         // Filter based on user role
-        if (auth()->user()->hasRole(['Admin']) || auth()->user()->hasRole(['Head'])) {
-            $query->where('division_id', auth()->user()->division_id);
+        $user = auth()->user();
+        if ($user->hasRole(['Admin']) || $user->hasRole(['Head'])) {
+            // For Marketing divisions, only show their own requests
+            if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+                $query->where('division_id', $user->division_id);
+            }
+            // For IPC, GA, HCG divisions, they can see all requests for approval process
+            else if ($user->division && 
+                     ($user->division->initial === 'IPC' || 
+                      $user->division->initial === 'GA' || 
+                      $user->division->initial === 'HCG')) {
+                // These divisions can see all requests for approval
+            }
+            // For other divisions, only show their own requests
+            else {
+                $query->where('division_id', $user->division_id);
+            }
         }
         
         return $query;
+    }
+    
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow Marketing divisions to view their own requests
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        // Allow IPC and GA divisions to view all requests for approval process
+        if ($user->division && 
+            ($user->division->initial === 'IPC' || 
+             $user->division->initial === 'GA')) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        return false;
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Only allow Marketing divisions to create requests
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow editing if user belongs to the same division as the record and is from a Marketing division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']) && 
+                   $user->division_id === $record->division_id;
+        }
+        
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow deleting if user belongs to the same division as the record and is from a Marketing division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']) && 
+                   $user->division_id === $record->division_id;
+        }
+        
+        return false;
     }
 
     public static function getRelations(): array

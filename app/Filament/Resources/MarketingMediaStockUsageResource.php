@@ -2,71 +2,50 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Infolists;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use App\Models\CompanyDivision;
-use Filament\Infolists\Infolist;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\Repeater;
-use Filament\Notifications\Notification;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use App\Models\MarketingMediaStockUsage;
-use Filament\Forms\Components\Actions\Action;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\MarketingMediaStockUsageResource\Pages;
 use App\Filament\Resources\MarketingMediaStockUsageResource\RelationManagers;
+use App\Models\MarketingMediaStockUsage;
+use App\Models\CompanyDivision;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MarketingMediaStockUsageResource extends Resource
 {
     protected static ?string $model = MarketingMediaStockUsage::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
+
     protected static ?string $navigationGroup = 'Marketing Media';
+
     protected static ?string $navigationLabel = 'Stock Usages';
-    protected static ?string $modelLabel = 'Stock Usage';
-    protected static ?string $pluralModelLabel = 'Stock Usages';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Grid::make(1)
+                Forms\Components\Section::make('Usage Information')
                     ->schema([
                         Forms\Components\Hidden::make('type')
                             ->default(MarketingMediaStockUsage::TYPE_DECREASE),
+                        Forms\Components\Textarea::make('notes')
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+                
+                Forms\Components\Section::make('Usage Items')
+                    ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship()
-                            ->addable(false)
-                            ->cloneable()
-                            ->extraItemActions([
-                                Action::make('add_new_after')
-                                    ->icon('heroicon-m-plus')
-                                    ->color('primary')
-                                    ->action(function (array $arguments, Repeater $component) {
-                                        $items = $component->getState();
-                                        $currentKey = $arguments['item'];
-                                        
-                                        // Create new item
-                                        $newItem = [];
-                                        $newKey = uniqid();
-                                        
-                                        // Insert after current item
-                                        $newItems = [];
-                                        foreach ($items as $key => $item) {
-                                            $newItems[$key] = $item;
-                                            if ($key === $currentKey) {
-                                                $newItems[$newKey] = $newItem;
-                                            }
-                                        }
-                                        
-                                        $component->state($newItems);
-                                    }),
-                            ])
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->label('Category')
@@ -86,48 +65,7 @@ class MarketingMediaStockUsageResource extends Resource
                                     })
                                     ->searchable()
                                     ->preload()
-                                    ->required()
-                                    ->live()
-                                    ->rules([
-                                        function () {
-                                            return function (string $attribute, $value, \Closure $fail, $livewire) {
-                                                // Extract the repeater index from the attribute name
-                                                // e.g., "data.items.0.quantity" -> index 0
-                                                preg_match('/items\.(\\d+)\.quantity/', $attribute, $matches);
-                                                $index = $matches[1] ?? null;
-                                                
-                                                if ($index === null) {
-                                                    return;
-                                                }
-                                                
-                                                // Get the item_id for this repeater item
-                                                $itemId = data_get($livewire, "data.items.{$index}.item_id");
-                                                
-                                                if (!$itemId || !$value) {
-                                                    return;
-                                                }
-                                                
-                                                // Get division_id from the form or from the record
-                                                $divisionId = null;
-                                                if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
-                                                    $divisionId = auth()->user()->division_id;
-                                                } else {
-                                                    $record = MarketingMediaStockUsage::find(request()->route('record'));
-                                                    $divisionId = $record ? $record->division_id : auth()->user()->division_id;
-                                                }
-                                                
-                                                $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $divisionId)
-                                                    ->where('item_id', $itemId)
-                                                    ->first();
-                                                    
-                                                $currentStock = $stock ? $stock->current_stock : 0;
-                                                
-                                                if ($value > $currentStock) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available stock ({$currentStock}) for this item.");
-                                                }
-                                            };
-                                        },
-                                    ]),
+                                    ->required(),
                                 Forms\Components\TextInput::make('quantity')
                                     ->required()
                                     ->numeric()
@@ -138,86 +76,49 @@ class MarketingMediaStockUsageResource extends Resource
                                             return '';
                                         }
                                         
-                                        // Get division_id from the form or from the record
-                                        $divisionId = null;
-                                        if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
-                                            $divisionId = auth()->user()->division_id;
-                                        } else {
-                                            $record = MarketingMediaStockUsage::find(request()->route('record'));
-                                            $divisionId = $record ? $record->division_id : auth()->user()->division_id;
-                                        }
-                                        
-                                        $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $divisionId)
+                                        $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
                                             ->where('item_id', $itemId)
                                             ->first();
                                             
                                         $currentStock = $stock ? $stock->current_stock : 0;
                                         
-                                        return "Current: {$currentStock}";
+                                        return "Current stock: {$currentStock}";
                                     })
                                     ->live()
-                                    ->rules([
-                                        function () {
-                                            return function (string $attribute, $value, \Closure $fail, $livewire) {
-                                                // Extract the repeater index from the attribute name
-                                                // e.g., "data.items.0.quantity" -> index 0
-                                                preg_match('/items\.(\\d+)\.quantity/', $attribute, $matches);
-                                                $index = $matches[1] ?? null;
-                                                
-                                                if ($index === null) {
-                                                    return;
-                                                }
-                                                
-                                                // Get the item_id for this repeater item
-                                                $itemId = data_get($livewire, "data.items.{$index}.item_id");
-                                                
-                                                if (!$itemId || !$value) {
-                                                    return;
-                                                }
-                                                
-                                                // Get division_id from the form or from the record
-                                                $divisionId = null;
-                                                if (request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.create')) {
-                                                    $divisionId = auth()->user()->division_id;
-                                                } else {
-                                                    $record = MarketingMediaStockUsage::find(request()->route('record'));
-                                                    $divisionId = $record ? $record->division_id : auth()->user()->division_id;
-                                                }
-                                                
-                                                $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $divisionId)
-                                                    ->where('item_id', $itemId)
-                                                    ->first();
-                                                    
-                                                $currentStock = $stock ? $stock->current_stock : 0;
-                                                
-                                                // For decrease type, check if quantity exceeds available stock
-                                                // For increase type, no validation needed
-                                                $usageType = data_get($livewire, 'data.type') ?? MarketingMediaStockUsage::TYPE_DECREASE;
-                                                if ($usageType === MarketingMediaStockUsage::TYPE_DECREASE && $value > $currentStock) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available stock ({$currentStock}) for this item.");
-                                                }
-                                            };
-                                        },
-                                    ]),
+                                    ->afterStateUpdated(function (callable $get, callable $set, $state) {
+                                        $itemId = $get('item_id');
+                                        if (!$itemId || !$state) {
+                                            return;
+                                        }
+                                        
+                                        $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
+                                            ->where('item_id', $itemId)
+                                            ->first();
+                                            
+                                        $currentStock = $stock ? $stock->current_stock : 0;
+                                        
+                                        if ($state > $currentStock) {
+                                            // Reset to available stock
+                                            $set('quantity', $currentStock);
+                                            
+                                            // Show notification to user
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Quantity adjusted')
+                                                ->body("The requested quantity has been adjusted to the available stock: {$currentStock}")
+                                                ->warning()
+                                                ->send();
+                                        }
+                                    }),
                                 Forms\Components\Textarea::make('notes')
                                     ->maxLength(1000)
-                                    ->rows(1)
-                                    ->autosize(),
+                                    ->columnSpanFull(),
                             ])
-                            ->columns(4)
+                            ->columns(3)
                             ->minItems(1)
                             ->addActionLabel('Add Item')
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
-                Forms\Components\Section::make('Stock Usage Information (Optional)')
-                    ->schema([
-                        Forms\Components\Textarea::make('notes')
-                            ->maxLength(65535)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-                
             ]);
     }
 
@@ -235,32 +136,25 @@ class MarketingMediaStockUsageResource extends Resource
                     ->label('Requested By')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        MarketingMediaStockUsage::TYPE_DECREASE => 'danger',
-                        default => 'secondary',
-                    })
+                Tables\Columns\BadgeColumn::make('type')
+                    ->colors([
+                        'danger' => MarketingMediaStockUsage::TYPE_DECREASE,
+                    ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         MarketingMediaStockUsage::TYPE_DECREASE => 'Decrease',
-                        default => ucfirst($state),
                     }),
-                Tables\Columns\TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        MarketingMediaStockUsage::STATUS_PENDING => 'warning',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
-                        default => 'secondary',
-                    })
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'warning' => MarketingMediaStockUsage::STATUS_PENDING,
+                        'success' => [MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_COMPLETED],
+                        'danger' => [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN],
+                    ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -272,38 +166,33 @@ class MarketingMediaStockUsageResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('division_id')
+                Tables\Filters\SelectFilter::make('division_id')
                     ->label('Division')
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload(),
-                SelectFilter::make('type')
+                Tables\Filters\SelectFilter::make('type')
                     ->options([
-                        MarketingMediaStockUsage::TYPE_DECREASE => 'Decrease',
+                        MarketingMediaStockUsage::TYPE_DECREASE => 'Stock Decrease',
                     ]),
-                SelectFilter::make('status')
-                    ->multiple()
+                Tables\Filters\SelectFilter::make('status')
                     ->options([
                         MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->modalWidth('7xl')
                     ->visible(fn ($record) => $record->status === MarketingMediaStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === MarketingMediaStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                
                 // Approval Actions
                 Tables\Actions\Action::make('approve_as_head')
-                    ->label('Approve')
+                    ->label('Approve (Head)')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
@@ -316,16 +205,17 @@ class MarketingMediaStockUsageResource extends Resource
                         $record->update([
                             'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
                             'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now()->timezone('Asia/Jakarta'),
+                            'approval_head_at' => now(),
                         ]);
                         
-                        Notification::make()
+                        \Filament\Notifications\Notification::make()
                             ->title('Usage approved successfully')
                             ->success()
                             ->send();
                     }),
+                
                 Tables\Actions\Action::make('reject_as_head')
-                    ->label('Reject')
+                    ->label('Reject (Head)')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
@@ -336,122 +226,93 @@ class MarketingMediaStockUsageResource extends Resource
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
                             ->required()
                             ->maxLength(65535),
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD,
-                            'rejection_head_id' => auth()->user()->id,
-                            'rejection_head_at' => now()->timezone('Asia/Jakarta'),
+                            'approval_head_id' => auth()->user()->id,
+                            'approval_head_at' => now(),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
-                        Notification::make()
-                            ->title('Stock Usage rejected successfully')
-                            ->success()
+                        \Filament\Notifications\Notification::make()
+                            ->title('Usage rejected successfully')
+                            ->warning()
                             ->send();
                     }),
+                
                 Tables\Actions\Action::make('approve_as_ga_admin')
-                    ->label('Approve')
+                    ->label('Approve (GA Admin)')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                        $record->isDecrease() && auth()->user()->division?->initial === 'GA' &&
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
+                    ->databaseTransaction()
                     ->action(function ($record) {
+                        // Update stock levels
+                        foreach ($record->items as $item) {
+                            $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
+                                ->where('item_id', $item->item_id)
+                                ->lockForUpdate()
+                                ->first();
+                                
+                            if ($officeStationeryStockPerDivision) {
+                                // Store previous stock
+                                $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
+                                
+                                // Update stock
+                                $officeStationeryStockPerDivision->decrement('current_stock', $item->quantity);
+                                
+                                // Store new stock
+                                $item->new_stock = $officeStationeryStockPerDivision->current_stock;
+                                $item->save();
+                            }
+                        }
+                        
                         $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                            'status' => MarketingMediaStockUsage::STATUS_COMPLETED,
                             'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
+                            'approval_ga_admin_at' => now(),
                         ]);
                         
-                        Notification::make()
-                            ->title('Usage approved successfully')
+                        \Filament\Notifications\Notification::make()
+                            ->title('Usage approved by GA Admin and stock updated')
                             ->success()
                             ->send();
                     }),
+                
                 Tables\Actions\Action::make('reject_as_ga_admin')
-                    ->label('Reject')
+                    ->label('Reject (GA Admin)')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                        $record->isDecrease() && auth()->user()->division?->initial === 'GA' &&
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
                             ->required()
                             ->maxLength(65535),
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN,
-                            'rejection_ga_admin_id' => auth()->user()->id,
-                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
+                            'approval_ga_admin_id' => auth()->user()->id,
+                            'approval_ga_admin_at' => now(),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
-                        Notification::make()
-                            ->title('Stock Usage rejected successfully')
-                            ->success()
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('approve_as_mkt_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->initial === 'MKS')
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD,
-                            'approval_marketing_head_id' => auth()->user()->id,
-                            'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        // Process the stock usage
-                        $record->processStockUsage();
-                        
-                        Notification::make()
-                            ->title('Stock Usage approved and stock updated successfully')
-                            ->success()
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('reject_as_mkt_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->initial === 'MKS')
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD,
-                            'rejection_marketing_head_id' => auth()->user()->id,
-                            'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Stock Usage rejected successfully')
-                            ->success()
+                        \Filament\Notifications\Notification::make()
+                            ->title('Usage rejected by GA Admin successfully')
+                            ->warning()
                             ->send();
                     }),
             ])
@@ -459,6 +320,9 @@ class MarketingMediaStockUsageResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->headerActions([
+                
             ]);
     }
     
@@ -473,10 +337,99 @@ class MarketingMediaStockUsageResource extends Resource
         }elseif($user->division?->initial === 'MKS' && $user->hasRole('Head')){
             $query->where('status', MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN);
         }else{
-            $query->where('division_id', $user->division_id)->orderByDesc('usage_number');
+            // For Marketing divisions, only show their own usages
+            if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+                $query->where('division_id', $user->division_id);
+            }
+            // For IPC, GA divisions, they can see all usages for approval process
+            else if ($user->division && 
+                     ($user->division->initial === 'IPC' || 
+                      $user->division->initial === 'GA')) {
+                // These divisions can see all usages for approval
+            }
+            // For other divisions, only show their own usages
+            else {
+                $query->where('division_id', $user->division_id);
+            }
+            $query->orderByDesc('usage_number');
         }
         
         return $query;
+    }
+    
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow Marketing divisions to view their own usages
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        // Allow IPC, GA divisions to view all usages for approval process
+        if ($user->division && 
+            ($user->division->initial === 'IPC' || $user->division->initial === 'GA')) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        return false;
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Only allow Marketing divisions to create usages
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']);
+        }
+        
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow editing if user belongs to the same division as the record and is from a Marketing division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head', 'Staff']) && 
+                   $user->division_id === $record->division_id;
+        }
+        
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow deleting if user belongs to the same division as the record and is from a Marketing division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin']) && 
+                   $user->division_id === $record->division_id;
+        }
+        
+        return false;
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -511,8 +464,9 @@ class MarketingMediaStockUsageResource extends Resource
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 MarketingMediaStockUsage::STATUS_PENDING => 'warning',
-                                MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
-                                MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
+                                MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'success',
+                                MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'danger',
+                                MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
                                 default => 'secondary',
                             })
                             ->formatStateUsing(fn ($state) => match ($state) {
@@ -521,65 +475,48 @@ class MarketingMediaStockUsageResource extends Resource
                                 MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                                 MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                 MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                                MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
-                                MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                                 MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
-                            })
-                            ->columnSpan(6),
+                                default => ucfirst(str_replace('_', ' ', $state)),
+                            }),
                         Infolists\Components\TextEntry::make('divisionHead.name')
                             ->label('Head Approve')
-                            ->visible(fn ($record) => $record->approval_head_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('approval_head_at')
-                            ->label('Head Approve At')
+                            ->label('Head Approval At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->approval_head_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('rejectionHead.name')
-                            ->label('Head Rejection')
-                            ->visible(fn ($record) => $record->rejection_head_id !== null),
+                            ->label('Head Reject')
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('rejection_head_at')
                             ->label('Head Rejection At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->rejection_head_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('gaAdmin.name')
                             ->label('GA Admin Approve')
-                            ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('approval_ga_admin_at')
-                            ->label('GA Admin Approve At')
+                            ->label('GA Admin Approval At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('rejectionGaAdmin.name')
-                            ->label('GA Admin Rejection')
-                            ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
+                            ->label('GA Admin Reject')
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('rejection_ga_admin_at')
                             ->label('GA Admin Rejection At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
-                        Infolists\Components\TextEntry::make('marketingSupportHead.name')
-                            ->label('Marketing Support Head Approve')
-                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
-                        Infolists\Components\TextEntry::make('approval_marketing_head_at')
-                            ->label('Marketing Support Head Approve At')
-                            ->dateTime()
-                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
-                        Infolists\Components\TextEntry::make('rejectionMarketingSupportHead.name')
-                            ->label('Marketing Support Head Rejection')
-                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
-                        Infolists\Components\TextEntry::make('rejection_marketing_head_at')
-                            ->label('Marketing Support Head Rejection At')
-                            ->dateTime()
-                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
+                            ->placeholder('-'),
                         Infolists\Components\TextEntry::make('rejection_reason')
                             ->label('Rejection Reason')
-                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD]))
-                            ->columnSpan(6),
-                        
+                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN]))
+                            ->columnSpan(4),
                     ])
-                    ->columns(6)
+                    ->columns(4)
                     ->collapsible()
                     ->collapsed()
                     ->persistCollapsed()
                     ->id('stock-usage-status'),
-                    
+                
                 Infolists\Components\Section::make('Stock Usage Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
@@ -605,13 +542,6 @@ class MarketingMediaStockUsageResource extends Resource
                     ->id('stock-request-items'),
                 
             ]);
-    }
-    
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
