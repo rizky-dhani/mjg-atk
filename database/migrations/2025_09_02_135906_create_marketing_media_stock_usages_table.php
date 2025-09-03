@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('usage_number')->unique();
             $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
-            $table->foreignId('used_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('requested_by')->constrained('users')->onDelete('cascade');
             $table->string('type')->default('decrease'); // decrease
             $table->string('status')->default('pending');
             $table->text('notes')->nullable();
@@ -26,22 +26,19 @@ return new class extends Migration
             $table->timestamp('approval_head_at')->nullable();
             $table->foreignId('rejection_head_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('rejection_head_at')->nullable();
-            
             $table->foreignId('approval_ga_admin_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('approval_ga_admin_at')->nullable();
             $table->foreignId('rejection_ga_admin_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('rejection_ga_admin_at')->nullable();
-            
             $table->foreignId('approval_ga_head_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('approval_marketing_head_at')->nullable();
             $table->foreignId('rejection_marketing_head_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('rejection_marketing_head_at')->nullable();
-            
             $table->timestamps();
             
             // Indexes for better query performance
             $table->index(['division_id', 'status']);
-            $table->index(['used_by', 'created_at']);
+            $table->index(['requested_by', 'created_at']);
             $table->index(['type', 'status']);
         });
     }

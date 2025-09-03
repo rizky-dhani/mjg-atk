@@ -52,7 +52,6 @@ return new class extends Migration
             $table->timestamp('approval_marketing_head_at')->nullable();
             $table->foreignId('rejection_marketing_head_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('rejection_marketing_head_at')->nullable();
-            
             $table->timestamps();
             
             // Indexes for better query performance

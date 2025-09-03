@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mm_stock_request_items', function (Blueprint $table) {
-            $table->foreignId('stock_request_id')->constrained('marketing_media_stock_requests')->onDelete('cascade');
+        Schema::create('mm_stock_request_items', function (Blueprint $table) {
+            $table->foreignId('stock_request_id')->constrained('mm_stock_requests')->onDelete('cascade');
             $table->foreignId('item_id')->constrained('marketing_media_items')->onDelete('cascade');
             $table->foreignId('category_id')->constrained('marketing_media_categories')->onDelete('cascade');
             $table->integer('quantity');
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('previous_stock')->nullable();
             $table->integer('new_stock')->nullable();
             $table->text('notes')->nullable();
+            $table->timestamps();
             
             // Indexes for better query performance
             $table->index(['stock_request_id', 'item_id']);
