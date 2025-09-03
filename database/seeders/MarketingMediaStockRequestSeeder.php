@@ -7,14 +7,13 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\CompanyDivision;
 use Illuminate\Database\Seeder;
-use App\Models\StockRequestItem;
-use App\Models\OfficeStationeryItem;
+use App\Models\MarketingMediaItem;
 use App\Models\DivisionInventorySetting;
-use App\Models\OfficeStationeryStockRequest;
-use App\Models\OfficeStationeryStockPerDivision;
-use App\Models\OfficeStationeryStockRequestItem;
+use App\Models\MarketingMediaStockRequest;
+use App\Models\MarketingMediaStockPerDivision;
+use App\Models\MarketingMediaStockRequestItem;
 
-class OfficeStationeryStockRequestSeeder extends Seeder
+class MarketingMediaStockRequestSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -45,16 +44,16 @@ class OfficeStationeryStockRequestSeeder extends Seeder
             $query->where('initial', 'GA');
         })
         ->get();
-        $userHcg = User::with(['roles', 'division'])
+        $userMarketingSupport = User::with(['roles', 'division'])
         ->whereHas('roles', function ($query) {
             $query->where('name', 'Head');
         })
         ->whereHas('division', function ($query) {
-            $query->where('initial', 'HCG');
+            $query->where('initial', 'Marketing Support');
         })
         ->get();
         $divisions = CompanyDivision::all();
-        $items = OfficeStationeryItem::all();
+        $items = MarketingMediaItem::all();
 
         // Check if we have users with required roles
         if ($userAdmin->isEmpty() || $userHead->isEmpty() || $userIPC->isEmpty()) {
@@ -88,169 +87,170 @@ class OfficeStationeryStockRequestSeeder extends Seeder
             
             // Pick a random GA admin
             $gaAdmin = $userGA->isNotEmpty() ? $userGA->random() : $admin; // Fallback to regular admin if no GA admin
-            $hcgHead = $userHcg->isNotEmpty() ? $userHcg->random() : $head;
-            $request = OfficeStationeryStockRequest::create([
+            $marketingSupportHead = $userMarketingSupport->isNotEmpty() ? $userMarketingSupport->random() : $head;
+            
+            $request = MarketingMediaStockRequest::create([
                 'requested_by' => $admin->id,
                 'division_id' => $division->id,
-                'type' => OfficeStationeryStockRequest::TYPE_INCREASE,
+                'type' => MarketingMediaStockRequest::TYPE_INCREASE,
                 'status' => [
-                    OfficeStationeryStockRequest::STATUS_PENDING, 
-                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, 
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, 
-                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, 
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, 
-                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                    OfficeStationeryStockRequest::STATUS_DELIVERED, 
-                    OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
-                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
-                    OfficeStationeryStockRequest::STATUS_COMPLETED
+                    MarketingMediaStockRequest::STATUS_PENDING, 
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, 
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, 
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, 
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, 
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_DELIVERED, 
+                    MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
+                    MarketingMediaStockRequest::STATUS_COMPLETED
                 ][rand(0, 13)],
-                'notes' => 'Sample request ' . $i,
+                'notes' => 'Sample marketing media request ' . $i,
             ]);
 
             // Set approval fields based on status
-            if ($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD) {
+            if ($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_DELIVERED) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_DELIVERED) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_hcg_head_id = $hcgHead->id;
-                $request->approval_hcg_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_at = now();
+                $request->approval_marketing_head_id = $marketingSupportHead->id;
+                $request->approval_marketing_head_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_COMPLETED) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_COMPLETED) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->approval_hcg_head_id = $hcgHead->id;
-                $request->approval_hcg_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_at = now();
+                $request->approval_marketing_head_id = $marketingSupportHead->id;
+                $request->approval_marketing_head_at = now();
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD) {
                 $request->rejection_head_id = $head->id;
-                $request->rejection_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_head_at = now();
                 $request->rejection_reason = 'Rejected by head due to budget constraints';
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->rejection_ipc_id = $ipc->id;
-                $request->rejection_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ipc_at = now();
                 $request->rejection_reason = 'Rejected by IPC due to stock availability';
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->rejection_ipc_head_id = $ipc->id;
-                $request->rejection_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ipc_head_at = now();
                 $request->rejection_reason = 'Rejected by IPC Head due to policy violation';
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->rejection_ga_admin_id = $gaAdmin->id;
-                $request->rejection_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ga_admin_at = now();
                 $request->rejection_reason = 'Rejected by GA Admin due to documentation issues';
                 $request->save();
-            } elseif($request->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_head_at = now();
                 $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_at = now();
                 $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_at = now();
                 $request->delivered_by = $ipc->id;
-                $request->delivered_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_at = now();
                 $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_at = now();
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
-                $request->rejection_hcg_head_id = $hcgHead->id;
-                $request->rejection_hcg_head_at = now()->timezone('Asia/Jakarta');
-                $request->rejection_reason = 'Rejected by GA Head due to budget approval';
+                $request->approval_ga_admin_at = now();
+                $request->rejection_marketing_head_id = $marketingSupportHead->id;
+                $request->rejection_marketing_head_at = now();
+                $request->rejection_reason = 'Rejected by Marketing Support Head due to budget approval';
                 $request->save();
             }
 
@@ -265,14 +265,14 @@ class OfficeStationeryStockRequestSeeder extends Seeder
                     $maxLimit = $setting?->max_limit ?? 0;
 
                     // Get current stock from DivisionStock
-                    $stock = OfficeStationeryStockPerDivision::where('division_id', $division->id)
+                    $stock = MarketingMediaStockPerDivision::where('division_id', $division->id)
                         ->where('item_id', $item->id)
                         ->first();
 
                     $currentStock = $stock?->current_stock ?? 0;
 
                     // Calculate allowed quantity for request
-                    if ($request->type === OfficeStationeryStockRequest::TYPE_INCREASE) {
+                    if ($request->type === MarketingMediaStockRequest::TYPE_INCREASE) {
                         // Only allow up to (max_limit - current_stock)
                         $allowed = max($maxLimit - $currentStock, 0);
                         // If allowed is 0, skip this item
@@ -289,7 +289,7 @@ class OfficeStationeryStockRequestSeeder extends Seeder
                         $quantity = rand(1, $allowed);
                     }
 
-                    OfficeStationeryStockRequestItem::create([
+                    MarketingMediaStockRequestItem::create([
                         'stock_request_id' => $request->id,
                         'item_id' => $item->id,
                         'category_id' => $item->category->id,
