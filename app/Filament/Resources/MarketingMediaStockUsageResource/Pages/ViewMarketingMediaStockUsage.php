@@ -137,7 +137,7 @@ class ViewMarketingMediaStockUsage extends ViewRecord
                 }),
 
             // Marketing Support Head Approval/Rejection Actions
-            Actions\Action::make('approve_as_marketing_support_head')
+            Actions\Action::make('approve_as_mkt_head')
                 ->label('Approve & Process Stock')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
@@ -150,9 +150,9 @@ class ViewMarketingMediaStockUsage extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function ($record) {
                     $record->update([
-                        'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD,
-                        'approval_marketing_support_head_id' => Auth::user()->id,
-                        'approval_marketing_support_head_at' => now()->timezone('Asia/Jakarta'),
+                        'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD,
+                        'approval_marketing_head_id' => Auth::user()->id,
+                        'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                     ]);
                     
                     // Process the Pengeluaran Barang
@@ -164,7 +164,7 @@ class ViewMarketingMediaStockUsage extends ViewRecord
                         ->send();
                 }),
 
-            Actions\Action::make('reject_as_marketing_support_head')
+            Actions\Action::make('reject_as_mkt_head')
                 ->label('Reject')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
@@ -183,9 +183,9 @@ class ViewMarketingMediaStockUsage extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD,
-                        'rejection_marketing_support_head_id' => Auth::user()->id,
-                        'rejection_marketing_support_head_at' => now()->timezone('Asia/Jakarta'),
+                        'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD,
+                        'rejection_marketing_head_id' => Auth::user()->id,
+                        'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                         'rejection_reason' => $data['rejection_reason'],
                     ]);
                     

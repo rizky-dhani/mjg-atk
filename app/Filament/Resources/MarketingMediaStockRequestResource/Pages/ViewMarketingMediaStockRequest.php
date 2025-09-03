@@ -406,7 +406,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                         ->send();
                 }),
             
-            Action::make('approve_as_marketing_support_head')
+            Action::make('approve_as_mkt_head')
                 ->label('Approve (Marketing Support Head)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
@@ -461,7 +461,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                         ->send();
                 }),
             
-            Action::make('reject_as_marketing_support_head')
+            Action::make('reject_as_mkt_head')
                 ->label('Reject (Marketing Support Head)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
@@ -480,7 +480,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD,
+                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
                         'approval_marketing_head_id' => auth()->user()->id,
                         'approval_marketing_head_at' => now(),
                         'rejection_reason' => $data['rejection_reason'],

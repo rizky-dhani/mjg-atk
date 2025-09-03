@@ -249,8 +249,8 @@ class MarketingMediaStockUsageResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         MarketingMediaStockUsage::STATUS_PENDING => 'warning',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'danger',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
@@ -259,8 +259,8 @@ class MarketingMediaStockUsageResource extends Resource
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -289,8 +289,8 @@ class MarketingMediaStockUsageResource extends Resource
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
-                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
@@ -402,7 +402,7 @@ class MarketingMediaStockUsageResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('approve_as_marketing_support_head')
+                Tables\Actions\Action::make('approve_as_mkt_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -413,9 +413,9 @@ class MarketingMediaStockUsageResource extends Resource
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD,
-                            'approval_marketing_support_head_id' => auth()->user()->id,
-                            'approval_marketing_support_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD,
+                            'approval_marketing_head_id' => auth()->user()->id,
+                            'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         // Process the stock usage
@@ -426,7 +426,7 @@ class MarketingMediaStockUsageResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('reject_as_marketing_support_head')
+                Tables\Actions\Action::make('reject_as_mkt_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -443,9 +443,9 @@ class MarketingMediaStockUsageResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD,
-                            'rejection_marketing_support_head_id' => auth()->user()->id,
-                            'rejection_marketing_support_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD,
+                            'rejection_marketing_head_id' => auth()->user()->id,
+                            'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -511,8 +511,8 @@ class MarketingMediaStockUsageResource extends Resource
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 MarketingMediaStockUsage::STATUS_PENDING => 'warning',
-                                MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
-                                MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'danger',
+                                MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
+                                MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                                 default => 'secondary',
                             })
                             ->formatStateUsing(fn ($state) => match ($state) {
@@ -521,8 +521,8 @@ class MarketingMediaStockUsageResource extends Resource
                                 MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                                 MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                 MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                                MarketingMediaStockUsage::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
-                                MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
+                                MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                                MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                                 MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                             })
                             ->columnSpan(6),
@@ -556,21 +556,21 @@ class MarketingMediaStockUsageResource extends Resource
                             ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('marketingSupportHead.name')
                             ->label('Marketing Support Head Approve')
-                            ->visible(fn ($record) => $record->approval_marketing_support_head_id !== null),
-                        Infolists\Components\TextEntry::make('approval_marketing_support_head_at')
+                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
+                        Infolists\Components\TextEntry::make('approval_marketing_head_at')
                             ->label('Marketing Support Head Approve At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->approval_marketing_support_head_id !== null),
+                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
                         Infolists\Components\TextEntry::make('rejectionMarketingSupportHead.name')
                             ->label('Marketing Support Head Rejection')
-                            ->visible(fn ($record) => $record->rejection_marketing_support_head_id !== null),
-                        Infolists\Components\TextEntry::make('rejection_marketing_support_head_at')
+                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
+                        Infolists\Components\TextEntry::make('rejection_marketing_head_at')
                             ->label('Marketing Support Head Rejection At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->rejection_marketing_support_head_id !== null),
+                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_reason')
                             ->label('Rejection Reason')
-                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD]))
+                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD]))
                             ->columnSpan(6),
                         
                     ])

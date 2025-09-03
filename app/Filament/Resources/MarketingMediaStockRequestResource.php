@@ -164,8 +164,8 @@ class MarketingMediaStockRequestResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'warning' => MarketingMediaStockRequest::STATUS_PENDING,
-                        'success' => [MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED],
-                        'danger' => [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD],
+                        'success' => [MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED],
+                        'danger' => [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD],
                     ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
@@ -179,8 +179,8 @@ class MarketingMediaStockRequestResource extends Resource
                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -214,8 +214,8 @@ class MarketingMediaStockRequestResource extends Resource
                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
@@ -559,7 +559,7 @@ class MarketingMediaStockRequestResource extends Resource
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('approve_as_marketing_support_head')
+                Tables\Actions\Action::make('approve_as_marketing_head')
                     ->label('Approve (Marketing Support Head)')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -605,7 +605,7 @@ class MarketingMediaStockRequestResource extends Resource
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('reject_as_marketing_support_head')
+                Tables\Actions\Action::make('reject_as_marketing_head')
                     ->label('Reject (Marketing Support Head)')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -622,7 +622,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
                             'approval_marketing_head_id' => auth()->user()->id,
                             'approval_marketing_head_at' => now(),
                             'rejection_reason' => $data['rejection_reason'],
@@ -711,8 +711,8 @@ class MarketingMediaStockRequestResource extends Resource
                                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'Rejected by Marketing Support Head',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD => 'Approved by Marketing Support Head',
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
                                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
@@ -720,8 +720,8 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->color(fn ($state) => match ($state) {
                                         MarketingMediaStockRequest::STATUS_PENDING => 'warning',
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'success',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD => 'danger',
-                                        MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MARKETING_SUPPORT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
+                                        MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
                                         default => 'secondary',
                                     }),
                                 \Filament\Infolists\Components\TextEntry::make('divisionHead.name')
@@ -810,7 +810,7 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->placeholder('-'),
                                 \Filament\Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MARKETING_SUPPORT_HEAD]))
+                                    ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD]))
                                     ->columnSpan(5),
                             ]),
                     ])

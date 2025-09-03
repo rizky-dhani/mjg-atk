@@ -36,8 +36,8 @@ class MarketingMediaStockRequestsRelationManager extends RelationManager
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
-                        'approved_by_head', 'approved_by_ipc', 'approved_by_ipc_head', 'delivered', 'approved_stock_adjustment', 'approved_by_ga_admin', 'approved_by_marketing_support_head', 'completed' => 'success',
-                        'rejected_by_head', 'rejected_by_ipc', 'rejected_by_ipc_head', 'rejected_by_ga_admin', 'rejected_by_marketing_support_head' => 'danger',
+                        'approved_by_head', 'approved_by_ipc', 'approved_by_ipc_head', 'delivered', 'approved_stock_adjustment', 'approved_by_ga_admin', 'approved_by_mkt_head', 'completed' => 'success',
+                        'rejected_by_head', 'rejected_by_ipc', 'rejected_by_ipc_head', 'rejected_by_ga_admin', 'rejected_by_mkt_head' => 'danger',
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
@@ -52,8 +52,8 @@ class MarketingMediaStockRequestsRelationManager extends RelationManager
                         'approved_stock_adjustment' => 'Stock Adjustment Approved',
                         'rejected_by_ga_admin' => 'Rejected by GA Admin',
                         'approved_by_ga_admin' => 'Approved by GA Admin',
-                        'rejected_by_marketing_support_head' => 'Rejected by Marketing Support Head',
-                        'approved_by_marketing_support_head' => 'Approved by Marketing Support Head',
+                        'rejected_by_mkt_head' => 'Rejected by Marketing Support Head',
+                        'approved_by_mkt_head' => 'Approved by Marketing Support Head',
                         'completed' => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('created_at')
