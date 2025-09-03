@@ -20,11 +20,11 @@ class MarketingMediaStockUsageResource extends Resource
 {
     protected static ?string $model = MarketingMediaStockUsage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
 
-    protected static ?string $navigationGroup = 'Marketing Media';
-
-    protected static ?string $navigationLabel = 'Stock Usages';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?string $navigationParentItem = 'Media Cetak';
+    protected static ?string $navigationLabel = 'Pengeluaran Barang';
 
     protected static ?int $navigationSort = 5;
 

@@ -18,11 +18,11 @@ class MarketingMediaStockRequestResource extends Resource
 {
     protected static ?string $model = MarketingMediaStockRequest::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
 
-    protected static ?string $navigationGroup = 'Marketing Media';
-
-    protected static ?string $navigationLabel = 'Stock Requests';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?string $navigationParentItem = 'Media Cetak';
+    protected static ?string $navigationLabel = 'Pemasukan Barang';
 
     protected static ?int $navigationSort = 4;
 

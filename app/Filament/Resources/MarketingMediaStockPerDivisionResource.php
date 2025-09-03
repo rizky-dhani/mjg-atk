@@ -20,10 +20,10 @@ class MarketingMediaStockPerDivisionResource extends Resource
     protected static ?string $model = MarketingMediaStockPerDivision::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
-    protected static ?string $navigationGroup = 'Marketing Media';
-    protected static ?string $navigationLabel = 'Stock Per Division';
-    protected static ?string $modelLabel = 'Marketing Media Stock';
-    protected static ?string $pluralModelLabel = 'Marketing Media Stocks';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?string $navigationLabel = 'Media Cetak';
+    protected static ?string $modelLabel = 'Media Cetak';
+    protected static ?string $pluralModelLabel = 'Media Cetak';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
