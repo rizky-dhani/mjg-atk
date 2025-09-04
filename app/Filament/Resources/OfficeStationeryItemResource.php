@@ -20,9 +20,10 @@ class OfficeStationeryItemResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel = 'Items';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
+    protected static ?string $navigationParentItem = 'Alat Tulis Kantor';
     
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 0;
 
     public static function form(Form $form): Form
     {

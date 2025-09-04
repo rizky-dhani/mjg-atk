@@ -316,7 +316,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
+        return auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function canView($record): bool
@@ -327,13 +327,13 @@ class OfficeStationeryStockPerDivisionResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']) &&
+        return auth()->user()->hasRole(['Super Admin', 'Admin']) &&
             (auth()->user()->division_id === $record->division_id);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']) &&
+        return auth()->user()->hasRole(['Super Admin', 'Admin']) &&
             (auth()->user()->division_id === $record->division_id);
     }
 

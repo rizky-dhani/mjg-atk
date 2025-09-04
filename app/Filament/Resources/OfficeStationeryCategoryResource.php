@@ -18,9 +18,9 @@ class OfficeStationeryCategoryResource extends Resource
     protected static ?string $model = OfficeStationeryCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Categories';
-    protected static ?string $navigationParentItem = 'Items';
+    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
+    protected static ?string $navigationParentItem = 'Alat Tulis Kantor';
     
     protected static ?int $navigationSort = 1;
 
