@@ -71,6 +71,14 @@ class MarketingMediaStockUsage extends Model
     }
 
     /**
+     * Check if this is a stock decrease request.
+     */
+    public function isDecrease(): bool
+    {
+        return $this->type === self::TYPE_DECREASE;
+    }
+
+    /**
      * Get the division that owns this usage.
      */
     public function division(): BelongsTo

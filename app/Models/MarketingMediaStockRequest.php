@@ -246,7 +246,7 @@ class MarketingMediaStockRequest extends Model
      */
     public function items(): HasMany
     {
-        return $this->hasMany(MarketingMediaStockRequestItem::class);
+        return $this->hasMany(MarketingMediaStockRequestItem::class, 'stock_request_id');
     }
 
     /**

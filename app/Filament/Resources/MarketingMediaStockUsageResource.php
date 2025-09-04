@@ -144,17 +144,21 @@ class MarketingMediaStockUsageResource extends Resource
                         MarketingMediaStockUsage::TYPE_DECREASE => 'Decrease',
                     }),
                 Tables\Columns\BadgeColumn::make('status')
-                    ->colors([
-                        'warning' => MarketingMediaStockUsage::STATUS_PENDING,
-                        'success' => [MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_COMPLETED],
-                        'danger' => [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN],
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        MarketingMediaStockUsage::STATUS_PENDING => 'warning',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
+                        default => 'secondary',
+                    })
                     ->formatStateUsing(fn ($state) => match ($state) {
                         MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                         MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     }),
                 Tables\Columns\TextColumn::make('items_count')
@@ -480,36 +484,50 @@ class MarketingMediaStockUsageResource extends Resource
                             }),
                         Infolists\Components\TextEntry::make('divisionHead.name')
                             ->label('Head Approve')
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->approval_head_id !== null),
                         Infolists\Components\TextEntry::make('approval_head_at')
-                            ->label('Head Approval At')
+                            ->label('Head Approve At')
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->approval_head_id !== null),
                         Infolists\Components\TextEntry::make('rejectionHead.name')
-                            ->label('Head Reject')
-                            ->placeholder('-'),
+                            ->label('Head Rejection')
+                            ->visible(fn ($record) => $record->rejection_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_head_at')
                             ->label('Head Rejection At')
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->rejection_head_id !== null),
                         Infolists\Components\TextEntry::make('gaAdmin.name')
                             ->label('GA Admin Approve')
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('approval_ga_admin_at')
-                            ->label('GA Admin Approval At')
+                            ->label('GA Admin Approve At')
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('rejectionGaAdmin.name')
-                            ->label('GA Admin Reject')
-                            ->placeholder('-'),
+                            ->label('GA Admin Rejection')
+                            ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('rejection_ga_admin_at')
                             ->label('GA Admin Rejection At')
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
+                        Infolists\Components\TextEntry::make('supervisorMarketing.name')
+                            ->label('HCG Head Approve')
+                            ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
+                        Infolists\Components\TextEntry::make('approval_mkt_head_at')
+                            ->label('HCG Head Approve At')
+                            ->dateTime()
+                            ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
+                        Infolists\Components\TextEntry::make('rejectionSupervisorMarketing.name')
+                            ->label('HCG Head Rejection')
+                            ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
+                        Infolists\Components\TextEntry::make('rejection_mkt_head_at')
+                            ->label('HCG Head Rejection At')
+                            ->dateTime()
+                            ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_reason')
                             ->label('Rejection Reason')
-                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN]))
-                            ->columnSpan(4),
+                            ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD]))
+                            ->columnSpan(6),
                     ])
                     ->columns(4)
                     ->collapsible()
