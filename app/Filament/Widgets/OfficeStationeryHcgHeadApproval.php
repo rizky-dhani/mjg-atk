@@ -10,9 +10,13 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class OfficeStationeryHcgHeadApproval extends BaseWidget
 {
-    protected ?string $heading = 'Office Stationery';
+    protected ?string $heading = 'Alat Tulis Kantor';
     protected static bool $isLazy = false;
     protected static ?int $sort = 2;
+    protected function getColumns(): int
+    {
+        return 2;
+    }
     protected function getStats(): array
     {
         // Get requests that need GA Admin approval
@@ -29,7 +33,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN
                     ])
                 )
-                ->description('Stock Requests')
+                ->description('Pemasukan Barang')
                 ->color('primary')
                 ->icon('heroicon-o-document-text'),
                 
@@ -39,7 +43,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
                         'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN
                     ])
                 )
-                ->description('Stock Usages')
+                ->description('Pengeluaran Barang')
                 ->color('warning')
                 ->icon('heroicon-o-document-text'),
         ];

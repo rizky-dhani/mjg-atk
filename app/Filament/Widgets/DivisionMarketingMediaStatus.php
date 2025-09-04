@@ -13,26 +13,101 @@ use Illuminate\Support\Facades\Auth;
 class DivisionMarketingMediaStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
-    protected ?string $heading = 'Marketing Media';
+    protected ?string $heading = 'Media Cetak';
     protected function getColumns(): int
     {
         return 4;
     }
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 4;
     protected function getStats(): array
     {
         $user = Auth::user();
         $divisionId = $user->division_id;
+        $stockRequestUrl = route('filament.dashboard.resources.marketing-media-stock-requests.index');
+        $stockUsageUrl = route('filament.dashboard.resources.marketing-media-stock-usages.index');
+
+        $approvedStockRequestFilters = [
+            'tableFilters' => [
+                'division_id' => [
+                    'value' => $user->division_id,
+                ],
+                'status' => [
+                    'values' => [
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_DELIVERED,
+                        MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD
+                    ],
+                ],
+            ],
+        ];
+
+        $rejectedStockRequestFilters = [
+            'tableFilters' => [
+                'division_id' => [
+                    'value' => $user->division_id,
+                ],
+                'status' => [
+                    'values' => [
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
+                    ],
+                ],
+            ],
+        ];
+
+        $approvedStockUsageFilters = [
+            'tableFilters' => [
+                'division_id' => [
+                    'value' => $user->division_id,
+                ],
+                'status' => [
+                    'values' => [
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD
+                    ],
+                ],
+            ],
+        ];
+
+        $rejectedStockUsageFilters = [
+            'tableFilters' => [
+                'division_id' => [
+                    'value' => $user->division_id,
+                ],
+                'status' => [
+                    'values' => [
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, 
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, 
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD
+                    ],
+                ],
+            ],
+        ];
+
+        $inProgressStockRequestUrl = $stockRequestUrl . '?' . http_build_query($approvedStockRequestFilters);
+        $rejectedStockRequestUrl = $stockRequestUrl . '?' . http_build_query($rejectedStockRequestFilters);
+        $inProgressStockUsageUrl = $stockUsageUrl . '?' . http_build_query($approvedStockUsageFilters);
+        $rejectedStockUsageUrl = $stockUsageUrl . '?' . http_build_query($rejectedStockUsageFilters);
         
         // Get counts for all Stock Request statuses
         $pendingStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
             ->where('status', MarketingMediaStockRequest::STATUS_PENDING)
             ->count();
         $inProgressStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
-            ->whereNotIn('status', [MarketingMediaStockRequest::STATUS_PENDING, MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED])
+            ->whereNotIn('status', [MarketingMediaStockRequest::STATUS_PENDING, MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED])
             ->count();
         $rejectedStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
-            ->whereIn('status', [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD])
+            ->whereIn('status', [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD])
             ->count();
         $completedStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
             ->where('status', MarketingMediaStockRequest::STATUS_COMPLETED)
@@ -43,7 +118,7 @@ class DivisionMarketingMediaStatus extends BaseWidget
             ->where('status', MarketingMediaStockUsage::STATUS_PENDING)
             ->count();
         $inProgressStockUsageCount = MarketingMediaStockUsage::where('division_id', $divisionId)
-            ->whereNotIn('status', [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD])
+            ->whereNotIn('status', [MarketingMediaStockRequest::STATUS_PENDING, MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD])
             ->count();
         $rejectedStockUsageCount = MarketingMediaStockUsage::where('division_id', $divisionId)
             ->whereIn('status', [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD])
@@ -54,83 +129,79 @@ class DivisionMarketingMediaStatus extends BaseWidget
 
         return [
             // Stock Requests
-            Stat::make('Stock Request', $pendingStockRequestCount)
+            Stat::make('Pemasukan Barang', $pendingStockRequestCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-requests.index', [
-                        'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_PENDING
+                        'tableFilters[status][values][0]' => MarketingMediaStockRequest::STATUS_PENDING,
+                        'tableFilters[division_id][value]' => $user->division_id
                     ])
                 )
                 ->icon('heroicon-o-document-text'),
 
-            Stat::make('Stock Request', $inProgressStockRequestCount)
+            Stat::make('Pemasukan Barang', $inProgressStockRequestCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary')
-                ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-requests.index')
-                )
+                ->url($inProgressStockRequestUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Request', $rejectedStockRequestCount)
+            Stat::make('Pemasukan Barang', $rejectedStockRequestCount)
                 ->description('Rejected')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
-                ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-requests.index')
-                )
+                ->url($rejectedStockRequestUrl  )
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Request', $completedStockRequestCount)
+            Stat::make('Pemasukan Barang', $completedStockRequestCount)
                 ->description('Fully processed requests')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-requests.index', [
-                        'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_COMPLETED
+                        'tableFilters[status][values][0]' => MarketingMediaStockRequest::STATUS_COMPLETED,
+                        'tableFilters[division_id][value]' => $user->division_id
                     ])
                 )
                 ->icon('heroicon-o-document-text'),
 
             // Stock Usages
-            Stat::make('Stock Usage', $pendingStockUsageCount)
+            Stat::make('Pengeluaran Barang', $pendingStockUsageCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-usages.index', [
-                        'tableFilters[status][value]' => MarketingMediaStockUsage::STATUS_PENDING
+                        'tableFilters[status][values][0]' => MarketingMediaStockUsage::STATUS_PENDING,
+                        'tableFilters[division_id][value]' => $user->division_id
                     ])
                 )
                 ->icon('heroicon-o-document-text'),
 
-            Stat::make('Stock Usage', $inProgressStockUsageCount)
+            Stat::make('Pengeluaran Barang', $inProgressStockUsageCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary')
-                ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-usages.index')
-                )
+                ->url($inProgressStockUsageUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Usage', $rejectedStockUsageCount)
+            Stat::make('Pengeluaran Barang', $rejectedStockUsageCount)
                 ->description('Rejected')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
-                ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-usages.index')
-                )
+                ->url($rejectedStockUsageUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Usage', $completedStockUsageCount)
+            Stat::make('Pengeluaran Barang', $completedStockUsageCount)
                 ->description('Fully processed usages')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-usages.index', [
-                        'tableFilters[status][value]' => MarketingMediaStockUsage::STATUS_COMPLETED
+                        'tableFilters[status][values][0]' => MarketingMediaStockUsage::STATUS_COMPLETED,
+                        'tableFilters[division_id][value]' => $user->division_id
                     ])
                 )
                 ->icon('heroicon-o-document-text'),

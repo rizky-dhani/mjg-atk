@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\Auth;
 
 class OfficeStationeryHeadApproval extends BaseWidget
 {
-    protected ?string $heading = 'Office Stationery';
+    protected ?string $heading = 'Alat Tulis Kantor';
     protected static bool $isLazy = false;
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 1;
+    protected function getColumns(): int
+    {
+        return 2;
+    }
     protected function getStats(): array
     {
         $user = Auth::user();
@@ -35,7 +39,7 @@ class OfficeStationeryHeadApproval extends BaseWidget
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_PENDING
                     ])
                 )
-                ->description('Stock Requests')
+                ->description('Pemasukan Barang')
                 ->color('primary')
                 ->icon('heroicon-o-document-text'),
                 
@@ -45,7 +49,7 @@ class OfficeStationeryHeadApproval extends BaseWidget
                         'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_PENDING
                     ])
                 )
-                ->description('Stock Usages')
+                ->description('Pengeluaran Barang')
                 ->color('warning')
                 ->icon('heroicon-o-document-text'),
         ];

@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Auth;
 class DivisionOfficeStationeryStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
-    protected ?string $heading = 'Office Stationery (My Division)';
+    protected ?string $heading = 'Alat Tulis Kantor (My Division)';
     protected function getColumns(): int
     {
         return 4;
     }
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 3;
     protected function getStats(): array
     {
         $user = Auth::user();
@@ -51,6 +51,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 ],
                 'status' => [
                     'values' => [
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
@@ -103,7 +104,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             ->where('status', OfficeStationeryStockRequest::STATUS_PENDING)
             ->count();
         $inProgressStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
-            ->whereNotIn('status', [OfficeStationeryStockRequest::STATUS_PENDING, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED])
+            ->whereNotIn('status', [OfficeStationeryStockRequest::STATUS_PENDING, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,  OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED])
             ->count();
         $rejectedStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
             ->whereIn('status', [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD])
@@ -129,7 +130,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
 
         return [
             // Stock Requests
-            Stat::make('Stock Request', $pendingStockRequestCount)
+            Stat::make('Pemasukan Barang', $pendingStockRequestCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
@@ -141,21 +142,21 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 )
                 ->icon('heroicon-o-document-text'),
 
-            Stat::make('Stock Request', $inProgressStockRequestCount)
+            Stat::make('Pemasukan Barang', $inProgressStockRequestCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary')
                 ->url($inProgressStockRequestUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Request', $rejectedStockRequestCount)
+            Stat::make('Pemasukan Barang', $rejectedStockRequestCount)
                 ->description('Rejected')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
                 ->url($rejectedStockRequestUrl  )
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Request', $completedStockRequestCount)
+            Stat::make('Pemasukan Barang', $completedStockRequestCount)
                 ->description('Fully processed requests')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
@@ -168,7 +169,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 ->icon('heroicon-o-document-text'),
 
             // Stock Usages
-            Stat::make('Stock Usage', $pendingStockUsageCount)
+            Stat::make('Pengeluaran Barang', $pendingStockUsageCount)
                 ->description('Pending approval')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
@@ -180,21 +181,21 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 )
                 ->icon('heroicon-o-document-text'),
 
-            Stat::make('Stock Usage', $inProgressStockUsageCount)
+            Stat::make('Pengeluaran Barang', $inProgressStockUsageCount)
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary')
                 ->url($inProgressStockUsageUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Usage', $rejectedStockUsageCount)
+            Stat::make('Pengeluaran Barang', $rejectedStockUsageCount)
                 ->description('Rejected')
                 ->descriptionIcon('heroicon-m-x-circle')
                 ->color('danger')
                 ->url($rejectedStockUsageUrl)
                 ->icon('heroicon-o-document-text'),
             
-            Stat::make('Stock Usage', $completedStockUsageCount)
+            Stat::make('Pengeluaran Barang', $completedStockUsageCount)
                 ->description('Fully processed usages')
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')

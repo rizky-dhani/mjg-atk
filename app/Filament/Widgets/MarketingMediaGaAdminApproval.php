@@ -34,7 +34,7 @@ class MarketingMediaGaAdminApproval extends BaseWidget
                         'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD
                     ])
                 )
-                ->description('Stock Requests')
+                ->description('Pemasukan Barang')
                 ->color('primary')
                 ->icon('heroicon-o-document-text'),
             
@@ -44,8 +44,8 @@ class MarketingMediaGaAdminApproval extends BaseWidget
                         'tableFilters[status][value]' => MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD
                     ])
                 )
-                ->description('Stock Usages')
-                ->color('primary')
+                ->description('Pengeluaran Barang')
+                ->color('warning')
                 ->icon('heroicon-o-document-text'),
         ];
     }
