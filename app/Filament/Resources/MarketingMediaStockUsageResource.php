@@ -179,6 +179,7 @@ class MarketingMediaStockUsageResource extends Resource
                         MarketingMediaStockUsage::TYPE_DECREASE => 'Stock Decrease',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
+                    ->multiple()
                     ->options([
                         MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
                         MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',

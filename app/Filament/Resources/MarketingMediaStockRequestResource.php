@@ -205,6 +205,7 @@ class MarketingMediaStockRequestResource extends Resource
                         MarketingMediaStockRequest::TYPE_INCREASE => 'Stock Increase',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
+                    ->multiple()
                     ->options([
                         MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
