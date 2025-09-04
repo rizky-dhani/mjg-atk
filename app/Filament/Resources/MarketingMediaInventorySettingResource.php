@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MarketingMediaInventorySettingResource\Pages;
-use App\Models\DivisionInventorySetting;
+use App\Models\MarketingMediaDivisionInventorySetting;
 use App\Models\CompanyDivision;
 use App\Models\MarketingMediaItem;
 use Filament\Forms;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class MarketingMediaInventorySettingResource extends Resource
 {
-    protected static ?string $model = DivisionInventorySetting::class;
+    protected static ?string $model = MarketingMediaDivisionInventorySetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog';
     protected static ?string $navigationGroup = 'Settings';
@@ -25,7 +25,20 @@ class MarketingMediaInventorySettingResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Head', 'Admin']) && auth()->user()->division?->initial === 'IPC';
+        $user = auth()->user();
+        
+        // Only IPC users with Super Admin, Head, or Admin roles can view
+        if ($user->hasRole(['Super Admin', 'Head', 'Admin']) && $user->division?->initial === 'IPC') {
+            return true;
+        }
+        
+        // Allow Marketing division users to view
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head']);
+        }
+        
+        // Hide from all other users
+        return false;
     }
 
     public static function canCreate(): bool
@@ -156,7 +169,7 @@ class MarketingMediaInventorySettingResource extends Resource
                         
                         foreach ($marketingDivisions as $division) {
                             // Update or create division inventory setting for each Marketing division
-                            DivisionInventorySetting::updateOrCreate(
+                            MarketingMediaDivisionInventorySetting::updateOrCreate(
                                 [
                                     'division_id' => $division->id,
                                     'item_id' => $data['item_id'],

@@ -21,10 +21,10 @@ class MarketingMediaStockPerDivisionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
     protected static ?string $navigationGroup = 'Media Cetak';
-    protected static ?string $navigationLabel = 'Media Cetak';
-    protected static ?string $modelLabel = 'Media Cetak';
-    protected static ?string $pluralModelLabel = 'Media Cetak';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationLabel = 'Stok Barang';
+    protected static ?string $modelLabel = 'Stok Barang';
+    protected static ?string $pluralModelLabel = 'Stok Barang';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -53,9 +53,23 @@ class MarketingMediaStockPerDivisionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn($query) =>
-                $query->where('division_id', auth()->user()->division_id)
-                    ->orderBy('category_id', 'asc'))
+            ->modifyQueryUsing(function ($query) {
+                $user = auth()->user();
+                
+                // For Super Admin, show all records
+                if ($user->hasRole(['Super Admin'])) {
+                    return $query->orderBy('category_id', 'asc');
+                }
+                
+                // For Admin users from Marketing divisions, only show their division's stocks
+                if ($user->division && strpos($user->division->name, 'Marketing') !== false && $user->hasRole(['Admin'])) {
+                    return $query->where('division_id', $user->division_id)
+                        ->orderBy('category_id', 'asc');
+                }
+                
+                // For other users (like IPC, GA), show all records
+                return $query->orderBy('category_id', 'asc');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('division.initial')
                     ->label('Division')
@@ -73,6 +87,19 @@ class MarketingMediaStockPerDivisionResource extends Resource
                     ->sortable()
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('division.name')
+                    ->label('Division')
+                    ->visible(function(){
+                        $user = auth()->user();
+                        // Only visible for users with Marketing divisions and IPC
+                        if($user->division && $user->division->initial === 'IPC'){
+                            return true;
+                        }
+                        return false;
+                    })
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('current_stock')
                     ->label('Current')
                     ->numeric()
@@ -81,7 +108,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                 Tables\Columns\TextColumn::make('max_limit')
                     ->label('Max')
                     ->getStateUsing(function ($record) {
-                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
                             ->first();
                         return $setting ? $setting->max_limit : '-';
@@ -92,7 +119,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                 Tables\Columns\TextColumn::make('stock_status')
                     ->label('Stock Status')
                     ->getStateUsing(function ($record) {
-                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
                             ->first();
                         
@@ -186,7 +213,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                                 Infolists\Components\TextEntry::make('max_limit')
                                     ->label('Max')
                                     ->getStateUsing(function ($record) {
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
                                             ->where('item_id', $record->item_id)
                                             ->first();
                                         return $setting ? $setting->max_limit : 'No limit set';
@@ -202,7 +229,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                                 Infolists\Components\TextEntry::make('stock_status')
                                     ->label('Stock Status')
                                     ->getStateUsing(function ($record) {
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
                                             ->where('item_id', $record->item_id)
                                             ->first();
                                         
@@ -312,6 +339,26 @@ class MarketingMediaStockPerDivisionResource extends Resource
             RelationManagers\MarketingMediaStockRequestsRelationManager::class,
             RelationManagers\StockUsagesRelationManager::class,
         ];
+    }
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+        if ($user->hasRole(['Super Admin'])) {
+            return true;
+        }
+        
+        // Allow Marketing divisions to view their own requests
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head']);
+        }
+        
+        // Allow IPC and GA divisions to view all requests for approval process
+        if ($user->division && ($user->division->initial === 'IPC')) {
+            return $user->hasRole(['Admin', 'Head']);
+        }
+        
+        // Hide from users who don't belong to any Marketing divisions
+        return false;
     }
 
     public static function canCreate(): bool

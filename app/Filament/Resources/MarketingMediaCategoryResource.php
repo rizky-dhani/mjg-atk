@@ -18,9 +18,9 @@ class MarketingMediaCategoryResource extends Resource
     protected static ?string $model = MarketingMediaCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Marketing Media';
-    protected static ?string $navigationLabel = 'Categories';
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationLabel = 'Kategori';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {
@@ -79,18 +79,19 @@ class MarketingMediaCategoryResource extends Resource
             return true;
         }
         
-        // Check if user's division name contains 'Marketing'
-        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+        // Check if user's division name contains 'Marketing' and from IPC division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false || $user->division?->initial === 'IPC') {
             return $user->hasRole(['Admin', 'Head']);
         }
         
+        // Hide from users who don't belong to any Marketing divisions
         return false;
     }
 
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         
@@ -105,7 +106,7 @@ class MarketingMediaCategoryResource extends Resource
     public static function canEdit($record): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         
@@ -120,7 +121,7 @@ class MarketingMediaCategoryResource extends Resource
     public static function canDelete($record): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         

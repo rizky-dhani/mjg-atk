@@ -23,10 +23,9 @@ class MarketingMediaStockUsageResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
 
     protected static ?string $navigationGroup = 'Media Cetak';
-    protected static ?string $navigationParentItem = 'Media Cetak';
     protected static ?string $navigationLabel = 'Pengeluaran Barang';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -379,6 +378,7 @@ class MarketingMediaStockUsageResource extends Resource
             return $user->hasRole(['Admin', 'Head', 'Staff']);
         }
         
+        // Hide from users who don't belong to any Marketing divisions
         return false;
     }
 

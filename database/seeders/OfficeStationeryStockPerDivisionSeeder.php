@@ -8,7 +8,7 @@ use App\Models\OfficeStationeryItem;
 use Illuminate\Database\Seeder;
 use App\Models\CompanyDivision;
 use App\Models\item;
-use App\Models\DivisionInventorySetting;
+use App\Models\OfficeStationeryDivisionInventorySetting;
 use App\Models\OfficeStationeryStockPerDivision;
 
 class OfficeStationeryStockPerDivisionSeeder extends Seeder
@@ -23,7 +23,7 @@ class OfficeStationeryStockPerDivisionSeeder extends Seeder
 
         foreach ($divisions as $division) {
             foreach ($items as $item) {
-                $setting = DivisionInventorySetting::where('division_id', $division->id)
+                $setting = OfficeStationeryDivisionInventorySetting::where('division_id', $division->id)
                     ->where('item_id', $item->id)
                     ->first();
 

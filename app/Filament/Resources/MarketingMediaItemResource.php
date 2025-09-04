@@ -19,10 +19,9 @@ class MarketingMediaItemResource extends Resource
     protected static ?string $model = MarketingMediaItem::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationLabel = 'Items';
-    protected static ?string $navigationGroup = 'Marketing Media';
-    
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationLabel = 'List Item';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -86,7 +85,7 @@ class MarketingMediaItemResource extends Resource
                 ]),
             ])
             ->headerActions([
-                 
+                
             ]);
     }
     
@@ -97,18 +96,19 @@ class MarketingMediaItemResource extends Resource
             return true;
         }
         
-        // Check if user's division name contains 'Marketing'
-        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+        // Check if user's division name contains 'Marketing' and from IPC division
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false || $user->division?->initial === 'IPC') {
             return $user->hasRole(['Admin', 'Head']);
         }
         
+        // Hide from users who don't belong to any Marketing divisions
         return false;
     }
 
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         
@@ -123,7 +123,7 @@ class MarketingMediaItemResource extends Resource
     public static function canEdit($record): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         
@@ -138,7 +138,7 @@ class MarketingMediaItemResource extends Resource
     public static function canDelete($record): bool
     {
         $user = auth()->user();
-        if ($user->hasRole(['Super Admin'])) {
+        if ($user->hasRole(['Super Admin', 'Admin']) && $user->division->initial === 'IPC') {
             return true;
         }
         

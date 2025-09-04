@@ -9,7 +9,7 @@ use App\Models\CompanyDivision;
 use Illuminate\Database\Seeder;
 use App\Models\StockRequestItem;
 use App\Models\OfficeStationeryItem;
-use App\Models\DivisionInventorySetting;
+use App\Models\OfficeStationeryDivisionInventorySetting;
 use App\Models\OfficeStationeryStockRequest;
 use App\Models\OfficeStationeryStockPerDivision;
 use App\Models\OfficeStationeryStockRequestItem;
@@ -257,8 +257,8 @@ class OfficeStationeryStockRequestSeeder extends Seeder
             // Attach 2-4 random items to this request
             if ($items->count() >= 2) {
                 foreach ($items->random(rand(2, min(4, $items->count()))) as $item) {
-                    // Get max_limit from DivisionInventorySetting
-                    $setting = DivisionInventorySetting::where('division_id', $division->id)
+                    // Get max_limit from OfficeStationeryDivisionInventorySetting
+                    $setting = OfficeStationeryDivisionInventorySetting::where('division_id', $division->id)
                         ->where('item_id', $item->id)
                         ->first();
 

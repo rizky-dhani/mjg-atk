@@ -21,10 +21,9 @@ class MarketingMediaStockRequestResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
 
     protected static ?string $navigationGroup = 'Media Cetak';
-    protected static ?string $navigationParentItem = 'Media Cetak';
     protected static ?string $navigationLabel = 'Pemasukan Barang';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -74,7 +73,7 @@ class MarketingMediaStockRequestResource extends Resource
                                             return '';
                                         }
                                         
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                             ->where('item_id', $itemId)
                                             ->first();
                                             
@@ -99,7 +98,7 @@ class MarketingMediaStockRequestResource extends Resource
                                             return;
                                         }
                                         
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                        $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                             ->where('item_id', $itemId)
                                             ->first();
                                             
@@ -694,6 +693,7 @@ class MarketingMediaStockRequestResource extends Resource
             return $user->hasRole(['Admin', 'Head', 'Staff']);
         }
         
+        // Hide from users who don't belong to any Marketing divisions
         return false;
     }
 

@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\CompanyDivision;
 use Illuminate\Database\Seeder;
 use App\Models\MarketingMediaItem;
-use App\Models\DivisionInventorySetting;
+use App\Models\MarketingMediaDivisionInventorySetting;
 use App\Models\MarketingMediaStockRequest;
 use App\Models\MarketingMediaStockPerDivision;
 use App\Models\MarketingMediaStockRequestItem;
@@ -257,8 +257,8 @@ class MarketingMediaStockRequestSeeder extends Seeder
             // Attach 2-4 random items to this request
             if ($items->count() >= 2) {
                 foreach ($items->random(rand(2, min(4, $items->count()))) as $item) {
-                    // Get max_limit from DivisionInventorySetting
-                    $setting = DivisionInventorySetting::where('division_id', $division->id)
+                    // Get max_limit from MarketingMediaDivisionInventorySetting
+                    $setting = MarketingMediaDivisionInventorySetting::where('division_id', $division->id)
                         ->where('item_id', $item->id)
                         ->first();
 

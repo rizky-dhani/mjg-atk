@@ -81,7 +81,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                 Tables\Columns\TextColumn::make('max_limit')
                     ->label('Max')
                     ->getStateUsing(function ($record) {
-                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                        $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
                             ->first();
                         return $setting ? $setting->max_limit : '-';
@@ -92,7 +92,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                 Tables\Columns\TextColumn::make('stock_status')
                     ->label('Stock Status')
                     ->getStateUsing(function ($record) {
-                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                        $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->division_id)
                             ->where('item_id', $record->item_id)
                             ->first();
                         
@@ -186,7 +186,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                 Infolists\Components\TextEntry::make('max_limit')
                                     ->label('Max')
                                     ->getStateUsing(function ($record) {
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                        $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->division_id)
                                             ->where('item_id', $record->item_id)
                                             ->first();
                                         return $setting ? $setting->max_limit : 'No limit set';
@@ -202,7 +202,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                 Infolists\Components\TextEntry::make('stock_status')
                                     ->label('Stock Status')
                                     ->getStateUsing(function ($record) {
-                                        $setting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                                        $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->division_id)
                                             ->where('item_id', $record->item_id)
                                             ->first();
                                         

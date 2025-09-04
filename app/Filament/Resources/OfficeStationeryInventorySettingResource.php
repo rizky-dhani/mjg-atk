@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
-use App\Models\item;
 use Filament\Tables;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
@@ -13,7 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use App\Models\OfficeStationeryItem;
-use App\Models\DivisionInventorySetting;
+use App\Models\OfficeStationeryDivisionInventorySetting;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OfficeStationeryInventorySettingResource\Pages;
@@ -21,13 +20,13 @@ use App\Filament\Resources\OfficeStationeryInventorySettingResource\RelationMana
 
 class OfficeStationeryInventorySettingResource extends Resource
 {
-    protected static ?string $model = DivisionInventorySetting::class;
+    protected static ?string $model = OfficeStationeryDivisionInventorySetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Stock Limit - ATK';
     protected static ?string $modelLabel = 'Inventory Limit';
-    protected static ?string $ppluralModelLabel = 'Inventory Limits';
+    protected static ?string $pluralModelLabel = 'Inventory Limits';
     protected static ?int $navigationSort = 1;
     
 
@@ -177,7 +176,7 @@ class OfficeStationeryInventorySettingResource extends Resource
                     ])
                     ->action(function (array $data) {
                         // Update all inventory settings for the current division
-                        DivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                        OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                             ->update(['max_limit' => $data['max_limit']]);
                         
                         Notification::make()

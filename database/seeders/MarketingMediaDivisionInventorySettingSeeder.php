@@ -6,29 +6,30 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\CompanyDivision;
-use App\Models\OfficeStationeryItem;
-use App\Models\DivisionInventorySetting;
+use App\Models\MarketingMediaItem;
+use App\Models\MarketingMediaDivisionInventorySetting;
 
-class DivisionInventorySettingSeeder extends Seeder
+class MarketingMediaDivisionInventorySettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $divisions = CompanyDivision::all();
-        $items = OfficeStationeryItem::all();
+        // Get all Marketing divisions
+        $marketingDivisions = CompanyDivision::where('name', 'like', '%Marketing%')->get();
+        $items = MarketingMediaItem::all();
 
-        foreach ($divisions as $division) {
+        foreach ($marketingDivisions as $division) {
             foreach ($items as $item) {
-                DivisionInventorySetting::updateOrCreate(
+                MarketingMediaDivisionInventorySetting::updateOrCreate(
                     [
                         'division_id' => $division->id,
                         'item_id' => $item->id,
                         'category_id' => $item->category->id,
                     ],
                     [
-                        'max_limit' => 50,
+                        'max_limit' => 100, // Default max limit for Marketing Media items
                     ]
                 );
             }

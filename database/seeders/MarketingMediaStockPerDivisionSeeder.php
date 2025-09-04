@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use App\Models\MarketingMediaItem;
 use Illuminate\Database\Seeder;
 use App\Models\CompanyDivision;
-use App\Models\DivisionInventorySetting;
+use App\Models\MarketingMediaDivisionInventorySetting;
 use App\Models\MarketingMediaStockPerDivision;
 
 class MarketingMediaStockPerDivisionSeeder extends Seeder
@@ -22,7 +22,7 @@ class MarketingMediaStockPerDivisionSeeder extends Seeder
 
         foreach ($divisions as $division) {
             foreach ($items as $item) {
-                $setting = DivisionInventorySetting::where('division_id', $division->id)
+                $setting = MarketingMediaDivisionInventorySetting::where('division_id', $division->id)
                     ->where('item_id', $item->id)
                     ->first();
 
