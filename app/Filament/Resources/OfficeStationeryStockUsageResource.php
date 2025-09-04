@@ -24,12 +24,11 @@ class OfficeStationeryStockUsageResource extends Resource
 {
     protected static ?string $model = OfficeStationeryStockUsage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
     protected static ?string $navigationLabel = 'Pengeluaran Barang';
     protected static ?string $modelLabel = 'Pengeluaran Barang';
     protected static ?string $pluralModelLabel = 'Pengeluaran Barang';
-    protected static ?string $navigationParentItem = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form

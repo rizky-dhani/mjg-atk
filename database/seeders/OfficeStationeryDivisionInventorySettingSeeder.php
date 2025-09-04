@@ -9,7 +9,7 @@ use App\Models\CompanyDivision;
 use App\Models\OfficeStationeryItem;
 use App\Models\OfficeStationeryDivisionInventorySetting;
 
-class DivisionInventorySettingSeeder extends Seeder
+class OfficeStationeryDivisionInventorySettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.

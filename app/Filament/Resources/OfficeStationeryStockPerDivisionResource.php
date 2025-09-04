@@ -21,7 +21,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Alat Tulis Kantor';
+    protected static ?string $navigationLabel = 'Stok Barang';
     protected static ?string $modelLabel = 'Alat Tulis Kantor';
     protected static ?string $pluralModelLabel = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 1;
