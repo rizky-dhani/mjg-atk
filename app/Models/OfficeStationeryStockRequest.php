@@ -250,7 +250,15 @@ class OfficeStationeryStockRequest extends Model
      */
     public function canBeDelivered(): bool
     {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
+    }
+
+    /**
+     * Check if request can be marked as completed (only for increase requests).
+     */
+    public function canBeCompleted(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
     }
 
     /**
@@ -258,7 +266,7 @@ class OfficeStationeryStockRequest extends Model
      */
     public function needsStockAdjustmentApproval(): bool
     {
-        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
     }
 
     /**

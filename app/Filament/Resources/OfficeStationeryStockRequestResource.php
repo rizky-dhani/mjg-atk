@@ -304,8 +304,6 @@ class OfficeStationeryStockRequestResource extends Resource
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
-                        'in_progress' => 'In Progress',
-                        'rejected' => 'Rejected'
                     ])
             ])
             ->actions([
@@ -467,29 +465,6 @@ class OfficeStationeryStockRequestResource extends Resource
                         Notification::make()
                             ->title('Pemasukan Barang rejected successfully')
                             ->warning()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('deliver')
-                    ->label('Mark as Delivered')
-                    ->icon('heroicon-o-truck')
-                    ->color('primary')
-                    ->visible(fn ($record) => 
-                        $record->canBeDelivered() &&
-                        auth()->user()->hasRole('Admin')
-                    )
-                    ->requiresConfirmation()
-                    ->databaseTransaction()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_DELIVERED,
-                            'delivered_by' => auth()->user()->id,
-                            'delivered_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Request marked as delivered')
-                            ->success()
                             ->send();
                     }),
                 
@@ -746,7 +721,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
+                            'status' => OfficeStationeryStockRequest::STATUS_DELIVERED,
                             'approval_hcg_head_id' => auth()->user()->id,
                             'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                             // Automatically mark as delivered
@@ -786,6 +761,29 @@ class OfficeStationeryStockRequestResource extends Resource
                         Notification::make()
                             ->title('Pemasukan Barang rejected successfully')
                             ->warning()
+                            ->send();
+                    }),
+                
+                Tables\Actions\Action::make('mark_as_completed')
+                    ->label('Mark as Completed')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn ($record) => 
+                        $record->canBeCompleted() && 
+                        auth()->user()->division?->initial === 'HCG' &&
+                        auth()->user()->hasRole('Head')
+                    )
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
+                            'delivered_by' => auth()->user()->id,
+                            'delivered_at' => now()->timezone('Asia/Jakarta'),
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Pemasukan Barang marked as completed successfully')
+                            ->success()
                             ->send();
                     }),
             ])
@@ -1003,6 +1001,15 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->dateTime()
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('deliverer.name')
+                                    ->label('Completed By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
+                                Infolists\Components\TextEntry::make('delivered_at')
+                                    ->label('Completed At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
                                     ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
