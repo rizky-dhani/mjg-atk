@@ -15,7 +15,7 @@ class ListOfficeStationeryStockRequests extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('New Pemasukan Barang')
+                ->label('New Pemasukan ATK')
                 ->mutateFormDataUsing(function (array $data) {
                     $data['division_id'] = auth()->user()->division_id;
                     $data['requested_by'] = auth()->user()->id;

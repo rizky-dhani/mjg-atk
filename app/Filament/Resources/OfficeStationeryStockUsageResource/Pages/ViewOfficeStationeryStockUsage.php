@@ -41,7 +41,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Stock Usage approved successfully')
+                        ->title('Pengeluaran ATK approved successfully')
                         ->success()
                         ->send();
                 }),
@@ -71,7 +71,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Stock Usage rejected successfully')
+                        ->title('Pengeluaran ATK rejected successfully')
                         ->success()
                         ->send();
                 }),
@@ -94,7 +94,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Stock Usage approved successfully')
+                        ->title('Pengeluaran ATK approved successfully')
                         ->success()
                         ->send();
                 }),
@@ -123,7 +123,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Stock Usage rejected successfully')
+                        ->title('Pengeluaran ATK rejected successfully')
                         ->success()
                         ->send();
                 }),
@@ -145,7 +145,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                         'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                     ]);
                     
-                    // Process the stock usage
+                    // Process the Pengeluaran ATK
                     $record->processStockUsage();
 
                     // $record->update([
@@ -153,7 +153,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     // ]);
                     
                     Notification::make()
-                        ->title('Stock Usage approved and stock processed successfully')
+                        ->title('Pengeluaran ATK approved and stock processed successfully')
                         ->success()
                         ->send();
                 }),
@@ -182,7 +182,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Stock Usage rejected successfully')
+                        ->title('Pengeluaran ATK rejected successfully')
                         ->success()
                         ->send();
                 }),

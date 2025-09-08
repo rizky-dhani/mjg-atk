@@ -29,9 +29,9 @@ class OfficeStationeryStockRequestResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
     
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Pemasukan Barang';
-    protected static ?string $modelLabel = 'Pemasukan Barang';
-    protected static ?string $pluralModelLabel = 'Pemasukan Barang';
+    protected static ?string $navigationLabel = 'Pemasukan ATK';
+    protected static ?string $modelLabel = 'Pemasukan ATK';
+    protected static ?string $pluralModelLabel = 'Pemasukan ATK';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -207,7 +207,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
-                Forms\Components\Section::make('Office Stationery Pemasukan Barang Information (Optional)')
+                Forms\Components\Section::make('Pemasukan ATK Information (Optional)')
                     ->schema([
                         Forms\Components\Hidden::make('type')
                             ->default(OfficeStationeryStockRequest::TYPE_INCREASE),
@@ -331,7 +331,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang approved successfully')
+                            ->title('Pemasukan ATK approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -359,7 +359,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang rejected successfully')
+                            ->title('Pemasukan ATK rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -411,7 +411,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang rejected successfully')
+                            ->title('Pemasukan ATK rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -463,7 +463,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang rejected successfully')
+                            ->title('Pemasukan ATK rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -472,8 +472,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
-                    ->modalHeading('Pemasukan Barang Adjustment')
-                    ->modalSubheading('Are you sure to make the adjustment to this Pemasukan Barang?')
+                    ->modalHeading('Pemasukan ATK Adjustment')
+                    ->modalSubheading('Are you sure to make the adjustment to this Pemasukan ATK?')
                     ->modalWidth('7xl')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
@@ -677,7 +677,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang rejected successfully')
+                            ->title('Pemasukan ATK rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -730,7 +730,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang approved and stock updated successfully')
+                            ->title('Pemasukan ATK approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -759,7 +759,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang rejected successfully')
+                            ->title('Pemasukan ATK rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -782,7 +782,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan Barang marked as completed successfully')
+                            ->title('Pemasukan ATK marked as completed successfully')
                             ->success()
                             ->send();
                     }),
@@ -830,7 +830,7 @@ class OfficeStationeryStockRequestResource extends Resource
     {
         return $infolist
             ->schema([
-                Infolists\Components\Section::make('Pemasukan Barang Detail')
+                Infolists\Components\Section::make('Pemasukan ATK Detail')
                     ->schema([
                         Infolists\Components\Grid::make(5)
                             ->schema([
@@ -860,7 +860,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-request-detail'),
                     
-                Infolists\Components\Section::make('Pemasukan Barang Status')
+                Infolists\Components\Section::make('Pemasukan ATK Status')
                     ->schema([
                         Infolists\Components\Grid::make(6)
                             ->schema([
@@ -1022,7 +1022,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-request-status'),
 
-                Infolists\Components\Section::make('Pemasukan Barang Items')
+                Infolists\Components\Section::make('Pemasukan ATK Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

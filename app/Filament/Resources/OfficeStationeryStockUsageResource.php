@@ -26,9 +26,9 @@ class OfficeStationeryStockUsageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Pengeluaran Barang';
-    protected static ?string $modelLabel = 'Pengeluaran Barang';
-    protected static ?string $pluralModelLabel = 'Pengeluaran Barang';
+    protected static ?string $navigationLabel = 'Pengeluaran ATK';
+    protected static ?string $modelLabel = 'Pengeluaran ATK';
+    protected static ?string $pluralModelLabel = 'Pengeluaran ATK';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -210,7 +210,7 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
-                Forms\Components\Section::make('Stock Usage Information (Optional)')
+                Forms\Components\Section::make('Pengeluaran ATK Information (Optional)')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
                             ->maxLength(65535)
@@ -349,7 +349,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Usage rejected successfully')
+                            ->title('Pengeluaran ATK rejected successfully')
                             ->success()
                             ->send();
                     }),
@@ -398,7 +398,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Usage rejected successfully')
+                            ->title('Pengeluaran ATK rejected successfully')
                             ->success()
                             ->send();
                     }),
@@ -418,11 +418,11 @@ class OfficeStationeryStockUsageResource extends Resource
                             'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
-                        // Process the stock usage
+                        // Process the Pengeluaran ATK
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Stock Usage approved and stock updated successfully')
+                            ->title('Pengeluaran ATK approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -450,7 +450,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock Usage rejected successfully')
+                            ->title('Pengeluaran ATK rejected successfully')
                             ->success()
                             ->send();
                     }),
@@ -505,7 +505,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->collapsed()
                     ->persistCollapsed()
                     ->id('stock-usage-detail'),
-                Infolists\Components\Section::make('Stock Usage Status')
+                Infolists\Components\Section::make('Pengeluaran ATK Status')
                     ->schema([
                         Infolists\Components\TextEntry::make('status')
                             ->badge()
@@ -580,7 +580,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-usage-status'),
                     
-                Infolists\Components\Section::make('Pemasukan Barang Items')
+                Infolists\Components\Section::make('Pengeluaran ATK Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

@@ -11,7 +11,7 @@ use Filament\Tables\Table;
 class StockUsagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'usages';
-    protected static ?string $title = 'Stock Usages';
+    protected static ?string $title = 'Pengeluaran ATKs';
 
     public function table(Table $table): Table
     {
@@ -31,12 +31,12 @@ class StockUsagesRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('New Stock Usage')
+                    ->label('New Pengeluaran ATK')
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->infolist([
-                        Infolists\Components\Section::make('Stock Usage Details')
+                        Infolists\Components\Section::make('Pengeluaran ATK Details')
                             ->schema([
                                 Infolists\Components\Grid::make(3)
                                     ->schema([
@@ -72,7 +72,7 @@ class StockUsagesRelationManager extends RelationManager
                             ])
                             ->columns(1),
 
-                        Infolists\Components\Section::make('Stock Usage Items')
+                        Infolists\Components\Section::make('Pengeluaran ATK Items')
                             ->schema([
                                 Infolists\Components\RepeatableEntry::make('items')
                                     ->schema([

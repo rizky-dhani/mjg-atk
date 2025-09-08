@@ -13,7 +13,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 class OfficeStationeryStockRequestsRelationManager extends RelationManager
 {
     protected static string $relationship = 'requests';
-    protected static ?string $title = 'Pemasukan Barang';
+    protected static ?string $title = 'Pemasukan ATK';
     public function table(Table $table): Table
     {
         $ownerRecord = $this->getOwnerRecord();
@@ -33,12 +33,12 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('New Pemasukan Barang')
+                    ->label('New Pemasukan ATK')
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->infolist([
-                Infolists\Components\Section::make('Pemasukan Barang Detail')
+                Infolists\Components\Section::make('Pemasukan ATK Detail')
                     ->schema([
                         Infolists\Components\Grid::make(4)
                             ->schema([
@@ -65,7 +65,7 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                             ]),
                     ])
                     ->columns(1),
-                Infolists\Components\Section::make('Pemasukan Barang Status')
+                Infolists\Components\Section::make('Pemasukan ATK Status')
                     ->schema([
                         Infolists\Components\Grid::make(5)
                             ->schema([
@@ -112,7 +112,7 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                             ]),
                     ])
                     ->columns(1),
-                Infolists\Components\Section::make('Pemasukan Barang Items')
+                Infolists\Components\Section::make('Pemasukan ATK Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

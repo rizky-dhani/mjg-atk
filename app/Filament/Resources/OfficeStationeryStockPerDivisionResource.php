@@ -228,7 +228,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-exclamation-triangle'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Pemasukan Barangs Quantity')
+                                    ->label('Latest Pemasukan ATK Quantity')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -247,7 +247,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-arrow-down-tray'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Pemasukan Barangs Requester')
+                                    ->label('Latest Pemasukan ATK Requester')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -259,7 +259,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-user'),
                                 
                                 Infolists\Components\TextEntry::make('requests')
-                                    ->label('Latest Pemasukan Barangs Date')
+                                    ->label('Latest Pemasukan ATK Date')
                                     ->getStateUsing(function ($record) {
                                         $latestRequest = $record->requests()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -271,7 +271,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-calendar'),
                                 
                                 Infolists\Components\TextEntry::make('usages')
-                                    ->label('Latest Stock Usages Quantity')
+                                    ->label('Latest Pengeluaran ATK Quantity')
                                     ->getStateUsing(function ($record) {
                                         $latestUsage = $record->usages()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -290,7 +290,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-arrow-up-tray'),
                                 
                                 Infolists\Components\TextEntry::make('usages')
-                                    ->label('Latest Stock Usages Date')
+                                    ->label('Latest Pengeluaran ATK Date')
                                     ->getStateUsing(function ($record) {
                                         $latestUsage = $record->usages()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
