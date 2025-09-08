@@ -14,7 +14,7 @@ class ListOfficeStationeryCategories extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                    ->label('New Category'),
+                ->label('Tambah'),
         ];
     }
 }

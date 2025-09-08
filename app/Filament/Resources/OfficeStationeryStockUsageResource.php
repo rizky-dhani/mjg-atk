@@ -320,7 +320,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Usage approved successfully')
+                            ->title('Pengeluaran ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -349,7 +349,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK rejected successfully')
+                            ->title('Pengeluaran ATK berhasil di reject!')
                             ->success()
                             ->send();
                     }),
@@ -370,7 +370,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Usage approved successfully')
+                            ->title('Pengeluaran ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -398,7 +398,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK rejected successfully')
+                            ->title('Pengeluaran ATK berhasil di reject!')
                             ->success()
                             ->send();
                     }),
@@ -422,7 +422,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK approved and stock updated successfully')
+                            ->title('Pengeluaran ATK berhasil di approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -450,7 +450,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK rejected successfully')
+                            ->title('Pengeluaran ATK berhasil di reject!')
                             ->success()
                             ->send();
                     }),

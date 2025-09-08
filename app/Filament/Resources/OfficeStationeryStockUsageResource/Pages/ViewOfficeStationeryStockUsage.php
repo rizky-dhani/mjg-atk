@@ -42,7 +42,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK approved successfully')
+                        ->title('Pengeluaran ATK berhasil di approve!')
                         ->success()
                         ->send();
                 }),
@@ -72,7 +72,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK rejected successfully')
+                        ->title('Pengeluaran ATK berhasil di reject!')
                         ->success()
                         ->send();
                 }),
@@ -95,7 +95,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK approved successfully')
+                        ->title('Pengeluaran ATK berhasil di approve!')
                         ->success()
                         ->send();
                 }),
@@ -124,7 +124,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK rejected successfully')
+                        ->title('Pengeluaran ATK berhasil di reject!')
                         ->success()
                         ->send();
                 }),
@@ -154,7 +154,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     // ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK approved and stock processed successfully')
+                        ->title('Pengeluaran ATK berhasi di approve dan stok diperbaharui!')
                         ->success()
                         ->send();
                 }),
@@ -183,7 +183,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK rejected successfully')
+                        ->title('Pengeluaran ATK berhasil di reject!')
                         ->success()
                         ->send();
                 }),

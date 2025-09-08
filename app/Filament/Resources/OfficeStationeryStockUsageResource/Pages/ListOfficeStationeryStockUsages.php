@@ -21,7 +21,7 @@ class ListOfficeStationeryStockUsages extends ListRecords
                     return $data;
                 })
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->label('New Pengeluaran ATK'),
+                ->label('Tambah'),
         ];
     }
 }

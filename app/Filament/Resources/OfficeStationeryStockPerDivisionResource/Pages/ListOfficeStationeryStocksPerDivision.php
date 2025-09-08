@@ -15,7 +15,7 @@ class ListOfficeStationeryStocksPerDivision extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('New Item')
+                ->label('Tambah')
                 ->modalWidth(MaxWidth::SevenExtraLarge),
         ];
     }

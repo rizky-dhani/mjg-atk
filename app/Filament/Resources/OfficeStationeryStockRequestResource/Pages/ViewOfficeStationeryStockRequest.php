@@ -32,7 +32,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Pemasukan ATK')
-                    ->modalSubheading('Are you sure to approve this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk approve Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
                         auth()->user()->hasRole('Head') &&
@@ -47,7 +47,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -57,7 +57,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Pemasukan ATK')
-                    ->modalSubheading('Are you sure to reject this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk reject Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
                         auth()->user()->hasRole('Head') &&
@@ -77,7 +77,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -87,7 +87,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Pemasukan ATK')
-                    ->modalSubheading('Are you sure to approve this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk approve Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -102,7 +102,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -132,7 +132,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -142,7 +142,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Pemasukan ATK')
-                    ->modalSubheading('Are you sure to approve this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk approve Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsIpcHeadApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -157,7 +157,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -187,33 +187,8 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
-                            ->send();
-                    }),
-                
-                Action::make('deliver')
-                    ->label('Mark as Delivered')
-                    ->icon('heroicon-o-truck')
-                    ->color('primary')
-                    ->modalHeading('Mark Pemasukan ATK as Deliver?')
-                    ->modalSubheading('Are you sure to mark this Pemasukan ATK as Delivered?')
-                    ->visible(fn ($record) => 
-                        $record->canBeDelivered() &&
-                        auth()->user()->hasRole('Admin')
-                    )
-                    ->requiresConfirmation()
-                    ->databaseTransaction()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_DELIVERED,
-                            'delivered_by' => auth()->user()->id,
-                            'delivered_at' => now('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pemasukan ATK successfully marked as delivered')
-                            ->success()
                             ->send();
                     }),
                 
@@ -332,7 +307,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Stock adjusted and approved successfully')
+                            ->title('Stok Pemasukan ATK berhasil disesuaikan!')
                             ->success()
                             ->send();
                     }),
@@ -357,7 +332,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pemasukan ATK approved successfully by IPC Head (Post Adjustment)')
+                        ->title('Pemasukan ATK berhasil di approve!')
                         ->success()
                         ->send();
                 }),
@@ -387,7 +362,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pemasukan ATK rejected successfully by IPC Head (Post Adjustment)')
+                        ->title('Pemasukan ATK berhasil di reject!')
                         ->warning()
                         ->send();
                 }),
@@ -397,7 +372,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Pemasukan ATK')
-                    ->modalSubheading('Are you sure to approve this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk approve Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsGaAdminApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
@@ -412,7 +387,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -442,7 +417,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -452,7 +427,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Pemasukan ATK')
-                    ->modalSubheading('Are you sure to approve this Pemasukan ATK?')
+                    ->modalSubheading('Apakah anda yakin untuk approve Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsHcgHeadApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
@@ -497,7 +472,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved and stock updated successfully')
+                            ->title('Pemasukan ATK berhasil di approve dan stok diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -527,7 +502,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),

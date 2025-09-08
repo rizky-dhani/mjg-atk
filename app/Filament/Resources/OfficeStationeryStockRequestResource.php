@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\item;
 use App\Models\User;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Infolists;
 use Filament\Forms\Form;
@@ -331,7 +332,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -359,7 +360,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -382,7 +383,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by IPC successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -411,7 +412,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK  berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -434,7 +435,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by IPC Head successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -463,7 +464,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -472,9 +473,9 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
-                    ->modalHeading('Pemasukan ATK Adjustment')
-                    ->modalSubheading('Are you sure to make the adjustment to this Pemasukan ATK?')
-                    ->modalWidth('7xl')
+                    ->modalHeading('Penyesuaian Stok Pemasukan ATK')
+                    ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian stok untuk Pemasukan ATK ini?')
+                    ->modalWidth(MaxWidth::ExtraLarge)
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
                         auth()->user()->hasRole('Admin') &&
@@ -573,7 +574,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Stock adjusted and approved successfully')
+                            ->title('Pemasukan ATK penyesuaian stok berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -596,7 +597,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved (Post Adjustment) successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -625,7 +626,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request rejected (Post Adjustment) successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -648,7 +649,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by GA Admin successfully')
+                            ->title('Pemasukan ATK berhasil di approve!')
                             ->success()
                             ->send();
                     }),
@@ -677,7 +678,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -730,7 +731,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK approved and stock updated successfully')
+                            ->title('Pemasukan ATK berhasil di approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -759,31 +760,8 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK rejected successfully')
+                            ->title('Pemasukan ATK berhasil di reject!')
                             ->warning()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('mark_as_completed')
-                    ->label('Mark as Completed')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->canBeCompleted() && 
-                        auth()->user()->division?->initial === 'HCG' &&
-                        auth()->user()->hasRole('Head')
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
-                            'delivered_by' => auth()->user()->id,
-                            'delivered_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pemasukan ATK marked as completed successfully')
-                            ->success()
                             ->send();
                     }),
             ])

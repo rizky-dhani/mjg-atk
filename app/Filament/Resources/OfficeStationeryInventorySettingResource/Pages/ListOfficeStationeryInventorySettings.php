@@ -14,7 +14,7 @@ class ListOfficeStationeryInventorySettings extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                    ->label('New Settings'),
+                ->label('Tambah'),
         ];
     }
 }
