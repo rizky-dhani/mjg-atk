@@ -23,7 +23,7 @@ class MarketingMediaStockUsageResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
 
     protected static ?string $navigationGroup = 'Media Cetak';
-    protected static ?string $navigationLabel = 'Pengeluaran Barang';
+    protected static ?string $navigationLabel = 'Pengeluaran Media Cetak';
 
     protected static ?int $navigationSort = 3;
 

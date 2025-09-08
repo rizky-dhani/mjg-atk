@@ -21,7 +21,7 @@ class MarketingMediaStockRequestResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
 
     protected static ?string $navigationGroup = 'Media Cetak';
-    protected static ?string $navigationLabel = 'Pemasukan Barang';
+    protected static ?string $navigationLabel = 'Pemasukan Media Cetak';
 
     protected static ?int $navigationSort = 2;
 
@@ -601,6 +601,8 @@ class MarketingMediaStockRequestResource extends Resource
                             'status' => MarketingMediaStockRequest::STATUS_COMPLETED,
                             'approval_marketing_head_id' => auth()->user()->id,
                             'approval_marketing_head_at' => now(),
+                            'delivered_by' => auth()->user()->id,
+                            'delivered_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         \Filament\Notifications\Notification::make()

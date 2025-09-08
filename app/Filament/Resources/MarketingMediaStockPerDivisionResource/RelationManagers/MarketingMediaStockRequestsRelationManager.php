@@ -13,16 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class MarketingMediaStockRequestsRelationManager extends RelationManager
 {
     protected static string $relationship = 'requests';
-
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('request_number')
-                    ->required()
-                    ->maxLength(255),
-            ]);
-    }
+    protected static ?string $title = 'Pemasukan Media Cetak';
 
     public function table(Table $table): Table
     {

@@ -13,16 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class StockUsagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'usages';
-
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('usage_number')
-                    ->required()
-                    ->maxLength(255),
-            ]);
-    }
+    protected static ?string $title = 'Pengeluaran Media Cetak';
 
     public function table(Table $table): Table
     {

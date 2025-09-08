@@ -20,7 +20,8 @@ class ViewMarketingMediaStockUsage extends ViewRecord
         return [
             Actions\EditAction::make()
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->disabled(fn($record) => $record->status !== MarketingMediaStockUsage::STATUS_PENDING),
+                ->disabled(fn($record) => $record->status !== MarketingMediaStockUsage::STATUS_PENDING)
+                ->visible(fn($record) => $record->division_id === auth()->user()->division_id && auth()->user()->hasRole('Admin')),
             
             // Division Head Approval/Rejection Actions
             Actions\Action::make('approve_as_head')

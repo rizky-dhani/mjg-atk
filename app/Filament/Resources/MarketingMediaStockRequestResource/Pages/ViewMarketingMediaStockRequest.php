@@ -22,7 +22,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
         return [
             Actions\EditAction::make()
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->disabled(fn($record) => $record->status !== MarketingMediaStockRequest::STATUS_PENDING),
+                ->disabled(fn($record) => $record->status !== MarketingMediaStockRequest::STATUS_PENDING)
+                ->visible(fn($record) => $record->division_id === auth()->user()->division_id && auth()->user()->hasRole('Admin')),
             Actions\DeleteAction::make()
                 ->visible(fn ($record) => auth()->user()->id === $record->requested_by),
             
