@@ -40,11 +40,11 @@ class OfficeStationeryItem extends Model
     }
 
     /**
-     * Get the division inventory settings for this item.
+     * Get the office stationery division inventory settings for this item.
      */
     public function divisionSettings(): HasMany
     {
-        return $this->hasMany(DivisionInventorySetting::class, 'item_id');
+        return $this->hasMany(OfficeStationeryDivisionInventorySetting::class, 'item_id');
     }
 
     /**

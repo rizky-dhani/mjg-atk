@@ -44,11 +44,11 @@ class OfficeStationeryStockPerDivision extends Model
     }
 
     /**
-     * Get the division inventory setting for this office stationery stock.
+     * Get the office stationery division inventory setting for this office stationery stock.
      */
     public function setting()
     {
-        return DivisionInventorySetting::where('division_id', $this->division_id)
+        return OfficeStationeryDivisionInventorySetting::where('division_id', $this->division_id)
             ->where('item_id', $this->item_id)
             ->first();
     }

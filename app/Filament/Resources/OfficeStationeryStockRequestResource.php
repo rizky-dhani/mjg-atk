@@ -174,7 +174,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                                     return;
                                                 }
                                                 
-                                                $setting = \App\Models\DivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                                $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                                     ->where('item_id', $itemId)
                                                     ->first();
                                                     
@@ -530,7 +530,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                 ->where('item_id', $item->item_id)
                                 ->first();
                                 
-                            $divisionInventorySetting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                            $divisionInventorySetting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->division_id)
                                 ->where('item_id', $item->item_id)
                                 ->first();
                                 
