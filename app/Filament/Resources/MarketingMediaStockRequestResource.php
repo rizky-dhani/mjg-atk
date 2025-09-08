@@ -288,7 +288,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->visible(fn ($record) => 
                         $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -311,7 +311,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->visible(fn ($record) => 
                         $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Staff')
+                        auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -385,56 +385,13 @@ class MarketingMediaStockRequestResource extends Resource
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('deliver')
-                    ->label('Mark as Delivered')
-                    ->icon('heroicon-o-truck')
-                    ->color('primary')
-                    ->visible(fn ($record) => 
-                        $record->canBeDelivered() &&
-                        auth()->user()->hasRole('Staff')
-                    )
-                    ->requiresConfirmation()
-                    ->databaseTransaction()
-                    ->action(function ($record) {
-                        // Update stock levels
-                        foreach ($record->items as $item) {
-                            $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
-                                ->where('item_id', $item->item_id)
-                                ->lockForUpdate()
-                                ->first();
-                                
-                            if ($officeStationeryStockPerDivision) {
-                                // Store previous stock
-                                $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
-                                
-                                // Update stock
-                                $officeStationeryStockPerDivision->increment('current_stock', $item->quantity);
-                                
-                                // Store new stock
-                                $item->new_stock = $officeStationeryStockPerDivision->current_stock;
-                                $item->save();
-                            }
-                        }
-                        
-                        $record->update([
-                            'status' => $record->isIncrease() ? MarketingMediaStockRequest::STATUS_COMPLETED : MarketingMediaStockRequest::STATUS_DELIVERED,
-                            'delivered_by' => auth()->user()->id,
-                            'delivered_at' => now(),
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak marked as delivered and stock updated')
-                            ->success()
-                            ->send();
-                    }),
-                
                 Tables\Actions\Action::make('adjust_and_approve_stock')
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Staff') &&
+                        auth()->user()->hasRole('Admin') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
                     ->requiresConfirmation()
@@ -686,14 +643,14 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Allow Marketing divisions to view their own requests
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         // Allow IPC and GA divisions to view all requests for approval process
         if ($user->division && 
             ($user->division->initial === 'IPC' || 
              $user->division->initial === 'GA')) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         // Hide from users who don't belong to any Marketing divisions
@@ -709,7 +666,7 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Only allow Marketing divisions to create requests
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         return false;
@@ -724,7 +681,7 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Allow editing if user belongs to the same division as the record and is from a Marketing division
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']) && 
+            return $user->hasRole(['Admin', 'Head', 'Admin']) && 
                    $user->division_id === $record->division_id;
         }
         

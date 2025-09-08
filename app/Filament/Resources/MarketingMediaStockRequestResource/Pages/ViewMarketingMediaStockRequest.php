@@ -93,7 +93,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                    auth()->user()->hasRole('Staff')
+                    auth()->user()->hasRole('Admin')
                 )
                 ->requiresConfirmation()
                 ->action(function ($record) {
@@ -118,7 +118,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                    auth()->user()->hasRole('Staff')
+                    auth()->user()->hasRole('Admin')
                 )
                 ->requiresConfirmation()
                 ->form([
@@ -196,51 +196,6 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                         ->send();
                 }),
             
-            Action::make('deliver')
-                ->label('Mark as Delivered')
-                ->icon('heroicon-o-truck')
-                ->color('primary')
-                ->modalHeading('Mark Pemasukan Media Cetak as Deliver?')
-                ->modalSubheading('Are you sure to mark this Pemasukan Media Cetak as Delivered?')
-                ->visible(fn ($record) => 
-                    $record->canBeDelivered() &&
-                    auth()->user()->hasRole('Staff')
-                )
-                ->requiresConfirmation()
-                ->databaseTransaction()
-                ->action(function ($record) {
-                    // Update stock levels
-                    foreach ($record->items as $item) {
-                        $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
-                            ->where('item_id', $item->item_id)
-                            ->lockForUpdate()
-                            ->first();
-                            
-                        if ($officeStationeryStockPerDivision) {
-                            // Store previous stock
-                            $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
-                            
-                            // Update stock
-                            $officeStationeryStockPerDivision->increment('current_stock', $item->quantity);
-                            
-                            // Store new stock
-                            $item->new_stock = $officeStationeryStockPerDivision->current_stock;
-                            $item->save();
-                        }
-                    }
-                    
-                    $record->update([
-                        'status' => $record->isIncrease() ? MarketingMediaStockRequest::STATUS_COMPLETED : MarketingMediaStockRequest::STATUS_DELIVERED,
-                        'delivered_by' => auth()->user()->id,
-                        'delivered_at' => now(),
-                    ]);
-                    
-                    Notification::make()
-                        ->title('Pemasukan Media Cetak marked as delivered and stock updated')
-                        ->success()
-                        ->send();
-                }),
-            
             Action::make('adjust_and_approve_stock')
                 ->label('Adjust & Approve Stock')
                 ->icon('heroicon-o-pencil-square')
@@ -250,7 +205,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->modalWidth(MaxWidth::Screen)
                 ->visible(fn ($record) => 
                     $record->needsStockAdjustmentApproval() &&
-                    auth()->user()->hasRole('Staff') &&
+                    auth()->user()->hasRole('Admin') &&
                     auth()->user()->division?->initial === 'IPC'
                 )
                 ->requiresConfirmation()

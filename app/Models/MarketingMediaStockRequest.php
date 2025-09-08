@@ -286,7 +286,7 @@ class MarketingMediaStockRequest extends Model
      */
     public function needsStockAdjustmentApproval(): bool
     {
-        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
     }
 
     /**

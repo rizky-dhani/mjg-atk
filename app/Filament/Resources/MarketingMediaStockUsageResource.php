@@ -370,13 +370,13 @@ class MarketingMediaStockUsageResource extends Resource
         
         // Allow Marketing divisions to view their own usages
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         // Allow IPC, GA divisions to view all usages for approval process
         if ($user->division && 
             ($user->division->initial === 'IPC' || $user->division->initial === 'GA')) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         // Hide from users who don't belong to any Marketing divisions
@@ -392,7 +392,7 @@ class MarketingMediaStockUsageResource extends Resource
         
         // Only allow Marketing divisions to create usages
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']);
+            return $user->hasRole(['Admin', 'Head', 'Admin']);
         }
         
         return false;
@@ -407,7 +407,7 @@ class MarketingMediaStockUsageResource extends Resource
         
         // Allow editing if user belongs to the same division as the record and is from a Marketing division
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Staff']) && 
+            return $user->hasRole(['Admin', 'Head', 'Admin']) && 
                    $user->division_id === $record->division_id;
         }
         
