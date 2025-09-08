@@ -302,9 +302,9 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                             ->where('item_id', $item->item_id)
                             ->first();
                             
-                        $divisionInventorySetting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
-                            ->where('item_id', $item->item_id)
-                            ->first();
+                        $divisionInventorySetting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
+                           ->where('item_id', $item->item_id)
+                           ->first();
                             
                         // Calculate new stock level
                         $currentStock = $officeStationeryStockPerDivision->current_stock ?? 0;

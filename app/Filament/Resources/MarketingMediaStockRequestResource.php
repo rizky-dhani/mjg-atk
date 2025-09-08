@@ -469,7 +469,7 @@ class MarketingMediaStockRequestResource extends Resource
                                 ->where('item_id', $item->item_id)
                                 ->first();
                                 
-                            $divisionInventorySetting = \App\Models\DivisionInventorySetting::where('division_id', $record->division_id)
+                            $divisionInventorySetting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->division_id)
                                 ->where('item_id', $item->item_id)
                                 ->first();
                                 

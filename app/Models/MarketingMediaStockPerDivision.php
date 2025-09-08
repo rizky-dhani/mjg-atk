@@ -44,11 +44,11 @@ class MarketingMediaStockPerDivision extends Model
     }
 
     /**
-     * Get the division inventory setting for this marketing media stock.
+     * Get the marketing media division inventory setting for this marketing media stock.
      */
     public function setting()
     {
-        return DivisionInventorySetting::where('division_id', $this->division_id)
+        return MarketingMediaDivisionInventorySetting::where('division_id', $this->division_id)
             ->where('item_id', $this->item_id)
             ->first();
     }

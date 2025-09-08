@@ -40,11 +40,11 @@ class MarketingMediaItem extends Model
     }
 
     /**
-     * Get the division inventory settings for this item.
+     * Get the marketing media division inventory settings for this item.
      */
     public function divisionSettings(): HasMany
     {
-        return $this->hasMany(DivisionInventorySetting::class, 'item_id');
+        return $this->hasMany(MarketingMediaDivisionInventorySetting::class, 'item_id');
     }
 
     /**

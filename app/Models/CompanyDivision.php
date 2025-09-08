@@ -21,11 +21,19 @@ class CompanyDivision extends Model
     }
 
     /**
-     * Get the division inventory settings.
+     * Get the office stationery division inventory settings.
      */
-    public function inventorySettings(): HasMany
+    public function officeStationeryInventorySettings(): HasMany
     {
-        return $this->hasMany(DivisionInventorySetting::class, 'division_id');
+        return $this->hasMany(OfficeStationeryDivisionInventorySetting::class, 'division_id');
+    }
+
+    /**
+     * Get the marketing media division inventory settings.
+     */
+    public function marketingMediaInventorySettings(): HasMany
+    {
+        return $this->hasMany(MarketingMediaDivisionInventorySetting::class, 'division_id');
     }
 
     /**
