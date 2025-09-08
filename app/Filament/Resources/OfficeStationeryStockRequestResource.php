@@ -801,7 +801,7 @@ class OfficeStationeryStockRequestResource extends Resource
     {
         $query = parent::getEloquentQuery();
         
-        // Filter based on user role        
+        // Filter based on user role
         $user = auth()->user();
         
         // IPC & HCG Admins & Heads can see all requests (for approval workflow)
@@ -810,6 +810,10 @@ class OfficeStationeryStockRequestResource extends Resource
             ($user->division?->initial === 'HCG' && ($user->hasRole('Admin') || $user->hasRole('Head')))) {
             // No additional filtering needed, show all requests
             $query->orderByDesc('created_at')->orderByDesc('request_number');
+        }
+        // Division Heads can only see requests from their own division
+        elseif ($user->hasRole('Head')) {
+            $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
         }
         // All other Admin users (including GA) only see requests from their own division
         elseif ($user->hasRole('Admin')) {

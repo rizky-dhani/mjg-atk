@@ -618,6 +618,10 @@ class MarketingMediaStockRequestResource extends Resource
             if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
                 $query->where('division_id', $user->division_id);
             }
+            // Division Heads can only see requests from their own division
+            elseif ($user->hasRole('Head') && strpos($user->division->name, 'Marketing') === true) {
+                $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
+            }
             // For IPC, GA, HCG divisions, they can see all requests for approval process
             else if ($user->division && 
                      ($user->division->initial === 'IPC' || 

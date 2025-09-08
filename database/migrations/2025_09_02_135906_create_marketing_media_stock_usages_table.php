@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('mm_stock_usages', function (Blueprint $table) {
             $table->id();
             $table->string('usage_number')->unique();
-            $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
             $table->foreignId('requested_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('division_id')->constrained('company_divisions')->onDelete('cascade');
             $table->string('type')->default('decrease'); // decrease
             $table->string('status')->default('pending');
             $table->text('notes')->nullable();
