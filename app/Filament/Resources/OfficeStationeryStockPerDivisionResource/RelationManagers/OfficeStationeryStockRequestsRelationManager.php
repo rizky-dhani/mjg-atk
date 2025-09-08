@@ -136,6 +136,6 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                     ->columns(1),
                     ]),
             ])
-            ->emptyStateHeading('No related requests');
+            ->emptyStateHeading('No Pemasukan ATK record exists for this item');
     }
 }

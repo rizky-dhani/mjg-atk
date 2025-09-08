@@ -11,7 +11,7 @@ use Filament\Tables\Table;
 class StockUsagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'usages';
-    protected static ?string $title = 'Pengeluaran ATKs';
+    protected static ?string $title = 'Pengeluaran ATK';
 
     public function table(Table $table): Table
     {
@@ -92,6 +92,6 @@ class StockUsagesRelationManager extends RelationManager
                             ->columns(1),
                     ]),
             ])
-            ->emptyStateHeading('No related usages');
+            ->emptyStateHeading('No Pengeluaran ATK record exists for this item');
     }
 }

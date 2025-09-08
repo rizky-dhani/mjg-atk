@@ -22,7 +22,8 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
         return [
             Actions\EditAction::make()
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->disabled(fn($record) => $record->status !== OfficeStationeryStockRequest::STATUS_PENDING),
+                ->disabled(fn($record) => $record->status !== OfficeStationeryStockRequest::STATUS_PENDING)
+                ->visible(fn($record) => $record->division_id === auth()->user()->division_id && auth()->user()->hasRole('Admin')),
             Actions\DeleteAction::make()
             ->visible(fn ($record) => auth()->user()->id === $record->requested_by),
                 // Approval Actions
@@ -487,7 +488,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
+                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
                             'approval_hcg_head_id' => auth()->user()->id,
                             'approval_hcg_head_at' => now('Asia/Jakarta'),
                             // Automatically mark as delivered
@@ -496,7 +497,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ]);
                         
                         Notification::make()
-                            ->title('Request approved by HCG Head, stock updated, and marked as delivered successfully')
+                            ->title('Pemasukan ATK approved and stock updated successfully')
                             ->success()
                             ->send();
                     }),

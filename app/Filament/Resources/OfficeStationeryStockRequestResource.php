@@ -721,7 +721,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         }
                         
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_DELIVERED,
+                            'status' => OfficeStationeryStockRequest::STATUS_COMPLETED,
                             'approval_hcg_head_id' => auth()->user()->id,
                             'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                             // Automatically mark as delivered

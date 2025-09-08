@@ -413,7 +413,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
+                            'status' => OfficeStationeryStockUsage::STATUS_COMPLETED,
                             'approval_hcg_head_id' => auth()->user()->id,
                             'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
