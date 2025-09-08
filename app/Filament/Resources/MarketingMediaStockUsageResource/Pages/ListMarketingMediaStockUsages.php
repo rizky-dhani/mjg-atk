@@ -21,7 +21,7 @@ class ListMarketingMediaStockUsages extends ListRecords
                     return $data;
                 })
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->label('New Pengeluaran Barang'),
+                ->label('New Pengeluaran Media Cetak'),
         ];
     }
 }

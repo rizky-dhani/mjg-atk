@@ -213,7 +213,7 @@ class MarketingMediaStockUsageResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Usage approved successfully')
+                            ->title('Pengeluaran Media Cetak approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -242,7 +242,7 @@ class MarketingMediaStockUsageResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Usage rejected successfully')
+                            ->title('Pengeluaran Media Cetak rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -286,7 +286,7 @@ class MarketingMediaStockUsageResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Usage approved by GA Admin and stock updated')
+                            ->title('Pengeluaran Media Cetak approved by GA Admin and stock updated')
                             ->success()
                             ->send();
                     }),
@@ -315,7 +315,7 @@ class MarketingMediaStockUsageResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Usage rejected by GA Admin successfully')
+                            ->title('Pengeluaran Media Cetak rejected by GA Admin successfully')
                             ->warning()
                             ->send();
                     }),
@@ -463,7 +463,7 @@ class MarketingMediaStockUsageResource extends Resource
                     ->collapsed()
                     ->persistCollapsed()
                     ->id('stock-usage-detail'),
-                Infolists\Components\Section::make('Stock Usage Status')
+                Infolists\Components\Section::make('Pengeluaran Media Cetak Status')
                     ->schema([
                         Infolists\Components\TextEntry::make('status')
                             ->badge()
@@ -536,7 +536,7 @@ class MarketingMediaStockUsageResource extends Resource
                     ->persistCollapsed()
                     ->id('stock-usage-status'),
                 
-                Infolists\Components\Section::make('Stock Usage Items')
+                Infolists\Components\Section::make('Pengeluaran Media Cetak Items')
                     ->schema([
                         Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

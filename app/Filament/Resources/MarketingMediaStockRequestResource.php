@@ -247,7 +247,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request approved successfully')
+                            ->title('Pemasukan Media Cetak approved successfully')
                             ->success()
                             ->send();
                     }),
@@ -276,7 +276,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request rejected successfully')
+                            ->title('Pemasukan Media Cetak rejected successfully')
                             ->warning()
                             ->send();
                     }),
@@ -299,7 +299,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request approved by IPC successfully')
+                            ->title('Pemasukan Media Cetak approved by IPC successfully')
                             ->success()
                             ->send();
                     }),
@@ -328,7 +328,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request rejected by IPC successfully')
+                            ->title('Pemasukan Media Cetak rejected by IPC successfully')
                             ->warning()
                             ->send();
                     }),
@@ -351,7 +351,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request approved by IPC Head successfully')
+                            ->title('Pemasukan Media Cetak approved by IPC Head successfully')
                             ->success()
                             ->send();
                     }),
@@ -380,7 +380,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request rejected by IPC Head successfully')
+                            ->title('Pemasukan Media Cetak rejected by IPC Head successfully')
                             ->warning()
                             ->send();
                     }),
@@ -423,7 +423,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request marked as delivered and stock updated')
+                            ->title('Pemasukan Media Cetak marked as delivered and stock updated')
                             ->success()
                             ->send();
                     }),
@@ -529,7 +529,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request approved by GA Admin successfully')
+                            ->title('Pemasukan Media Cetak approved by GA Admin successfully')
                             ->success()
                             ->send();
                     }),
@@ -558,7 +558,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request rejected by GA Admin successfully')
+                            ->title('Pemasukan Media Cetak rejected by GA Admin successfully')
                             ->warning()
                             ->send();
                     }),
@@ -604,7 +604,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request approved by Marketing Support Head and stock updated successfully')
+                            ->title('Pemasukan Media Cetak approved by Marketing Support Head and stock updated successfully')
                             ->success()
                             ->send();
                     }),
@@ -633,7 +633,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Request rejected by Marketing Support Head successfully')
+                            ->title('Pemasukan Media Cetak rejected by Marketing Support Head successfully')
                             ->warning()
                             ->send();
                     }),
@@ -756,7 +756,7 @@ class MarketingMediaStockRequestResource extends Resource
     {
         return $infolist
             ->schema([
-                \Filament\Infolists\Components\Section::make('Stock Request Detail')
+                \Filament\Infolists\Components\Section::make('Pemasukan Media Cetak Detail')
                     ->schema([
                         \Filament\Infolists\Components\Grid::make(5)
                             ->schema([
@@ -782,7 +782,7 @@ class MarketingMediaStockRequestResource extends Resource
                             ]),
                     ])
                     ->columns(1),
-                \Filament\Infolists\Components\Section::make('Stock Request Status')
+                \Filament\Infolists\Components\Section::make('Pemasukan Media Cetak Status')
                     ->schema([
                         \Filament\Infolists\Components\Grid::make(5)
                             ->schema([
@@ -928,7 +928,7 @@ class MarketingMediaStockRequestResource extends Resource
                             ]),
                     ])
                     ->columns(1),
-                \Filament\Infolists\Components\Section::make('Stock Request Items')
+                \Filament\Infolists\Components\Section::make('Pemasukan Media Cetak Items')
                     ->schema([
                         \Filament\Infolists\Components\RepeatableEntry::make('items')
                             ->schema([

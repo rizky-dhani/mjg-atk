@@ -15,7 +15,7 @@ class ListMarketingMediaStockRequests extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('New Penambahan Barang')
+                ->label('New Pemasukan Media Cetak')
                 ->mutateFormDataUsing(function (array $data) {
                     $data['division_id'] = auth()->user()->division_id;
                     $data['requested_by'] = auth()->user()->id;

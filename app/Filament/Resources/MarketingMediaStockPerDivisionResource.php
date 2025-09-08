@@ -298,7 +298,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-calendar'),
                                 
                                 Infolists\Components\TextEntry::make('usages')
-                                    ->label('Latest Stock Usages Quantity')
+                                    ->label('Latest Pengeluaran Media Cetak Quantity')
                                     ->getStateUsing(function ($record) {
                                         $latestUsage = $record->usages()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))
@@ -317,7 +317,7 @@ class MarketingMediaStockPerDivisionResource extends Resource
                                     ->icon('heroicon-o-arrow-up-tray'),
                                 
                                 Infolists\Components\TextEntry::make('usages')
-                                    ->label('Latest Stock Usages Date')
+                                    ->label('Latest Pengeluaran Media Cetak Date')
                                     ->getStateUsing(function ($record) {
                                         $latestUsage = $record->usages()
                                             ->whereHas('items', fn ($q) => $q->where('item_id', $record->item_id))

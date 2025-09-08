@@ -31,8 +31,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Approve (Head)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->modalHeading('Approve Penambahan Barang')
-                ->modalSubheading('Are you sure to approve this Penambahan Barang?')
+                ->modalHeading('Approve Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to approve this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_PENDING && 
                     auth()->user()->hasRole('Head') &&
@@ -47,7 +47,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang approved successfully')
+                        ->title('Pemasukan Media Cetak approved successfully')
                         ->success()
                         ->send();
                 }),
@@ -56,8 +56,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Reject (Head)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->modalHeading('Reject Penambahan Barang')
-                ->modalSubheading('Are you sure to reject this Penambahan Barang?')
+                ->modalHeading('Reject Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to reject this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_PENDING && 
                     auth()->user()->hasRole('Head') &&
@@ -78,7 +78,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang rejected successfully')
+                        ->title('Pemasukan Media Cetak rejected successfully')
                         ->warning()
                         ->send();
                 }),
@@ -87,8 +87,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Approve (IPC)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->modalHeading('Approve Penambahan Barang')
-                ->modalSubheading('Are you sure to approve this Penambahan Barang?')
+                ->modalHeading('Approve Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to approve this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -103,7 +103,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang approved by IPC successfully')
+                        ->title('Pemasukan Media Cetak approved by IPC successfully')
                         ->success()
                         ->send();
                 }),
@@ -112,8 +112,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Reject (IPC)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->modalHeading('Reject Penambahan Barang')
-                ->modalSubheading('Are you sure you want to reject this Penambahan Barang?')
+                ->modalHeading('Reject Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure you want to reject this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -134,7 +134,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang rejected by IPC successfully')
+                        ->title('Pemasukan Media Cetak rejected by IPC successfully')
                         ->warning()
                         ->send();
                 }),
@@ -143,8 +143,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Approve (IPC Head)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->modalHeading('Approve Penambahan Barang')
-                ->modalSubheading('Are you sure to approve this Penambahan Barang?')
+                ->modalHeading('Approve Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to approve this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsIpcHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -159,7 +159,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang approved by IPC Head successfully')
+                        ->title('Pemasukan Media Cetak approved by IPC Head successfully')
                         ->success()
                         ->send();
                 }),
@@ -168,8 +168,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Reject (IPC Head)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->modalHeading('Reject Penambahan Barang')
-                ->modalSubheading('Are you sure you want to reject this Penambahan Barang?')
+                ->modalHeading('Reject Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure you want to reject this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsIpcHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -190,7 +190,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang rejected by IPC Head successfully')
+                        ->title('Pemasukan Media Cetak rejected by IPC Head successfully')
                         ->warning()
                         ->send();
                 }),
@@ -199,8 +199,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Mark as Delivered')
                 ->icon('heroicon-o-truck')
                 ->color('primary')
-                ->modalHeading('Mark Penambahan Barang as Deliver?')
-                ->modalSubheading('Are you sure to mark this Penambahan Barang as Delivered?')
+                ->modalHeading('Mark Pemasukan Media Cetak as Deliver?')
+                ->modalSubheading('Are you sure to mark this Pemasukan Media Cetak as Delivered?')
                 ->visible(fn ($record) => 
                     $record->canBeDelivered() &&
                     auth()->user()->hasRole('Staff')
@@ -235,7 +235,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang marked as delivered and stock updated')
+                        ->title('Pemasukan Media Cetak marked as delivered and stock updated')
                         ->success()
                         ->send();
                 }),
@@ -244,8 +244,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Adjust & Approve Stock')
                 ->icon('heroicon-o-pencil-square')
                 ->color('primary')
-                ->modalHeading('Penambahan Barang Adjustment')
-                ->modalSubheading('Are you sure to make the adjustment to this Penambahan Barang?')
+                ->modalHeading('Pemasukan Media Cetak Adjustment')
+                ->modalSubheading('Are you sure to make the adjustment to this Pemasukan Media Cetak?')
                 ->modalWidth(MaxWidth::Screen)
                 ->visible(fn ($record) => 
                     $record->needsStockAdjustmentApproval() &&
@@ -354,8 +354,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Approve (GA Admin)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->modalHeading('Approve Penambahan Barang')
-                ->modalSubheading('Are you sure to approve this Penambahan Barang?')
+                ->modalHeading('Approve Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to approve this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsGaAdminApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
@@ -370,7 +370,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang approved by GA Admin successfully')
+                        ->title('Pemasukan Media Cetak approved by GA Admin successfully')
                         ->success()
                         ->send();
                 }),
@@ -379,8 +379,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Reject (GA Admin)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->modalHeading('Reject Penambahan Barang')
-                ->modalSubheading('Are you sure you want to reject this Penambahan Barang?')
+                ->modalHeading('Reject Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure you want to reject this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsGaAdminApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
@@ -401,7 +401,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang rejected by GA Admin successfully')
+                        ->title('Pemasukan Media Cetak rejected by GA Admin successfully')
                         ->warning()
                         ->send();
                 }),
@@ -410,8 +410,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Approve (Marketing Support Head)')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->modalHeading('Approve Penambahan Barang')
-                ->modalSubheading('Are you sure to approve this Penambahan Barang?')
+                ->modalHeading('Approve Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure to approve this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsMarketingHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'Marketing Support' &&
@@ -456,7 +456,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang approved by Marketing Support Head, stock updated, and marked as delivered successfully')
+                        ->title('Pemasukan Media Cetak approved by Marketing Support Head, stock updated, and marked as delivered successfully')
                         ->success()
                         ->send();
                 }),
@@ -465,8 +465,8 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ->label('Reject (Marketing Support Head)')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->modalHeading('Reject Penambahan Barang')
-                ->modalSubheading('Are you sure you want to reject this Penambahan Barang?')
+                ->modalHeading('Reject Pemasukan Media Cetak')
+                ->modalSubheading('Are you sure you want to reject this Pemasukan Media Cetak?')
                 ->visible(fn ($record) => 
                     $record->needsMarketingHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'Marketing Support' &&
@@ -487,7 +487,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Penambahan Barang rejected by Marketing Support Head successfully')
+                        ->title('Pemasukan Media Cetak rejected by Marketing Support Head successfully')
                         ->warning()
                         ->send();
                 }),
