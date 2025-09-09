@@ -21,7 +21,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
     {
         $user = Auth::user();
         $divisionId = $user->division_id;
-        $stockRequestUrl = route('filament.dashboard.resources.office-stationery-stock-requests.index');
+        $stockRequestUrl = route('filament.dashboard.resources.office-stationery-stock-requests.my-division');
         $stockUsageUrl = route('filament.dashboard.resources.office-stationery-stock-usages.index');
 
         $approvedStockRequestFilters = [
@@ -135,7 +135,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning')
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-requests.my-division', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_PENDING,
                         'tableFilters[division_id][value]' => $user->division_id
                     ])
@@ -161,7 +161,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 ->descriptionIcon('heroicon-m-check-badge')
                 ->color('success')
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-requests.my-division', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_COMPLETED,
                         'tableFilters[division_id][value]' => $user->division_id
                     ])
