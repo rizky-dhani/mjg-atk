@@ -151,8 +151,8 @@ class OfficeStationeryStockRequestResource extends Resource
                                             
                                             // Show notification to user
                                             Notification::make()
-                                                ->title('Quantity adjusted')
-                                                ->body("The requested quantity has been adjusted to the maximum available space: {$availableSpace}")
+                                                ->title('Kuantitas melebih batas maksimal')
+                                                ->body("Kuantitas penyesuaian melebihi batas maksimal, maksimal kuantitas yang bisa diminta: {$availableSpace}")
                                                 ->warning()
                                                 ->send();
                                         }
@@ -462,37 +462,28 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->send();
                     }),
                 
-                Tables\Actions\Action::make('adjust_and_approve_stock')
+                Tables\Actions\EditAction::make('adjust_and_approve_stock')
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->modalHeading('Penyesuaian Stok Pemasukan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian stok untuk Pemasukan ATK ini?')
-                    ->modalWidth(MaxWidth::ExtraLarge)
-                    ->visible(fn ($record) => 
+                    ->modalWidth(MaxWidth::SevenExtraLarge)
+                    ->visible(fn ($record) =>
                         $record->needsStockAdjustmentApproval() &&
                         auth()->user()->hasRole('Admin') &&
                         auth()->user()->division?->initial === 'IPC'
                     )
-                    ->requiresConfirmation()
                     ->form(function ($record) {
-                        // Pre-populate the items data
-                        $itemsData = [];
-                        foreach ($record->items as $item) {
-                            $itemsData[] = [
-                                'item_name' => $item->item->name ?? '',
-                                'quantity' => $item->quantity ?? 0,
-                                'adjusted_quantity' => $item->quantity ?? 0,
-                            ];
-                        }
-                        
                         return [
                             Forms\Components\Repeater::make('items')
+                                ->relationship()
                                 ->schema([
                                     Forms\Components\TextInput::make('item_name')
                                         ->label('Item')
                                         ->disabled()
-                                        ->extraInputAttributes(['class' => 'whitespace-normal']),
+                                        ->extraInputAttributes(['class' => 'whitespace-normal'])
+                                        ->formatStateUsing(fn ($record) => $record?->item?->name ?? ''),
                                     Forms\Components\TextInput::make('quantity')
                                         ->label('Requested Quantity')
                                         ->disabled(),
@@ -500,15 +491,124 @@ class OfficeStationeryStockRequestResource extends Resource
                                         ->label('Adjusted Quantity')
                                         ->numeric()
                                         ->minValue(0)
-                                        ->required(),
+                                        ->required()
+                                        ->default(fn ($record) => $record?->quantity ?? 0)
+                                        ->helperText(function (callable $get, $record) {
+                                            if (!$record) {
+                                                return '';
+                                            }
+                                            
+                                            $itemId = $record->item_id;
+                                            if (!$itemId) {
+                                                return '';
+                                            }
+                                            
+                                            $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            if (!$setting) {
+                                                return 'No inventory limit set for this item';
+                                            }
+                                            
+                                            $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            $currentStock = $stock ? $stock->current_stock : 0;
+                                            $maxLimit = $setting->max_limit;
+                                            $availableSpace = $maxLimit - $currentStock;
+                                            
+                                            return "Current: {$currentStock} | Max: {$maxLimit} | Available: {$availableSpace}";
+                                        })
+                                        ->live()
+                                        ->afterStateUpdated(function (callable $get, callable $set, $state, $record) {
+                                            if (!$record || !$state) {
+                                                return;
+                                            }
+                                            
+                                            $itemId = $record->item_id;
+                                            if (!$itemId) {
+                                                return;
+                                            }
+                                            
+                                            $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            if (!$setting) {
+                                                return;
+                                            }
+                                            
+                                            $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            $currentStock = $stock ? $stock->current_stock : 0;
+                                            $maxLimit = $setting->max_limit;
+                                            $availableSpace = $maxLimit - $currentStock;
+                                            
+                                            if ($state > $availableSpace) {
+                                                // Reset to available space
+                                                $set('adjusted_quantity', $availableSpace);
+                                                
+                                                // Show notification to user
+                                                Notification::make()
+                                                    ->title('Kuantitas melebih batas maksimal')
+                                                    ->body("Kuantitas penyesuaian melebihi batas maksimal, maksimal kuantitas yang bisa diminta: {$availableSpace}")
+                                                    ->warning()
+                                                    ->send();
+                                            }
+                                        })
+                                        ->rules([
+                                            function ($record) {
+                                                return function (string $attribute, $value, \Closure $fail) use ($record) {
+                                                    if (!$record || !$value) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $itemId = $record->item_id;
+                                                    if (!$itemId) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $setting = \App\Models\OfficeStationeryDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                        ->where('item_id', $itemId)
+                                                        ->first();
+                                                        
+                                                    if (!$setting) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                        ->where('item_id', $itemId)
+                                                        ->first();
+                                                        
+                                                    $currentStock = $stock ? $stock->current_stock : 0;
+                                                    $maxLimit = $setting->max_limit;
+                                                    $availableSpace = $maxLimit - $currentStock;
+                                                    
+                                                    if ($value > $availableSpace) {
+                                                        $fail("The requested quantity ({$value}) exceeds the available space ({$availableSpace}) for this item.");
+                                                    }
+                                                };
+                                            },
+                                        ]),
                                 ])
                                 ->columns(3)
                                 ->disabled(fn () => !$record->needsStockAdjustmentApproval())
+                                ->addable(false)
+                                ->deletable(false)
+                                ->reorderable(false)
                                 ->required()
-                                ->default($itemsData)
                         ];
                     })
-                    ->action(function ($record, array $data) {
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Pemasukan ATK penyesuaian stok berhasil di approve!')
+                            ->success()
+                    )
+                    ->mutateFormDataUsing(function (array $data, $record) {
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
                         foreach ($record->items as $index => $item) {
@@ -566,10 +666,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             'approval_stock_adjustment_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
-                        Notification::make()
-                            ->title('Pemasukan ATK penyesuaian stok berhasil di approve!')
-                            ->success()
-                            ->send();
+                        return $data;
                     }),
                 
                 Tables\Actions\Action::make('approve_as_second_ipc_head')
