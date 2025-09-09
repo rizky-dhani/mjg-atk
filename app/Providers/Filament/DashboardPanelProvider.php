@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\OfficeStationeryStockPerDivisionResource;
+use App\Filament\Resources\OfficeStationeryStockRequestResource;
+use App\Filament\Pages\ListRequestOfficeStationeryStockRequest;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -53,6 +57,29 @@ class DashboardPanelProvider extends PanelProvider
                 NavigationGroup::make('Alat Tulis Kantor'),
                 NavigationGroup::make('Settings'),
 
+            ])
+            ->navigationItems([
+                // Pemasukan ATK
+                NavigationItem::make('Permintaan ATK (Divisi Saya)')
+                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
+                    ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('my-division'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.my-division'))
+                    ->icon('heroicon-o-list-bullet')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(2),
+                NavigationItem::make('Semua Permintaan ATK')
+                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
+                    ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('request-list'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.request-list'))
+                    ->icon('heroicon-o-document-text')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(3),
+                NavigationItem::make('Pemasukan ATK')
+                    ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('index'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.index'))
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(4)
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

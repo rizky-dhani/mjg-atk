@@ -29,7 +29,7 @@ class OfficeStationeryIpcAdminApproval extends BaseWidget
         return [
             Stat::make('Pemasukan Barang', $requestsCount)
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-requests.request-list', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD
                     ])
                 )

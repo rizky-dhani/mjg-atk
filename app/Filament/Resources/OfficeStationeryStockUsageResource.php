@@ -29,7 +29,7 @@ class OfficeStationeryStockUsageResource extends Resource
     protected static ?string $navigationLabel = 'Pengeluaran ATK';
     protected static ?string $modelLabel = 'Pengeluaran ATK';
     protected static ?string $pluralModelLabel = 'Pengeluaran ATK';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {

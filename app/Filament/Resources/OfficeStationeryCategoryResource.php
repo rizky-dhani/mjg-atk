@@ -20,7 +20,7 @@ class OfficeStationeryCategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationLabel = 'Categories';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
     {
