@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class DivisionOfficeStationeryStatus extends BaseWidget
 {
     protected static bool $isLazy = false;
-    protected ?string $heading = 'Alat Tulis Kantor (My Division)';
+    protected ?string $heading = 'Alat Tulis Kantor (Divisi Saya)';
     protected function getColumns(): int
     {
         return 4;
