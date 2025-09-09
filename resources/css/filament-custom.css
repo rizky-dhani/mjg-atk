@@ -1,0 +1,166 @@
+/* Custom CSS for Filament font sizes targeting specific Filament classes */
+.fi,
+.fi-body {
+  font-size: 1rem; /* Base font size */
+ line-height: 1.5;
+}
+
+/* Headings */
+.fi h1,
+.fi .text-2xl {
+  font-size: 1.5rem; /* 24px */
+  line-height: 1.1111111;
+}
+
+.fi h2,
+.fi .text-xl {
+  font-size: 1.3rem; /* 24px */
+  line-height: 1.333333;
+}
+
+.fi h3,
+.fi .text-lg {
+  font-size: 1rem; /* 16px */
+  line-height: 1.6;
+}
+
+.fi h4,
+.fi .text-base {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.5;
+}
+
+.fi h5 {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+}
+
+.fi h6 {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+/* Smaller text */
+.fi .text-sm {
+ font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+.fi .text-xs {
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.5;
+}
+
+/* Form elements */
+.fi-input,
+.fi-select,
+.fi-textarea,
+.fi-input-wrapper,
+.fi-select-input,
+.fi-textarea-input {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+}
+
+/* Form labels */
+.fi-input-label,
+.fi-select-label,
+.fi-textarea-label {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+/* Table elements */
+.fi-table td,
+.fi-table th,
+.fi-table .fi-ta-cell,
+.fi-table .fi-ta-header-cell {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+/* Table headings */
+.fi-table .fi-ta-header-cell {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+}
+
+/* Navigation */
+.fi-sidebar-item-label,
+.fi-topbar-item-label,
+.fi-breadcrumb-item-label {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+/* Buttons */
+.fi-btn,
+.fi-button {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+/* Badges */
+.fi-badge {
+  font-size: 0.75rem; /* 12px */
+  line-height: 1.5;
+}
+
+/* Cards */
+.fi-card,
+.fi-section {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+}
+
+.fi-card-header,
+.fi-section-header {
+  font-size: 1.125rem; /* 18px */
+}
+
+/* Alerts */
+.fi-alert {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+}
+
+.fi-alert-heading {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+}
+
+/* Modal */
+.fi-modal-content {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+}
+
+.fi-modal-header {
+  font-size: 1.25rem; /* 20px */
+}
+
+/* Pagination */
+.fi-pagination-item,
+.fi-pagination-link {
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Tabs */
+.fi-tab {
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Dropdown */
+.fi-dropdown-list-item {
+  font-size: 0.875rem; /* 14px */
+}
+
+/* Tooltip */
+.fi-tooltip-content {
+  font-size: 0.75rem; /* 12px */
+}
+
+/* Toggle switch */
+.fi-toggle-item-label {
+  font-size: 0.875rem; /* 14px */
+}
