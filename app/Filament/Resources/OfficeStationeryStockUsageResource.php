@@ -30,7 +30,10 @@ class OfficeStationeryStockUsageResource extends Resource
     protected static ?string $modelLabel = 'Pengeluaran ATK';
     protected static ?string $pluralModelLabel = 'Pengeluaran ATK';
     protected static ?int $navigationSort = 5;
-
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->division->initial === 'GA';
+    }
     public static function form(Form $form): Form
     {
         return $form

@@ -9,33 +9,27 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\listRecords;
+use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Filters\SelectFilter;
 use App\Models\OfficeStationeryStockRequest;
 use App\Filament\Resources\OfficeStationeryStockRequestResource;
 
-class RequestListOfficeStationeryStockRequest extends listRecords
+class RequestListOfficeStationeryStockRequest extends ListRecords
 {
     protected static string $resource = OfficeStationeryStockRequestResource::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Semua Permintaan ATK';
-    protected static ?string $modelLabel = 'Semua Permintaan ATK';
-    protected static ?string $pluralModelLabel = 'Semua Permintaan ATK';
-
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasRole(['Super Admin', 'Head', 'Admin']) && auth()->user()->division?->initial === 'IPC';
-    }
-    
+    protected static ?string $navigationLabel = 'Permintaan ATK';
+    protected static ?string $modelLabel = 'Permintaan ATK';
+    protected static ?string $pluralModelLabel = 'Permintaan ATK';
     public function getBreadcrumb(): string
     {
-        return 'Semua Permintaan ATK';
+        return 'Permintaan ATK';
     }
     
     public function getTitle(): string
     {
-        return 'Semua Permintaan ATK';
+        return 'Permintaan ATK';
     } 
     public function table(Table $table): Table
     {

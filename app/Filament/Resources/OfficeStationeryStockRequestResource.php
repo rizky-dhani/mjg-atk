@@ -891,14 +891,14 @@ class OfficeStationeryStockRequestResource extends Resource
         
         $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('request_number');
         }
-        // Division Heads can only see requests from their own division
-        elseif ($user->hasRole('Head')) {
-            $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
-        }
-        // All other Admin users (including GA) only see requests from their own division
-        elseif ($user->hasRole('Admin')) {
-            $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
-        }
+        // // Division Heads can only see requests from their own division
+        // elseif ($user->hasRole('Head')) {
+        //     $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
+        // }
+        // // All other Admin users (including GA) only see requests from their own division
+        // elseif ($user->hasRole('Admin')) {
+        //     $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
+        // }
         
         return $query;
     }

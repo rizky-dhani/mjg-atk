@@ -61,13 +61,12 @@ class DashboardPanelProvider extends PanelProvider
             ->navigationItems([
                 // Pemasukan ATK
                 NavigationItem::make('Permintaan ATK (Divisi Saya)')
-                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
                     ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('my-division'))
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.my-division'))
                     ->icon('heroicon-o-list-bullet')
                     ->group('Alat Tulis Kantor')
                     ->sort(2),
-                NavigationItem::make('Semua Permintaan ATK')
+                NavigationItem::make('Permintaan ATK')
                     ->visible(fn() => auth()->user()->division->initial === 'IPC')
                     ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('request-list'))
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.request-list'))
@@ -75,6 +74,7 @@ class DashboardPanelProvider extends PanelProvider
                     ->group('Alat Tulis Kantor')
                     ->sort(3),
                 NavigationItem::make('Pemasukan ATK')
+                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
                     ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('index'))
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.index'))
                     ->icon('heroicon-o-arrow-down-tray')
