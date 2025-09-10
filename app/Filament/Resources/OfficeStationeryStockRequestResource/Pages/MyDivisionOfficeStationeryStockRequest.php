@@ -229,8 +229,34 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => ($record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC || $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD) && auth()->user()->hasRole('Admin') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => ($record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD || $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC || $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD) && auth()->user()->hasRole('Admin') && auth()->user()->division_id === $record->division_id)
                     ->form([
+                        Section::make('Rejection Information')
+                            ->schema([
+                                TextInput::make('rejected_by')
+                                    ->label('Rejected By')
+                                    ->disabled()
+                                    ->formatStateUsing(function($record){
+                                        if ($record->rejection_head_id) {
+                                            return $record->rejectionHead->name ?? '';
+                                        } elseif ($record->rejection_ipc_id) {
+                                            return $record->rejectionIpc->name ?? '';
+                                        } elseif ($record->rejection_ipc_head_id) {
+                                            return $record->rejectionIpcHead->name ?? '';
+                                        } elseif ($record->rejection_ga_admin_id) {
+                                            return $record->rejectionGaAdmin->name ?? '';
+                                        } elseif ($record->rejection_hcg_head_id) {
+                                            return $record->rejectionHcgHead->name ?? '';
+                                        }
+                                        return '';
+                                    }),
+                                Textarea::make('rejection_reason')
+                                    ->label('Rejection Reason')
+                                    ->maxLength(65535)
+                                    ->disabled(),
+                            ])
+                            ->columns(2)
+                            ->visible(fn ($record) => $record->rejection_reason || $record->rejection_head_id || $record->rejection_ipc_id || $record->rejection_ipc_head_id || $record->rejection_ga_admin_id || $record->rejection_hcg_head_id),
                         Grid::make(1)->schema([
                             Repeater::make('items')
                                 ->addable(false)
@@ -390,25 +416,27 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                 ->collapsible(),
                         ]),
                         Section::make('Pemasukan ATK Information (Optional)')
-                            ->schema([Hidden::make('type')->default(OfficeStationeryStockRequest::TYPE_INCREASE), Textarea::make('notes')->maxLength(65535)->columnSpanFull()])
+                            ->schema([Hidden::make('type')->default(OfficeStationeryStockRequest::TYPE_INCREASE), Textarea::make('notes')->maxLength(6535)->columnSpanFull()])
                             ->columns(2),
-                    ])
-                    ->action(function ($record, array $data) {
-                        // Update the record with new data
-                        $record->update($data);
+                        ])
+                        ->action(function ($record, array $data) {
+                            // Update the record with new data
+                            $record->update($data);
 
-                        // Reset status to pending and clear rejection information
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_PENDING,
-                            'rejection_ipc_id' => null,
-                            'rejection_ipc_at' => null,
-                            'rejection_ipc_head_id' => null,
-                            'rejection_ipc_head_at' => null,
-                            'rejection_reason' => null,
-                        ]);
+                            // Reset status to pending and clear rejection information
+                            $record->update([
+                                'status' => OfficeStationeryStockRequest::STATUS_PENDING,
+                                'rejection_head_id' => null,
+                                'rejection_head_at' => null,
+                                'rejection_ipc_id' => null,
+                                'rejection_ipc_at' => null,
+                                'rejection_ipc_head_id' => null,
+                                'rejection_ipc_head_at' => null,
+                                'rejection_reason' => null,
+                            ]);
 
-                        Notification::make()->title('Permintaan ATK berhasil diresubmit!')->success()->send();
-                    }),
-            ]);
+                            Notification::make()->title('Permintaan ATK berhasil diresubmit!')->success()->send();
+                        }),
+                ]);
     }
 }

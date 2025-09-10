@@ -224,6 +224,32 @@ class OfficeStationeryStockRequestResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function($query){
+                // Filter based on user role
+                $user = auth()->user();
+                
+                // IPC & HCG Admins & Heads can see all requests (for approval workflow)
+                if (($user->division?->initial === 'IPC' && ($user->hasRole('Admin') || $user->hasRole('Head'))) ||
+                    ($user->division?->initial === 'GA' && ($user->hasRole('Admin'))) ||
+                    ($user->division?->initial === 'HCG' && ($user->hasRole('Admin') || $user->hasRole('Head')))) {
+                                // Filter records to show only status from Approved by Head IPC (Pre Adjustment) to Completed
+                $statuses = [
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                    OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
+                    OfficeStationeryStockRequest::STATUS_COMPLETED,
+                ];
+                
+                $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('request_number');
+                }
+                
+                return $query;
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('request_number')
                     ->searchable()
@@ -863,44 +889,6 @@ class OfficeStationeryStockRequestResource extends Resource
             ->headerActions([
                 
             ]);
-    }
-    
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-        
-        // Filter based on user role
-        $user = auth()->user();
-        
-        // IPC & HCG Admins & Heads can see all requests (for approval workflow)
-        if (($user->division?->initial === 'IPC' && ($user->hasRole('Admin') || $user->hasRole('Head'))) ||
-            ($user->division?->initial === 'GA' && ($user->hasRole('Admin'))) ||
-            ($user->division?->initial === 'HCG' && ($user->hasRole('Admin') || $user->hasRole('Head')))) {
-                        // Filter records to show only status from Approved by Head IPC (Pre Adjustment) to Completed
-        $statuses = [
-            OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-            OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
-            OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
-            OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
-            OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
-            OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-            OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
-            OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
-            OfficeStationeryStockRequest::STATUS_COMPLETED,
-        ];
-        
-        $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('request_number');
-        }
-        // // Division Heads can only see requests from their own division
-        // elseif ($user->hasRole('Head')) {
-        //     $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
-        // }
-        // // All other Admin users (including GA) only see requests from their own division
-        // elseif ($user->hasRole('Admin')) {
-        //     $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
-        // }
-        
-        return $query;
     }
 
     public static function getRelations(): array

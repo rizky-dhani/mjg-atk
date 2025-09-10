@@ -164,10 +164,42 @@ class OfficeStationeryStockUsage extends Model
         return $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
 
-    /*** Check if usage can be processed (stock reduced).*/    
-    public function canProcessUsage(): bool    
-    {        
-        return $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;    
+    /**
+     * Check if the current user can approve this usage as Division Head.
+     */
+    public function canBeApprovedByDivisionHead(): bool
+    {
+        return $this->status === self::STATUS_PENDING &&
+                auth()->user()->hasRole('Head') &&
+                auth()->user()->division_id === $this->division_id;
+    }
+
+    /**
+     * Check if the current user can approve this usage as GA Admin.
+     */
+    public function canBeApprovedByGaAdmin(): bool
+    {
+        return $this->status === self::STATUS_APPROVED_BY_HEAD &&
+                auth()->user()->hasRole('Admin') &&
+                auth()->user()->division &&
+                auth()->user()->division->name === 'General Affairs';
+    }
+
+    /**
+     * Check if the current user can approve this usage as HCG Head.
+     */
+    public function canBeApprovedByHcgHead(): bool
+    {
+        return $this->status === self::STATUS_APPROVED_BY_GA_ADMIN &&
+                auth()->user()->hasRole('Head') &&
+                auth()->user()->division &&
+                auth()->user()->division->initial === 'HCG';
+    }
+
+    /*** Check if usage can be processed (stock reduced).*/
+    public function canProcessUsage(): bool
+    {
+        return $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
     }
     
     /**
