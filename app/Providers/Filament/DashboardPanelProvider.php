@@ -2,10 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\OfficeStationeryStockPerDivisionResource;
-use App\Filament\Resources\OfficeStationeryStockRequestResource;
-use App\Filament\Pages\ListRequestOfficeStationeryStockRequest;
-use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -13,6 +9,7 @@ use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Navigation\NavigationItem;
 use App\Filament\Pages\Auth\EditProfile;
 use Filament\Navigation\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
@@ -25,6 +22,10 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use App\Filament\Resources\OfficeStationeryStockUsageResource;
+use App\Filament\Pages\ListRequestOfficeStationeryStockRequest;
+use App\Filament\Resources\OfficeStationeryStockRequestResource;
+use App\Filament\Resources\OfficeStationeryStockPerDivisionResource;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -78,6 +79,28 @@ class DashboardPanelProvider extends PanelProvider
                     ->url(fn() => (string) OfficeStationeryStockRequestResource::getUrl('index'))
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-requests.index'))
                     ->icon('heroicon-o-arrow-down-tray')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(4),
+
+                // Pengeluaran ATK
+                NavigationItem::make('Pengeluaran ATK (Divisi Saya)')
+                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('my-divisions'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.my-divisions'))
+                    ->icon('heroicon-o-list-bullet')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(2),
+                NavigationItem::make('Pengeluaran ATK')
+                    ->visible(fn() => auth()->user()->division->initial === 'GA')
+                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('usage-list'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.request-list'))
+                    ->icon('heroicon-o-document-text')
+                    ->group('Alat Tulis Kantor')
+                    ->sort(3),
+                NavigationItem::make('Pengeluaran ATK')
+                    ->visible(fn() => auth()->user()->division->initial === 'GA')
+                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('index'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.index'))
+                    ->icon('heroicon-o-arrow-up-tray')
                     ->group('Alat Tulis Kantor')
                     ->sort(4)
             ])

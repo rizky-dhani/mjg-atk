@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Infolists;
 use Filament\Forms\Form;
@@ -30,10 +31,7 @@ class OfficeStationeryStockUsageResource extends Resource
     protected static ?string $modelLabel = 'Pengeluaran ATK';
     protected static ?string $pluralModelLabel = 'Pengeluaran ATK';
     protected static ?int $navigationSort = 5;
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->division->initial === 'GA';
-    }
+    protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
         return $form
@@ -227,6 +225,32 @@ class OfficeStationeryStockUsageResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function($query){
+                // Filter based on user role
+                $user = auth()->user();
+                
+                // GA Admins see only requests with status from Approved by Head to Completed (approval workflow)
+                if ($user->division?->initial === 'GA' && $user->hasRole('Admin') || $user->division?->initial === 'HCG' && $user->hasRole('Head')) {
+                    // Filter records to show only status from Approved by Head to Completed
+                    $statuses = [
+                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
+                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                        OfficeStationeryStockUsage::STATUS_COMPLETED,
+                    ];
+                    
+                    $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('usage_number');
+                }
+                // All Admin users (including GA division Admins) see all requests from their division, regardless of status
+                elseif ($user->hasRole('Admin')) {
+                    $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('usage_number');
+                }
+                // All other users only see records from their own division
+                else {
+                    $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('usage_number');
+                }
+                
+                return $query;
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('usage_number')
                     ->searchable()
@@ -300,7 +324,7 @@ class OfficeStationeryStockUsageResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->modalWidth('7xl')
+                    ->modalWidth(MaxWidth::SevenExtraLarge)
                     ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
@@ -464,23 +488,6 @@ class OfficeStationeryStockUsageResource extends Resource
                 ]),
             ]);
     }
-    
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-        
-        // Filter based on user role        
-        $user = auth()->user();
-        if($user->division?->initial === 'GA' && $user->hasRole('Admin')){
-            $query->where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD);
-        }elseif($user->division?->initial === 'HCG' && $user->hasRole('Head')){
-            $query->where('status', OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN);
-        }else{
-            $query->where('division_id', $user->division_id)->orderByDesc('usage_number');
-        }
-        
-        return $query;
-    }
 
     public static function infolist(Infolist $infolist): Infolist
     {
@@ -621,6 +628,8 @@ class OfficeStationeryStockUsageResource extends Resource
     {
         return [
             'index' => Pages\ListOfficeStationeryStockUsages::route('/'),
+            'my-divisions' => Pages\MyDivisionOfficeStationeryStockUsage::route('/my-divisions'),
+            'usage-list' => Pages\UsageListOfficeStationeryStockUsage::route('/usage-list'),
             'view' => Pages\ViewOfficeStationeryStockUsage::route('/{record}'),
         ];
     }
