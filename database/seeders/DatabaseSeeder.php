@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             OfficeStationeryDivisionInventorySettingSeeder::class,
             OfficeStationeryStockPerDivisionSeeder::class,
             OfficeStationeryStockRequestSeeder::class,
+            OfficeStationeryStockUsageSeeder::class,
             MarketingMediaCategorySeeder::class,
             MarketingMediaItemSeeder::class,
             MarketingMediaDivisionInventorySettingSeeder::class,
