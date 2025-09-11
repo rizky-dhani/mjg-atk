@@ -173,12 +173,6 @@ class MarketingMediaStockUsage extends Model
     {
         return $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
-
-    /*** Check if usage can be processed (stock reduced).*/    
-    public function canProcessUsage(): bool    
-    {        
-        return $this->status === self::STATUS_APPROVED_BY_MKT_HEAD;    
-    }
     
     /**
      * Process stock adjustment for all items in this usage.
@@ -188,9 +182,6 @@ class MarketingMediaStockUsage extends Model
      */
     public function processStockUsage(): void
     {
-        if (!$this->canProcessUsage()) {
-            throw new \Exception('Cannot process stock usage for this request. Not approved by Marketing Support Head.');
-        }
 
         foreach ($this->items as $item) {
             // Get the current stock for this item in this division

@@ -195,12 +195,6 @@ class OfficeStationeryStockUsage extends Model
                 auth()->user()->division &&
                 auth()->user()->division->initial === 'HCG';
     }
-
-    /*** Check if usage can be processed (stock reduced).*/
-    public function canProcessUsage(): bool
-    {
-        return $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
-    }
     
     /**
      * Process stock adjustment for all items in this usage.
@@ -210,9 +204,6 @@ class OfficeStationeryStockUsage extends Model
      */
     public function processStockUsage(): void
     {
-        if (!$this->canProcessUsage()) {
-            throw new \Exception('Cannot process stock usage for this request. Not approved by HCG Head.');
-        }
 
         foreach ($this->items as $item) {
             // Get the current stock for this item in this division
