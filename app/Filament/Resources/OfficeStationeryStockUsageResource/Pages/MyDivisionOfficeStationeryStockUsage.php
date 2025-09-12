@@ -31,6 +31,8 @@ use App\Models\OfficeStationeryStockPerDivision;
 use App\Models\OfficeStationeryDivisionInventorySetting;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use App\Filament\Resources\OfficeStationeryStockUsageResource;
+use App\Helpers\RequestStatusChecker;
+use App\Helpers\UserRoleChecker;
 
 class MyDivisionOfficeStationeryStockUsage extends ListRecords
 {
@@ -68,6 +70,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
     {
         $user = auth()->user();
         $query = OfficeStationeryStockUsage::query()->where('division_id', $user->division_id)->orderByDesc('usage_number')->orderByDesc('created_at');
+
         return $table
             ->modifyQueryUsing(fn() => $query)
             ->columns([
@@ -141,19 +144,15 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->authorize(true), // Bypass authorization for view action
                 EditAction::make()
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
                 DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
                 EditAction::make('resubmit_request')
                     ->label('Resubmit')
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => (
-                        $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD ||
-                        $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN ||
-                        $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD
-                    ) && auth()->user()->id === $record->requested_by)
+                    ->visible(fn($record) => RequestStatusChecker::canResubmitOfficeStationeryStockUsage($record) && UserRoleChecker::getRequesterId($record))
                     ->form([
                         Grid::make(1)->schema([
                             Section::make('Rejection Information')
@@ -177,7 +176,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                         ->disabled(),
                                 ])
                                 ->columns(2)
-                                ->visible(fn ($record) => $record->rejection_reason || $record->rejection_head_id || $record->rejection_ga_admin_id || $record->rejection_hcg_head_id),
+                                ->visible(fn ($record) => RequestStatusChecker::stockUsageIsRejected($record)),
                             Repeater::make('items')
                                 ->addable(false)
                                 ->relationship()
@@ -337,10 +336,10 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
+                        UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::canApproveInDivision($record)
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -351,7 +350,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve!')
+                            ->title('Pengeluaran ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -359,10 +358,10 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
+                        UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::canApproveInDivision($record)
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -380,7 +379,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->success()
                             ->send();
                     }),
@@ -388,9 +387,9 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
+                        (UserRoleChecker::isDivisionAdmin() && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -401,7 +400,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve!')
+                            ->title('Pengeluaran ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -409,9 +408,9 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
+                        (UserRoleChecker::isDivisionAdmin() && UserRoleChecker::isInDivisionWithInitial('GA'))
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -429,7 +428,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->success()
                             ->send();
                     }),
@@ -437,9 +436,9 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->initial === 'HCG')
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
+                        (UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('HCG'))
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -453,7 +452,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve dan stok item berhasil diperbaharui!')
+                            ->title('Pengeluaran ATK berhasil di-approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -461,9 +460,9 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        (auth()->user()->hasRole('Head') && auth()->user()->division && auth()->user()->division->name === 'Marketing Support')
+                    ->visible(fn ($record) =>
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
+                        (UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('MKS'))
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -481,7 +480,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->success()
                             ->send();
                     }),

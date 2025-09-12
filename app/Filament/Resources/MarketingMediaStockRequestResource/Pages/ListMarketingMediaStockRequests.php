@@ -14,14 +14,15 @@ class ListMarketingMediaStockRequests extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('New Pemasukan Media Cetak')
-                ->mutateFormDataUsing(function (array $data) {
-                    $data['division_id'] = auth()->user()->division_id;
-                    $data['requested_by'] = auth()->user()->id;
-                    return $data;
-                })
-                ->modalWidth(MaxWidth::SevenExtraLarge),
+            // Actions\CreateAction::make()
+            //     ->label('Tambah')
+            //     ->mutateFormDataUsing(function (array $data) {
+            //         $data['division_id'] = auth()->user()->division_id;
+            //         $data['requested_by'] = auth()->user()->id;
+            //         return $data;
+            //     })
+            //     ->visible(fn() => auth()->user()->hasRole('Admin'))
+            //     ->modalWidth(MaxWidth::SevenExtraLarge),
         ];
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
 
 use Filament\Actions;
+use App\Helpers\RequestStatusChecker;
+use App\Helpers\UserRoleChecker;
 use Filament\Forms\Components\Grid;
 use App\Models\OfficeStationeryItem;
 use Filament\Support\Enums\MaxWidth;
@@ -33,17 +35,13 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
             Actions\EditAction::make()
                 ->modalWidth(MaxWidth::SevenExtraLarge)
                 ->disabled(fn($record) => $record->status !== OfficeStationeryStockUsage::STATUS_PENDING)
-                ->visible(fn($record) => $record->division_id === auth()->user()->division_id && auth()->user()->hasRole('Admin')),
+                ->visible(fn($record) => $record->division_id === UserRoleChecker::getCurrentUserDivisionId() && UserRoleChecker::isDivisionAdmin()),
             Actions\EditAction::make('resubmit_request')
                 ->label('Resubmit')
                 ->icon('heroicon-o-arrow-path')
                 ->color('primary')
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->visible(fn($record) => (
-                    $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD ||
-                    $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN ||
-                    $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD
-                ) && auth()->user()->id === $record->requested_by)
+                ->visible(fn($record) => RequestStatusChecker::canResubmitOfficeStationeryStockUsage($record) && UserRoleChecker::getRequesterId($record))
                 ->form([
                     Grid::make(1)->schema([
                         Section::make('Rejection Information')
@@ -52,11 +50,11 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                                     ->label('Rejected By')
                                     ->disabled()
                                     ->default(function ($record) {
-                                        if ($record->rejection_head_id) {
+                                        if (RequestStatusChecker::rejectedByDivHead($record)) {
                                             return $record->rejectionHead->name ?? '';
-                                        } elseif ($record->rejection_ga_admin_id) {
+                                        } elseif (RequestStatusChecker::rejectedByGaAdmin($record)) {
                                             return $record->rejectionGaAdmin->name ?? '';
-                                        } elseif ($record->rejection_hcg_head_id) {
+                                        } elseif (RequestStatusChecker::rejectedByHcgHead($record)) {
                                             return $record->rejectionHcgHead->name ?? '';
                                         }
                                         return '';
@@ -67,7 +65,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                                     ->disabled(),
                             ])
                             ->columns(2)
-                            ->visible(fn ($record) => $record->rejection_reason || $record->rejection_head_id || $record->rejection_ga_admin_id || $record->rejection_hcg_head_id),
+                            ->visible(fn ($record) => RequestStatusChecker::stockUsageIsRejected($record)),
                         Repeater::make('items')
                             ->addable(false)
                             ->relationship()
@@ -175,7 +173,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                                                 $currentStock = $stock ? $stock->current_stock : 0;
 
                                                 if ($value > $currentStock) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available stock ({$currentStock}) for this item.");
+                                                    $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$currentStock}) untuk item ini.");
                                                 }
                                             };
                                         },
@@ -228,10 +226,10 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Approve')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                    Auth::user()->hasRole('Head') &&
-                    Auth::user()->division_id === $record->division_id
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
+                    UserRoleChecker::isDivisionHead() &&
+                    UserRoleChecker::canApproveInDivision($record)
                 )
                 ->requiresConfirmation()
                 ->action(function ($record) {
@@ -242,7 +240,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil di approve!')
+                        ->title('Pengeluaran ATK berhasil di-approve!')
                         ->success()
                         ->send();
                 }),
@@ -251,10 +249,10 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Reject')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                    Auth::user()->hasRole('Head') &&
-                    Auth::user()->division_id === $record->division_id
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
+                    UserRoleChecker::isDivisionHead() &&
+                    UserRoleChecker::canApproveInDivision($record)
                 )
                 ->requiresConfirmation()
                 ->form([
@@ -272,7 +270,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil di reject!')
+                        ->title('Pengeluaran ATK berhasil di-reject!')
                         ->success()
                         ->send();
                 }),
@@ -282,9 +280,9 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Approve')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
+                        (UserRoleChecker::isDivisionAdmin() && UserRoleChecker::canApproveInDivision('GA'))
                 )
                 ->requiresConfirmation()
                 ->action(function ($record) {
@@ -295,7 +293,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil di approve!')
+                        ->title('Pengeluaran ATK berhasil di-approve!')
                         ->success()
                         ->send();
                 }),
@@ -304,9 +302,9 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Reject')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        (auth()->user()->hasRole('Admin') && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
+                        (UserRoleChecker::isDivisionAdmin() && UserRoleChecker::canApproveInDivision('GA'))
                 )
                 ->requiresConfirmation()
                 ->form([
@@ -324,7 +322,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil di reject!')
+                        ->title('Pengeluaran ATK berhasil di-reject!')
                         ->success()
                         ->send();
                 }),
@@ -334,9 +332,9 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Approve & Process Stock')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                    (Auth::user()->hasRole('Head') && Auth::user()->division && Auth::user()->division->name === 'Marketing Support')
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
+                    (UserRoleChecker::isDivisionHead() && UserRoleChecker::canApproveInDivision('MKS'))
                 )
                 ->requiresConfirmation()
                 ->action(function ($record) {
@@ -354,7 +352,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     // ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasi di approve dan stok diperbaharui!')
+                        ->title('Pengeluaran ATK berhasi di-approve dan stok diperbaharui!')
                         ->success()
                         ->send();
                 }),
@@ -363,9 +361,9 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                 ->label('Reject')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
-                ->visible(fn ($record) => 
-                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                    (Auth::user()->hasRole('Head') && Auth::user()->division && Auth::user()->division->name === 'Marketing Support')
+                ->visible(fn ($record) =>
+                    $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
+                    (UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('MKS'))
                 )
                 ->requiresConfirmation()
                 ->form([
@@ -383,7 +381,7 @@ class ViewOfficeStationeryStockUsage extends ViewRecord
                     ]);
                     
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil di reject!')
+                        ->title('Pengeluaran ATK berhasil di-reject!')
                         ->success()
                         ->send();
                 }),

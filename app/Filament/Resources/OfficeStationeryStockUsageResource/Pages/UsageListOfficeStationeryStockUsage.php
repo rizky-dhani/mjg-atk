@@ -35,10 +35,16 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
     
     public function table(Table $table): Table
     {            
+        $query = OfficeStationeryStockUsage::query()
+            ->whereIn('status', [
+                OfficeStationeryStockUsage::STATUS_PENDING,
+                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
+                OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD,
+            ]);
+
         return $table
-            ->modifyQueryUsing(function($query){
-                
-            })
+            ->modifyQueryUsing(fn() => $query->orderByDesc('usage_number')->orderByDesc('created_at'))
             ->columns([
                 TextColumn::make('usage_number')
                     ->searchable()
@@ -123,7 +129,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve!')
+                            ->title('Pengeluaran ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -147,7 +153,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -166,7 +172,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve!')
+                            ->title('Pengeluaran ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -191,7 +197,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -213,7 +219,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di approve dan stok item berhasil diperbaharui!')
+                            ->title('Pengeluaran ATK berhasil di-approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -238,7 +244,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di reject!')
+                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),

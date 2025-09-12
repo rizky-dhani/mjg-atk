@@ -14,14 +14,14 @@ class ListOfficeStationeryStockUsages extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->mutateFormDataUsing(function(array $data){
-                    $data['requested_by'] = auth()->user()->id;
-                    $data['division_id'] = auth()->user()->division_id;
-                    return $data;
-                })
-                ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->label('Tambah'),
+            // Actions\CreateAction::make()
+            //     ->mutateFormDataUsing(function(array $data){
+            //         $data['requested_by'] = auth()->user()->id;
+            //         $data['division_id'] = auth()->user()->division_id;
+            //         return $data;
+            //     })
+            //     ->modalWidth(MaxWidth::SevenExtraLarge)
+            //     ->label('Tambah'),
         ];
     }
 }

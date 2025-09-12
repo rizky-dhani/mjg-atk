@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages\MyDivisionOfficeStationeryStockRequest;
 use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages\RequestListOfficeStationeryStockRequest;
+use App\Helpers\UserRoleChecker;
 use Filament\Forms;
 use App\Models\item;
 use App\Models\User;
@@ -329,7 +330,7 @@ class OfficeStationeryStockRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by)
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
                     ->requiresConfirmation()
                     ->successNotification(
                         Notification::make()
@@ -337,7 +338,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             ->success()
                     ),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by)
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
                     ->requiresConfirmation()
                     ->successNotification(
                         Notification::make()
@@ -351,8 +352,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivision($record)
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -363,7 +363,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve!')
+                            ->title('Pemasukan ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -374,8 +374,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivision($record)
                     )
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -391,7 +390,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di reject!')
+                            ->title('Pemasukan ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -402,8 +401,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Admin')
+                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -414,7 +413,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve!')
+                            ->title('Pemasukan ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -425,8 +424,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Admin')
+                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -443,7 +442,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK  berhasil di reject!')
+                            ->title('Pemasukan ATK  berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -454,8 +453,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -466,7 +465,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve!')
+                            ->title('Pemasukan ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -477,8 +476,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -495,7 +494,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di reject!')
+                            ->title('Pemasukan ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -509,8 +508,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->modalWidth(MaxWidth::SevenExtraLarge)
                     ->visible(fn ($record) =>
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Admin') &&
-                        auth()->user()->division?->initial === 'IPC'
+                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->form(function ($record) {
                         return [
@@ -643,7 +642,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     })
                     ->successNotification(
                         Notification::make()
-                            ->title('Pemasukan ATK penyesuaian stok berhasil di approve!')
+                            ->title('Pemasukan ATK penyesuaian stok berhasil di-approve!')
                             ->success()
                     )
                     ->mutateFormDataUsing(function (array $data, $record) {
@@ -713,8 +712,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->needsSecondIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -725,7 +724,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve!')
+                            ->title('Pemasukan ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -736,8 +735,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->needsSecondIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -754,7 +753,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di reject!')
+                            ->title('Pemasukan ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -765,8 +764,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
+                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('GA')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -777,7 +776,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve!')
+                            ->title('Pemasukan ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -788,8 +787,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
+                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('GA')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -806,7 +805,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di reject!')
+                            ->title('Pemasukan ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -817,8 +816,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->needsHcgHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('HCG')
                     )
                     ->requiresConfirmation()
                     ->databaseTransaction()
@@ -859,7 +858,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di approve dan stok item berhasil diperbaharui!')
+                            ->title('Pemasukan ATK berhasil di-approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -870,8 +869,8 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->needsHcgHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
-                        auth()->user()->hasRole('Head')
+                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::isInDivisionWithInitial('HCG')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -888,7 +887,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Pemasukan ATK berhasil di reject!')
+                            ->title('Pemasukan ATK berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
