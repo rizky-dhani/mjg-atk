@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OfficeStationeryStockRequestResource\Pages;
+namespace App\Filament\Resources\MarketingMediaStockRequestResource\Pages;
 
 use Filament\Actions;
 use Filament\Forms\Form;
@@ -8,7 +8,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
-use App\Models\OfficeStationeryItem;
+use App\Models\MarketingMediaItem;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -21,49 +21,47 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Filters\SelectFilter;
-use App\Models\OfficeStationeryStockRequest;
-use App\Models\OfficeStationeryStockPerDivision;
-use App\Models\OfficeStationeryDivisionInventorySetting;
+use App\Models\MarketingMediaStockRequest;
+use App\Models\MarketingMediaStockPerDivision;
+use App\Models\MarketingMediaDivisionInventorySetting;
 use Filament\Forms\Components\Actions\Action as FormAction;
-use App\Filament\Resources\OfficeStationeryStockRequestResource;
+use App\Filament\Resources\MarketingMediaStockRequestResource;
 
-class MyDivisionOfficeStationeryStockRequest extends ListRecords
+class MyDivisionMarketingMediaStockRequest extends ListRecords
 {
-    protected static string $resource = OfficeStationeryStockRequestResource::class;
+    protected static string $resource = MarketingMediaStockRequestResource::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Permintaan ATK (Divisi Saya)';
-    protected static ?string $modelLabel = 'Permintaan ATK (Divisi Saya)';
-    protected static ?string $pluralModelLabel = 'Permintaan ATK (Divisi Saya)';
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?string $navigationLabel = 'Permintaan Media Cetak (Divisi Saya)';
+    protected static ?string $modelLabel = 'Permintaan Media Cetak (Divisi Saya)';
+    protected static ?string $pluralModelLabel = 'Permintaan Media Cetak (Divisi Saya)';
 
-    protected function getHeaderActions(): array
+    public static function canAccess(array $parameters = []): bool
     {
-        return [
-            Actions\CreateAction::make()
-                ->label('Tambah')
-                ->mutateFormDataUsing(function (array $data) {
-                    $data['division_id'] = auth()->user()->division_id;
-                    $data['requested_by'] = auth()->user()->id;
-                    return $data;
-                })
-                ->visible(fn() => auth()->user()->hasRole('Admin'))
-                ->modalWidth(MaxWidth::SevenExtraLarge),
-        ];
+        $user = auth()->user();
+        
+        // Only allow users from Marketing divisions to access this page
+        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+            return $user->hasRole(['Admin', 'Head']);
+        }
+        
+        return false;
     }
-
+    
     public function getBreadcrumb(): string
     {
-        return 'Permintaan ATK (Divisi Saya)';
+        return 'Permintaan Media Cetak (Divisi Saya)';
     }
 
     public function getTitle(): string
     {
-        return 'Permintaan ATK (Divisi Saya)';
+        return 'Permintaan Media Cetak (Divisi Saya)';
     }
+    
     public function table(Table $table): Table
     {
         $user = auth()->user();
-        $query = OfficeStationeryStockRequest::query()->where('division_id', $user->division_id)->orderByDesc('request_number')->orderByDesc('created_at');
+        $query = MarketingMediaStockRequest::query()->where('division_id', $user->division_id)->orderByDesc('request_number')->orderByDesc('created_at');
         return $table
             ->query($query)
             ->columns([
@@ -73,41 +71,41 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                 TextColumn::make('type')
                     ->badge()
                     ->colors([
-                        'primary' => OfficeStationeryStockRequest::TYPE_INCREASE,
+                        'primary' => MarketingMediaStockRequest::TYPE_INCREASE,
                     ])
                     ->formatStateUsing(
                         fn($state) => match ($state) {
-                            OfficeStationeryStockRequest::TYPE_INCREASE => 'Increase',
+                            MarketingMediaStockRequest::TYPE_INCREASE => 'Increase',
                         },
                     ),
                 TextColumn::make('status')
                     ->badge()
                     ->color(
                         fn(string $state): string => match ($state) {
-                            OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
+                            MarketingMediaStockRequest::STATUS_PENDING => 'warning',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                             default => 'secondary',
                         },
                     )
                     ->formatStateUsing(
                         fn($state) => match ($state) {
-                            OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
-                            OfficeStationeryStockRequest::STATUS_DELIVERED => 'Delivered',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                            OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
-                            OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
-                            OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
+                            MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                            MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
+                            MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                            MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                            MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                            MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                         },
                     ),
                 TextColumn::make('items_count')->label('Items')->counts('items'),
@@ -117,22 +115,22 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                 SelectFilter::make('status')
                     ->multiple()
                     ->options([
-                        OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
-                        OfficeStationeryStockRequest::STATUS_DELIVERED => 'Delivered',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
-                        OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
+                        MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
+                        MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
             ->actions([
@@ -142,67 +140,67 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
                             'approval_head_id' => auth()->user()->id,
                             'approval_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di approve!')->success()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
                     }),
 
                 Action::make('reject_as_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
                             'rejection_head_id' => auth()->user()->id,
                             'rejection_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di reject!')->warning()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
                     }),
 
                 Action::make('approve_as_ipc')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
+                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
                             'approval_ipc_id' => auth()->user()->id,
                             'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di approve!')->success()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
                     }),
 
                 Action::make('reject_as_ipc')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
+                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
                     ->requiresConfirmation()
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
                             'rejection_ipc_id' => auth()->user()->id,
                             'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di reject!')->warning()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
                     }),
 
                 Action::make('approve_as_ipc_head')
@@ -213,12 +211,12 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
                             'approval_ipc_head_id' => auth()->user()->id,
                             'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di approve!')->success()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
                     }),
 
                 Action::make('reject_as_ipc_head')
@@ -230,13 +228,13 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
                             'rejection_ipc_head_id' => auth()->user()->id,
                             'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
 
-                        Notification::make()->title('Pemasukan ATK berhasil di reject!')->warning()->send();
+                        Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
                     }),
 
                 EditAction::make('resubmit_request')
@@ -244,7 +242,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => ($record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD || $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC || $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD) && auth()->user()->hasRole('Admin') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => ($record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD || $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC || $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) && auth()->user()->hasRole('Admin') && auth()->user()->division_id === $record->division_id)
                     ->form([
                         Section::make('Rejection Information')
                             ->schema([
@@ -260,8 +258,8 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                             return $record->rejectionIpcHead->name ?? '';
                                         } elseif ($record->rejection_ga_admin_id) {
                                             return $record->rejectionGaAdmin->name ?? '';
-                                        } elseif ($record->rejection_hcg_head_id) {
-                                            return $record->rejectionHcgHead->name ?? '';
+                                        } elseif ($record->rejection_marketing_head_id) {
+                                            return $record->rejectionMarketingHead->name ?? '';
                                         }
                                         return '';
                                     }),
@@ -271,7 +269,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                     ->disabled(),
                             ])
                             ->columns(2)
-                            ->visible(fn ($record) => $record->rejection_reason || $record->rejection_head_id || $record->rejection_ipc_id || $record->rejection_ipc_head_id || $record->rejection_ga_admin_id || $record->rejection_hcg_head_id),
+                            ->visible(fn ($record) => $record->rejection_reason || $record->rejection_head_id || $record->rejection_ipc_id || $record->rejection_ipc_head_id || $record->rejection_ga_admin_id || $record->rejection_marketing_head_id),
                         Grid::make(1)->schema([
                             Repeater::make('items')
                                 ->addable(false)
@@ -312,7 +310,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                             if (!$categoryId) {
                                                 return [];
                                             }
-                                            return OfficeStationeryItem::where('category_id', $categoryId)->pluck('name', 'id');
+                                            return MarketingMediaItem::where('category_id', $categoryId)->pluck('name', 'id');
                                         })
                                         ->searchable()
                                         ->preload()
@@ -328,7 +326,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                 return '';
                                             }
 
-                                            $setting = OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                            $setting = MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -336,7 +334,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                 return 'No inventory limit set for this item';
                                             }
 
-                                            $stock = OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
+                                            $stock = MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -353,7 +351,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                 return;
                                             }
 
-                                            $setting = OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                            $setting = MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -361,7 +359,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                 return;
                                             }
 
-                                            $stock = OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
+                                            $stock = MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -400,7 +398,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                         return;
                                                     }
 
-                                                    $setting = OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                                    $setting = MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                                         ->where('item_id', $itemId)
                                                         ->first();
 
@@ -408,7 +406,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                         return;
                                                     }
 
-                                                    $stock = OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
+                                                    $stock = MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
                                                         ->where('item_id', $itemId)
                                                         ->first();
 
@@ -417,7 +415,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                                     $availableSpace = $maxLimit - $currentStock;
 
                                                     if ($value > $availableSpace) {
-                                                        $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
+                                                        $fail("The requested quantity ({$value}) exceeds the available space ({$availableSpace}) for this item.");
                                                     }
                                                 };
                                             },
@@ -430,8 +428,8 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                 ->reorderableWithButtons()
                                 ->collapsible(),
                         ]),
-                        Section::make('Pemasukan ATK Information (Optional)')
-                            ->schema([Hidden::make('type')->default(OfficeStationeryStockRequest::TYPE_INCREASE), Textarea::make('notes')->maxLength(6535)->columnSpanFull()])
+                        Section::make('Permintaan Media Cetak Information (Optional)')
+                            ->schema([Hidden::make('type')->default(MarketingMediaStockRequest::TYPE_INCREASE), Textarea::make('notes')->maxLength(6535)->columnSpanFull()])
                             ->columns(2),
                         ])
                         ->action(function ($record, array $data) {
@@ -440,7 +438,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
 
                             // Reset status to pending and clear rejection information
                             $record->update([
-                                'status' => OfficeStationeryStockRequest::STATUS_PENDING,
+                                'status' => MarketingMediaStockRequest::STATUS_PENDING,
                                 'rejection_head_id' => null,
                                 'rejection_head_at' => null,
                                 'rejection_ipc_id' => null,
@@ -450,7 +448,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                 'rejection_reason' => null,
                             ]);
 
-                            Notification::make()->title('Permintaan ATK berhasil diresubmit!')->success()->send();
+                            Notification::make()->title('Permintaan Media Cetak berhasil diresubmit!')->success()->send();
                         }),
                 ]);
     }

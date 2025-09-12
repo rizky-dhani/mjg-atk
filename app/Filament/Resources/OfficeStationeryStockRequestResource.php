@@ -193,7 +193,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                                 $availableSpace = $maxLimit - $currentStock;
                                                 
                                                 if ($value > $availableSpace) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available space ({$availableSpace}) for this item.");
+                                                    $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
                                                 }
                                             };
                                         },
@@ -329,9 +329,21 @@ class OfficeStationeryStockRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by)
+                    ->requiresConfirmation()
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Pemasukan ATK berhasil diperbarui!')
+                            ->success()
+                    ),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by)
+                    ->requiresConfirmation()
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Pemasukan ATK berhasil dihapus!')
+                            ->success()
+                    ),
                 // Approval Actions
                 Tables\Actions\Action::make('approve_as_head')
                     ->label('Approve')
@@ -615,7 +627,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                                     $availableSpace = $maxLimit - $currentStock;
                                                     
                                                     if ($value > $availableSpace) {
-                                                        $fail("The requested quantity ({$value}) exceeds the available space ({$availableSpace}) for this item.");
+                                                        $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
                                                     }
                                                 };
                                             },
@@ -667,7 +679,7 @@ class OfficeStationeryStockRequestResource extends Resource
                         // If there are validation errors, display them and stop the process
                         if (!empty($validationErrors)) {
                             Notification::make()
-                                ->title('Stock adjustment exceeds maximum limits')
+                                ->title('Penyesuaian stok melebihi batas maksimum')
                                 ->body(implode("", $validationErrors))
                                 ->danger()
                                 ->send();

@@ -184,7 +184,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                                                 $availableSpace = $maxLimit - $currentStock;
 
                                                 if ($value > $availableSpace) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available space ({$availableSpace}) for this item.");
+                                                    $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
                                                 }
                                             };
                                         },
@@ -335,7 +335,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Pemasukan ATK')
-                    ->modalSubheading('Are you sure you want to reject this Pemasukan ATK?')
+                    ->modalSubheading('Apakah Anda yakin ingin reject Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -390,7 +390,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Pemasukan ATK')
-                    ->modalSubheading('Are you sure you want to reject this Pemasukan ATK?')
+                    ->modalSubheading('Apakah Anda yakin ingin reject Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsIpcHeadApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -420,7 +420,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
                     ->modalHeading('Pemasukan ATK Adjustment')
-                    ->modalSubheading('Are you sure to make the adjustment to this Pemasukan ATK?')
+                    ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian pada Pemasukan ATK ini?')
                     ->modalWidth(MaxWidth::Screen)
                     ->visible(fn ($record) => 
                         $record->needsStockAdjustmentApproval() &&
@@ -504,7 +504,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         // If there are validation errors, display them and stop the process
                         if (!empty($validationErrors)) {
                             Notification::make()
-                                ->title('Stock adjustment exceeds maximum limits')
+                                ->title('Penyesuaian stok melebihi batas maksimum')
                                 ->body(implode("\n", $validationErrors))
                                 ->danger()
                                 ->send();
@@ -540,7 +540,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->modalHeading('Approve Pemasukan ATK')
-                ->modalSubheading('Are you sure you want to approve this Pemasukan ATK after stock adjustment?')
+                ->modalSubheading('Apakah Anda yakin ingin approve Pemasukan ATK ini setelah penyesuaian stok?')
                 ->visible(fn ($record) => 
                     $record->needsSecondIpcHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -565,7 +565,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->modalHeading('Reject Pemasukan ATK')
-                ->modalSubheading('Are you sure you want to reject this Pemasukan ATK after stock adjustment?')
+                ->modalSubheading('Apakah Anda yakin ingin reject Pemasukan ATK ini setelah penyesuaian stok?')
                 ->visible(fn ($record) => 
                     $record->needsSecondIpcHeadApproval() && 
                     $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
@@ -620,7 +620,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Pemasukan ATK')
-                    ->modalSubheading('Are you sure you want to reject this Pemasukan ATK?')
+                    ->modalSubheading('Apakah Anda yakin ingin reject Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsGaAdminApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
@@ -705,7 +705,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Pemasukan ATK')
-                    ->modalSubheading('Are you sure you want to reject this Pemasukan ATK?')
+                    ->modalSubheading('Apakah Anda yakin ingin reject Pemasukan ATK ini?')
                     ->visible(fn ($record) => 
                         $record->needsHcgHeadApproval() && 
                         $record->isIncrease() && auth()->user()->division?->initial === 'HCG' &&
