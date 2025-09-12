@@ -22,7 +22,6 @@ class OfficeStationeryItemResource extends Resource
     protected static ?string $navigationLabel = 'Items';
     protected static ?string $navigationGroup = 'Alat Tulis Kantor';
     protected static ?int $navigationSort = 6;
-
     public static function form(Form $form): Form
     {
         return $form
@@ -91,7 +90,8 @@ class OfficeStationeryItemResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin', 'Head', 'Admin']);
+        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        return $authenticatedUsers;
     }
 
     public static function canCreate(): bool
