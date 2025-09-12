@@ -71,6 +71,7 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                             ->schema([
                                 Infolists\Components\TextEntry::make('status')
                                     ->label('Status')
+                                    ->badge()
                                     ->formatStateUsing(fn ($state) => match ($state) {
                                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
@@ -81,7 +82,6 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
-                                    ->badge()
                                     ->color(fn ($state) => match ($state) {
                                         OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'success',
@@ -92,22 +92,123 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                                 Infolists\Components\TextEntry::make('divisionHead.name')
                                     ->label('Head Approve')
                                     ->placeholder('-')
-                                    ->formatStateUsing(fn ($record) => $record->approval_head_id ? 'Approved' : '-'),
+                                    ->visible(fn ($record) => $record->approval_head_id !== null),
                                 Infolists\Components\TextEntry::make('approval_head_at')
                                     ->label('Head Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionHead.name')
+                                    ->label('Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_head_at')
+                                    ->label('Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_head_id !== null),
                                 Infolists\Components\TextEntry::make('ipcAdmin.name')
                                     ->label('IPC Approve')
-                                    ->formatStateUsing(fn ($record) => $record->approval_ipc_id ? 'Approved' : '-')
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_id !== null),
                                 Infolists\Components\TextEntry::make('approval_ipc_at')
                                     ->label('IPC Approval At')
                                     ->dateTime()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionIpc.name')
+                                    ->label('IPC Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ipc_at')
+                                    ->label('IPC Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_id !== null),
+                                Infolists\Components\TextEntry::make('ipcHead.name')
+                                    ->label('IPC Head Approve')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('approval_ipc_head_at')
+                                    ->label('IPC Head Approval At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionIpcHead.name')
+                                    ->label('IPC Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ipc_head_at')
+                                    ->label('IPC Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ipc_head_id !== null),
+                                Infolists\Components\TextEntry::make('approvalStockAdjustmentBy.name')
+                                    ->label('Stock Adjustment Approved By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('approval_stock_adjustment_at')
+                                    ->label('Stock Adjustment Approval At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionStockAdjustmentBy.name')
+                                    ->label('Stock Adjustment Rejected By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_stock_adjustment_at')
+                                    ->label('Stock Adjustment Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_stock_adjustment_id !== null),
+                                Infolists\Components\TextEntry::make('gaAdmin.name')
+                                    ->label('GA Admin Approve')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('approval_ga_admin_at')
+                                    ->label('GA Admin Approval At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionGaAdmin.name')
+                                    ->label('GA Admin Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ga_admin_at')
+                                    ->label('GA Admin Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
+                                Infolists\Components\TextEntry::make('gaHead.name')
+                                    ->label('GA Head Approve')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('approval_ga_head_at')
+                                    ->label('GA Head Approval At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->approval_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejectionGaHead.name')
+                                    ->label('GA Head Reject')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('rejection_ga_head_at')
+                                    ->label('GA Head Rejection At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
+                                Infolists\Components\TextEntry::make('deliverer.name')
+                                    ->label('Completed By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
+                                Infolists\Components\TextEntry::make('delivered_at')
+                                    ->label('Completed At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC]))
+                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
                                     ->columnSpan(5),
                             ]),
                     ])

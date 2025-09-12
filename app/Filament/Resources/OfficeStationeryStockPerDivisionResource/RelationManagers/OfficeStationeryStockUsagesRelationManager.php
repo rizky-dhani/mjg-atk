@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources\OfficeStationeryStockPerDivisionResource\RelationManagers;
 
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Infolists;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use App\Models\OfficeStationeryStockUsage;
+use Filament\Resources\RelationManagers\RelationManager;
 
-class StockUsagesRelationManager extends RelationManager
+class OfficeStationeryStockUsagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'usages';
     protected static ?string $title = 'Pengeluaran ATK';
@@ -48,17 +49,22 @@ class StockUsagesRelationManager extends RelationManager
                                             ->label('Division Name'),
                                         Infolists\Components\TextEntry::make('status')
                                             ->label('Status')
-                                            ->formatStateUsing(fn ($state) => match ($state) {
-                                                'pending' => 'Pending',
-                                                'approved' => 'Approved',
-                                                'rejected' => 'Rejected',
-                                                default => ucfirst($state),
-                                            })
                                             ->badge()
+                                            ->formatStateUsing(fn ($state) => match ($state) {
+                                                OfficeStationeryStockUsage::STATUS_PENDING => 'Pending',
+                                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
+                                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
+                                                OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
+                                                default => ucfirst(str_replace('_', ' ', $state)),
+                                            })
                                             ->color(fn ($state) => match ($state) {
-                                                'pending' => 'warning',
-                                                'approved' => 'success',
-                                                'rejected' => 'danger',
+                                                OfficeStationeryStockUsage::STATUS_PENDING => 'warning',
+                                                OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN,OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD, => 'success',
+                                                OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD,OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN,OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD, => 'danger',OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
                                                 default => 'secondary',
                                             }),
                                         Infolists\Components\TextEntry::make('created_at')

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OfficeStationeryItemResource\Pages;
 use App\Filament\Resources\OfficeStationeryItemResource\RelationManagers;
+use App\Helpers\UserRoleChecker;
 use App\Models\OfficeStationeryItem;
 use App\Models\OfficeStationeryCategory;
 use Filament\Forms;
@@ -90,25 +91,25 @@ class OfficeStationeryItemResource extends Resource
     
     public static function canViewAny(): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') &&  UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canCreate(): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') &&  UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canEdit($record): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') &&  UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canDelete($record): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') &&  UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 

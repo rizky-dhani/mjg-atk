@@ -16,6 +16,7 @@ class ListOfficeStationeryStocksPerDivision extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Tambah')
+                ->visible(fn() => auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin'))
                 ->modalWidth(MaxWidth::SevenExtraLarge),
         ];
     }

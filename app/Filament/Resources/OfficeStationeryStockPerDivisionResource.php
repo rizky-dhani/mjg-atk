@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OfficeStationeryStockPerDivisionResource\Pages;
 use App\Filament\Resources\OfficeStationeryStockPerDivisionResource\RelationManagers;
+use App\Helpers\UserRoleChecker;
 use App\Models\OfficeStationeryStockPerDivision;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -59,7 +60,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('division.initial')
                     ->label('Division')
-                    ->visible(fn() => auth()->user()->division?->name === 'IPC' || auth()->user()->division?->name === 'General Affairs' )
+                    ->visible(fn() => UserRoleChecker::isInDivisionWithInitial('IPC') || UserRoleChecker::isInDivisionWithInitial('GA') )
                     ->sortable()
                     ->searchable(),
 
@@ -310,7 +311,7 @@ class OfficeStationeryStockPerDivisionResource extends Resource
     {
         return [
             RelationManagers\OfficeStationeryStockRequestsRelationManager::class,
-            RelationManagers\StockUsagesRelationManager::class,
+            RelationManagers\OfficeStationeryStockUsagesRelationManager::class,
         ];
     }
 

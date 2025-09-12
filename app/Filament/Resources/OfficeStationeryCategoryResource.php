@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OfficeStationeryCategoryResource\Pages;
 use App\Filament\Resources\OfficeStationeryCategoryResource\RelationManagers;
+use App\Helpers\UserRoleChecker;
 use App\Models\OfficeStationeryCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -51,8 +52,10 @@ class OfficeStationeryCategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                ->visible(fn() => UserRoleChecker::isIpcAdmin()),
+                Tables\Actions\DeleteAction::make()
+                ->visible(fn() => UserRoleChecker::isIpcAdmin()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -66,25 +69,25 @@ class OfficeStationeryCategoryResource extends Resource
     
     public static function canViewAny(): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canCreate(): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canEdit($record): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 
     public static function canDelete($record): bool
     {
-        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        $authenticatedUsers = UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin();
         return $authenticatedUsers;
     }
 

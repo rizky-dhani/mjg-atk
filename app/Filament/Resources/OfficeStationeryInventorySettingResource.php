@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Helpers\UserRoleChecker;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Get;
@@ -109,8 +110,10 @@ class OfficeStationeryInventorySettingResource extends Resource
                             return 'Over limit';
                         } elseif ($stock->current_stock == $record->max_limit) {
                             return 'At limit';
-                        } else {
+                        } elseif ($stock->current_stock < $record->max_limit) {
                             return 'Within limit';
+                        } else {
+                            return 'Empty';
                         }
                     })
                     ->badge()
@@ -118,6 +121,7 @@ class OfficeStationeryInventorySettingResource extends Resource
                         'Over limit' => 'danger',
                         'At limit' => 'warning',
                         'Within limit' => 'success',
+                        'Empty' => 'danger',
                         default => 'gray',
                     }),
             ])
@@ -192,8 +196,8 @@ class OfficeStationeryInventorySettingResource extends Resource
         $query = parent::getEloquentQuery();
         
         // Filter based on user role
-        if (auth()->user()->hasRole('Division Admin') || auth()->user()->hasRole('Division Head')) {
-            $query->where('division_id', auth()->user()->division_id);
+        if (UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isDivisionHead()) {
+            $query->where('division_id', UserRoleChecker::getCurrentUserDivisionId());
         }
         
         return $query;
@@ -201,22 +205,22 @@ class OfficeStationeryInventorySettingResource extends Resource
     
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Head', 'Admin']) && auth()->user()->division?->initial === 'IPC';
+        return UserRoleChecker::hasRole(['Head', 'Admin']) && UserRoleChecker::isInDivisionWithInitial('IPC');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin', 'Admin']);
+        return auth()->user()->division?->initial == 'IPC' && auth()->user()->hasRole(['Super Admin', 'Admin']);
     }
 
     public static function getRelations(): array
