@@ -102,6 +102,35 @@ class DashboardPanelProvider extends PanelProvider
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.index'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->group('Alat Tulis Kantor')
+                    ->sort(4),
+
+                // Pemasukan Media Cetak
+                NavigationItem::make('Permintaan Media Cetak (Divisi Saya)')
+                    ->visible(function(){
+                        $user = auth()->user();
+                        // Only allow users from Marketing divisions to access this page
+                        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+                            return $user->hasRole(['Admin', 'Head']);
+                        }
+                    })
+                    ->url(fn() => (string) \App\Filament\Resources\MarketingMediaStockRequestResource::getUrl('my-division'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.marketing-media-stock-requests.my-division'))
+                    ->icon('heroicon-o-list-bullet')
+                    ->group('Media Cetak')
+                    ->sort(2),
+                NavigationItem::make('Permintaan Media Cetak')
+                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
+                    ->url(fn() => (string) \App\Filament\Resources\MarketingMediaStockRequestResource::getUrl('request-list'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.marketing-media-stock-requests.request-list'))
+                    ->icon('heroicon-o-document-text')
+                    ->group('Media Cetak')
+                    ->sort(3),
+                NavigationItem::make('Pemasukan Media Cetak')
+                    ->visible(fn() => auth()->user()->division->initial === 'IPC')
+                    ->url(fn() => (string) \App\Filament\Resources\MarketingMediaStockRequestResource::getUrl('index'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.marketing-media-stock-requests.index'))
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->group('Media Cetak')
                     ->sort(4)
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
