@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MarketingMediaStockRequestResource\Pages;
 use App\Filament\Resources\MarketingMediaStockRequestResource\RelationManagers;
+use App\Helpers\RequestStatusChecker;
+use App\Helpers\UserRoleChecker;
 use App\Models\MarketingMediaStockRequest;
 use App\Models\CompanyDivision;
 use Filament\Forms;
@@ -22,9 +24,8 @@ class MarketingMediaStockRequestResource extends Resource
 
     protected static ?string $navigationGroup = 'Media Cetak';
     protected static ?string $navigationLabel = 'Pemasukan Media Cetak';
-
     protected static ?int $navigationSort = 2;
-
+    protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
         return $form
@@ -142,6 +143,30 @@ class MarketingMediaStockRequestResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function($query){
+                // Filter based on user role
+                $user = auth()->user();
+                
+                // IPC & MKS Admins & Heads can see all requests (for approval workflow)
+                if ((UserRoleChecker::isInDivisionWithInitial('IPC') && UserRoleChecker::hasRole(['Admin', 'Head'])) || (UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin()) || (UserRoleChecker::isInDivisionWithInitial('MKS') && UserRoleChecker::isDivisionAdmin() || UserRoleChecker::isDivisionHead())) {
+                                // Filter records to show only status from Approved by Head IPC (Pre Adjustment) to Completed
+                $statuses = [
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
+                    MarketingMediaStockRequest::STATUS_COMPLETED,
+                ];
+                
+                $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('request_number');
+                }
+                
+                return $query;
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('request_number')
                     ->searchable()
@@ -216,27 +241,29 @@ class MarketingMediaStockRequestResource extends Resource
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
                         MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected (Post Adjustment)',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && auth()->user()->id === $record->requested_by),
+                    ->visible(fn ($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
                 
                 // Approval Actions
                 Tables\Actions\Action::make('approve_as_head')
-                    ->label('Approve (Head)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockRequest::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                    ->visible(fn ($record) =>
+                        $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
+                        UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::canApproveInDivision($record)
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -247,19 +274,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak approved successfully')
+                            ->title('Pemasukan Media Cetak berhasil di approve!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('reject_as_head')
-                    ->label('Reject (Head)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockRequest::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
+                    ->visible(fn ($record) =>
+                        $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
+                        UserRoleChecker::isDivisionHead() &&
+                        UserRoleChecker::canApproveInDivision($record)
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -276,19 +303,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak rejected successfully')
+                            ->title('Pemasukan Media Cetak berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('approve_as_ipc')
-                    ->label('Approve (IPC)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Admin')
+                    ->visible(fn ($record) =>
+                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
+                        UserRoleChecker::isDivisionAdmin()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -299,19 +326,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak approved by IPC successfully')
+                            ->title('Pemasukan Media Cetak berhasil di approve!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('reject_as_ipc')
-                    ->label('Reject (IPC)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Admin')
+                    ->visible(fn ($record) =>
+                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
+                        UserRoleChecker::isDivisionAdmin()
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -328,19 +355,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak rejected by IPC successfully')
+                            ->title('Pemasukan Media Cetak berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('approve_as_ipc_head')
-                    ->label('Approve (IPC Head)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                    ->visible(fn ($record) =>
+                        $record->needsIpcHeadApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
+                        UserRoleChecker::isDivisionHead()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -351,19 +378,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak approved by IPC Head successfully')
+                            ->title('Pemasukan Media Cetak berhasil di approve!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('reject_as_ipc_head')
-                    ->label('Reject (IPC Head)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
-                        auth()->user()->hasRole('Head')
+                    ->visible(fn ($record) =>
+                        $record->needsIpcHeadApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
+                        UserRoleChecker::isDivisionHead()
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -380,7 +407,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak rejected by IPC Head successfully')
+                            ->title('Pemasukan Media Cetak berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -389,10 +416,10 @@ class MarketingMediaStockRequestResource extends Resource
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
-                    ->visible(fn ($record) => 
+                    ->visible(fn ($record) =>
                         $record->needsStockAdjustmentApproval() &&
-                        auth()->user()->hasRole('Admin') &&
-                        auth()->user()->division?->initial === 'IPC'
+                        UserRoleChecker::isDivisionAdmin() &&
+                        UserRoleChecker::isInDivisionWithInitial('IPC')
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -463,19 +490,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Stock adjusted and approved successfully')
+                            ->title('Pemasukan Media Cetak penyesuaian stok berhasil di approve!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('approve_as_ga_admin')
-                    ->label('Approve (GA Admin)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
+                    ->visible(fn ($record) =>
+                        $record->needsGaAdminApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') &&
+                        UserRoleChecker::isDivisionAdmin()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -486,19 +513,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak approved by GA Admin successfully')
+                            ->title('Pemasukan Media Cetak berhasil di approve!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('reject_as_ga_admin')
-                    ->label('Reject (GA Admin)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
+                    ->visible(fn ($record) =>
+                        $record->needsGaAdminApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') &&
+                        UserRoleChecker::isDivisionAdmin()
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -515,19 +542,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak rejected by GA Admin successfully')
+                            ->title('Pemasukan Media Cetak berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('approve_as_marketing_head')
-                    ->label('Approve (Marketing Support Head)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->needsMarketingHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'MKS' &&
-                        auth()->user()->hasRole('Head')
+                    ->visible(fn ($record) =>
+                        $record->needsMarketingHeadApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('MKS') &&
+                        UserRoleChecker::isDivisionHead()
                     )
                     ->requiresConfirmation()
                     ->databaseTransaction()
@@ -563,19 +590,19 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak approved by Marketing Support Head and stock updated successfully')
+                            ->title('Pemasukan Media Cetak berhasil di approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
                 
                 Tables\Actions\Action::make('reject_as_marketing_head')
-                    ->label('Reject (Marketing Support Head)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->needsMarketingHeadApproval() && 
-                        $record->isIncrease() && auth()->user()->division?->initial === 'MKS' &&
-                        auth()->user()->hasRole('Head')
+                    ->visible(fn ($record) =>
+                        $record->needsMarketingHeadApproval() &&
+                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('MKS') &&
+                        UserRoleChecker::isDivisionHead()
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -592,7 +619,7 @@ class MarketingMediaStockRequestResource extends Resource
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak rejected by Marketing Support Head successfully')
+                            ->title('Pemasukan Media Cetak berhasil di reject!')
                             ->warning()
                             ->send();
                     }),
@@ -619,18 +646,23 @@ class MarketingMediaStockRequestResource extends Resource
                 $query->where('division_id', $user->division_id);
             }
             // Division Heads can only see requests from their own division
-            elseif ($user->hasRole('Head') && strpos($user->division->name, 'Marketing') === true) {
+            elseif ($user->hasRole('Head') && strpos($user->division->name, 'Marketing') !== false) {
                 $query->where('division_id', $user->division_id)->orderByDesc('created_at')->orderByDesc('request_number');
             }
-            // For IPC, GA, HCG divisions, they can see all requests for approval process
-            else if ($user->division && 
-                     ($user->division->initial === 'IPC' || 
-                      $user->division->initial === 'GA' || 
-                      $user->division->initial === 'HCG')) {
+            // For IPC, GA, MKS divisions, they can see all requests for approval process
+            else if ($user->division &&
+                     ($user->division->initial === 'IPC' ||
+                      $user->division->initial === 'GA' ||
+                      $user->division->initial === 'MKS')) {
                 // These divisions can see all requests for approval
             }
             // For other divisions, only show their own requests
             else {
+                $query->where('division_id', $user->division_id);
+            }
+        } else {
+            // For regular users in Marketing divisions, only show their own requests
+            if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
                 $query->where('division_id', $user->division_id);
             }
         }
@@ -647,14 +679,15 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Allow Marketing divisions to view their own requests
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Admin']);
+            return $user->hasRole(['Admin', 'Head']);
         }
         
-        // Allow IPC and GA divisions to view all requests for approval process
-        if ($user->division && 
-            ($user->division->initial === 'IPC' || 
-             $user->division->initial === 'GA')) {
-            return $user->hasRole(['Admin', 'Head', 'Admin']);
+        // Allow IPC, GA, and MKS divisions to view all requests for approval process
+        if ($user->division &&
+            ($user->division->initial === 'IPC' ||
+             $user->division->initial === 'GA' ||
+             $user->division->initial === 'MKS')) {
+            return $user->hasRole(['Admin', 'Head']);
         }
         
         // Hide from users who don't belong to any Marketing divisions
@@ -670,7 +703,7 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Only allow Marketing divisions to create requests
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Admin']);
+            return $user->hasRole(['Admin']);
         }
         
         return false;
@@ -685,7 +718,7 @@ class MarketingMediaStockRequestResource extends Resource
         
         // Allow editing if user belongs to the same division as the record and is from a Marketing division
         if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
-            return $user->hasRole(['Admin', 'Head', 'Admin']) && 
+            return $user->hasRole(['Admin']) &&
                    $user->division_id === $record->division_id;
         }
         
@@ -752,28 +785,28 @@ class MarketingMediaStockRequestResource extends Resource
                                 \Filament\Infolists\Components\TextEntry::make('status')
                                     ->label('Status')
                                     ->formatStateUsing(fn ($state) => match ($state) {
-                                        MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
-                                        MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
                                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head (Post Adjustment)',
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head (Post Adjustment)',
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                                        MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
                                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
                                     ->badge()
                                     ->color(fn ($state) => match ($state) {
-                                        MarketingMediaStockRequest::STATUS_PENDING => 'warning',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'success',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
-                                        MarketingMediaStockRequest::STATUS_DELIVERED, MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
+                                        MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
+                                        MarketingMediaStockRequest::STATUS_DELIVERED,
+                                        MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                                         default => 'secondary',
                                     }),
                                 \Filament\Infolists\Components\TextEntry::make('divisionHead.name')
@@ -921,6 +954,8 @@ class MarketingMediaStockRequestResource extends Resource
     {
         return [
             'index' => Pages\ListMarketingMediaStockRequests::route('/'),
+            'my-division' => Pages\MyDivisionMarketingMediaStockRequest::route('my-division'),
+            'request-list' => Pages\RequestListMarketingMediaStockRequest::route('request-list'),
             'view' => Pages\ViewMarketingMediaStockRequest::route('/{record}'),
         ];
     }
