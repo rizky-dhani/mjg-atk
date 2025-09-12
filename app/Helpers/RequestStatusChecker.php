@@ -67,6 +67,17 @@ class RequestStatusChecker
     }
 
     /**
+     * Check if a Marketing Media Stock Request is rejected by Marketing Support Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function rejectedByMarketingHead($record): bool
+    {
+        return $record->rejection_marketing_head_id;
+    }
+
+    /**
      * Check if an Office Stationery Stock Request is Rejected
      *
      * @param OfficeStationeryStockRequest $record
