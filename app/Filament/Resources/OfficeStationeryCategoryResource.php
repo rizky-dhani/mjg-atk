@@ -72,17 +72,20 @@ class OfficeStationeryCategoryResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        return $authenticatedUsers;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        return $authenticatedUsers;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()->hasRole(['Super Admin', 'Admin']);
+        $authenticatedUsers = auth()->user()->division->initial === 'IPC' && auth()->user()->hasRole('Admin') ||auth()->user()->division->initial === 'GA' && auth()->user()->hasRole('Admin');
+        return $authenticatedUsers;
     }
 
     public static function getRelations(): array
