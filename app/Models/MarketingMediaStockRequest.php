@@ -89,8 +89,8 @@ class MarketingMediaStockRequest extends Model
     const STATUS_REJECTED_BY_SECOND_IPC_HEAD = 'rejected_by_second_ipc_head';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
-    const STATUS_APPROVED_BY_MKT_HEAD = 'approved_by_MKT_HEAD';
-    const STATUS_REJECTED_BY_MKT_HEAD = 'rejected_by_MKT_HEAD';
+    const STATUS_APPROVED_BY_MKT_HEAD = 'approved_by_mkt_head';
+    const STATUS_REJECTED_BY_MKT_HEAD = 'rejected_by_mkt_head';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -306,10 +306,18 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Check if request needs HCG Head approval.
+     * Check if request needs Marketing Head approval.
      */
     public function needsMarketingHeadApproval(): bool
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
+    }
+
+    /**
+     * Check if request can be marked as completed (only for increase requests).
+     */
+    public function canBeCompleted(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
     }
 }
