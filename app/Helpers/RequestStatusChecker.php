@@ -211,6 +211,207 @@ class RequestStatusChecker
         return $record->status === OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD && $record->rejection_head_id;
     }
 
+    // Marketing Media Stock Request Approval
+    /**
+     * Check if an Office Stationery Stock Request need approval from Division Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedApprovalFromDivisionHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_PENDING && UserRoleChecker::isDivisionHead();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need approval from IPC Admin
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedApprovalFromIpcAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isIpcAdmin();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need approval from IPC Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedApprovalFromIpcHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC && UserRoleChecker::isIpcHead();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need stock adjustment approval from IPC Admin
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD && UserRoleChecker::isIpcAdmin();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need second approval from IPC Head after Stock Adjustment approved
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedSecondApprovalFromIpcHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT && UserRoleChecker::isIpcHead();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need approval from GA Admin
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedApprovalFromGaAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD && UserRoleChecker::isGaAdmin();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need approval from HCG Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestNeedApprovalFromMksHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isMksHead();
+    }
+
+    // Marketing Media Stock Request Rejection
+    /**
+     * Check if an Office Stationery Stock Request is rejected by Division Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestRejectedByDivHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD && $record->rejection_head_id;
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request is rejected by IPC Admin
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestRejectedByIpcAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC && $record->rejection_ipc_id;
+    }
+
+    /**
+     * Check if an Office Stationery Stock Request is rejected by IPC Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestRejectedByIpcHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD && $record->rejection_ipc_head_id;
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request is rejected by GA Admin
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestRejectedByGaAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN && $record->rejection_ga_admin_id;
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request is rejected by HCG Head
+     *
+     * @param MarketingMediaStockRequest $record
+     * @return bool
+     */
+    public static function marketingMediaStockRequestRejectedByMksHead($record): bool
+    {
+        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD && $record->rejection_marketing_head_id;
+    }
+    
+    // Marketing Media Stock Usage Approval
+    /**
+     * Check if an Office Stationery Stock Usage need approval from Division Head
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageNeedApprovalFromDivisionHead($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_PENDING && UserRoleChecker::isDivisionHead();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Usage need approval from GA Admin
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageNeedApprovalFromGaAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Usage need approval from HCG Head
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageNeedApprovalFromMksHead($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isMksHead();
+    }
+    
+    // Marketing Media Stock Usage Rejection
+    /**
+     * Check if an Office Stationery Stock Usage rejected by Division Head
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageRejectedByDivisionHead($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD && $record->rejection_head_id;
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Usage rejected by GA Admin
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageRejectedByGaAdmin($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN && $record->rejection_ga_admin_id;
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Usage rejected by HCG Head
+     *
+     * @param MarketingMediaStockUsage $record
+     * @return bool
+     */
+    public static function marketingMediaStockUsageRejectedByMksHead($record): bool
+    {
+        return $record->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD && $record->rejection_marketing_head_id;
+    }
     /**
      * Check if a Marketing Media Stock Request is rejected by Marketing Support Head
      *
