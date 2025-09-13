@@ -122,12 +122,14 @@ class OfficeStationeryStockPerDivisionResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('division_id')
+                    ->visible(UserRoleChecker::isInDivisionWithInitial(['IPC', 'GA']))
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\SelectFilter::make('item_id')
-                    ->relationship('item', 'name')
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Category')
+                    ->relationship('item.category', 'name')
                     ->searchable()
                     ->preload(),
             ])
