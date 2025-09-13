@@ -18,7 +18,7 @@ class RequestStatusChecker
      */
     public static function atkStockRequestNeedApprovalFromDivisionHead($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::isDivisionHead($record);
+        return $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::isDivisionHead();
     }
     
     /**
@@ -152,7 +152,7 @@ class RequestStatusChecker
      */
     public static function atkStockUsageNeedApprovalFromDivisionHead($record): bool
     {
-        return $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::isDivisionHead($record);
+        return $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::isDivisionHead();
     }
     
     /**

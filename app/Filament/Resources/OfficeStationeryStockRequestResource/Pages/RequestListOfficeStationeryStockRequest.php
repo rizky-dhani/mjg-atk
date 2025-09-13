@@ -37,12 +37,12 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function($query, $record){
+            ->modifyQueryUsing(function($query){
                 if(UserRoleChecker::isIpcAdmin()){
                     $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)->orderByDesc('created_at');
                 }elseif(UserRoleChecker::isIpcHead()){
                     $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)->orderByDesc('created_at');
-                }elseif(UserRoleChecker::isDivisionHead($record)){
+                }elseif(UserRoleChecker::isDivisionHead()){
                     $query->orderByDesc('created_at')->orderByDesc('request_number');
                 }
             })

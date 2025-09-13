@@ -5,6 +5,10 @@ namespace App\Filament\Resources\OfficeStationeryStockRequestResource\Pages;
 use Filament\Actions;
 use Filament\Forms\Form;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
@@ -49,7 +53,12 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     return $data;
                 })
                 ->visible(fn() => UserRoleChecker::isDivisionAdmin())
-                ->modalWidth(MaxWidth::SevenExtraLarge),
+                ->modalWidth(MaxWidth::SevenExtraLarge)
+                ->successNotification(
+                    Notification::make()
+                        ->title('Permintaan ATK berhasil dibuat!')
+                        ->success()
+                ),
         ];
     }
 
@@ -66,7 +75,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
     {
         $user = auth()->user();
         $query = OfficeStationeryStockRequest::query()->where('division_id', $user->division_id)->orderByDesc('request_number')->orderByDesc('created_at');
-        
+
         return $table
             ->modifyQueryUsing(fn() => $query)
             ->columns([
@@ -140,6 +149,10 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
             ])
             ->actions([
                 ViewAction::make(),
+                EditAction::make()
+                    ->visible(fn($record) => UserRoleChecker::getRequesterId($record)),
+                DeleteAction::make()
+                    ->visible(fn($record) => UserRoleChecker::getRequesterId($record)),
                 // Approval Actions up to IPC Head
                 Action::make('approve_as_head')
                     ->label('Approve')
@@ -254,7 +267,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                 TextInput::make('rejected_by')
                                     ->label('Rejected By')
                                     ->disabled()
-                                    ->formatStateUsing(function($record){
+                                    ->formatStateUsing(function ($record) {
                                         if (RequestStatusChecker::atkStockRequestRejectedByDivHead($record)) {
                                             return $record->rejectionHead->name ?? '';
                                         } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcAdmin($record)) {
@@ -274,7 +287,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                     ->disabled(),
                             ])
                             ->columns(2)
-                            ->visible(fn ($record) => RequestStatusChecker::stockRequestIsRejected($record)),
+                            ->visible(fn($record) => RequestStatusChecker::stockRequestIsRejected($record)),
                         Grid::make(1)->schema([
                             Repeater::make('items')
                                 ->addable(false)
@@ -436,25 +449,36 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                         Section::make('Pemasukan ATK Information (Optional)')
                             ->schema([Hidden::make('type')->default(OfficeStationeryStockRequest::TYPE_INCREASE), Textarea::make('notes')->maxLength(6535)->columnSpanFull()])
                             ->columns(2),
-                        ])
-                        ->action(function ($record, array $data) {
-                            // Update the record with new data
-                            $record->update($data);
+                    ])
+                    ->action(function ($record, array $data) {
+                        // Update the record with new data
+                        $record->update($data);
 
-                            // Reset status to pending and clear rejection information
-                            $record->update([
-                                'status' => OfficeStationeryStockRequest::STATUS_PENDING,
-                                'rejection_head_id' => null,
-                                'rejection_head_at' => null,
-                                'rejection_ipc_id' => null,
-                                'rejection_ipc_at' => null,
-                                'rejection_ipc_head_id' => null,
-                                'rejection_ipc_head_at' => null,
-                                'rejection_reason' => null,
-                            ]);
+                        // Reset status to pending and clear rejection information
+                        $record->update([
+                            'status' => OfficeStationeryStockRequest::STATUS_PENDING,
+                            'rejection_head_id' => null,
+                            'rejection_head_at' => null,
+                            'rejection_ipc_id' => null,
+                            'rejection_ipc_at' => null,
+                            'rejection_ipc_head_id' => null,
+                            'rejection_ipc_head_at' => null,
+                            'rejection_reason' => null,
+                        ]);
 
-                            Notification::make()->title('Permintaan ATK berhasil diresubmit!')->success()->send();
-                        }),
-                ]);
+                        Notification::make()
+                            ->title('Permintaan ATK berhasil diresubmit!')
+                            ->success()
+                            ->send();
+                    }),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make('delete_selected')
+                        ->label('Delete Selected')
+                        ->visible(fn() => UserRoleChecker::isDivisionAdmin())
+                        ->successNotificationTitle('Permintaan ATK yang terpilih berhasil dihapus!')
+                ])
+            ]);
     }
 }

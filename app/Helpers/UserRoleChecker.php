@@ -90,10 +90,9 @@ class UserRoleChecker
      *
      * @return bool
      */
-    public static function isDivisionHead($record): bool
+    public static function isDivisionHead(): bool
     {
-        $user = auth()->user();
-        return $user && $user->division_id === $record->division_id;
+        return self::hasRole('Head');
     }
 
     /**

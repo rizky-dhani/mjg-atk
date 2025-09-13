@@ -52,7 +52,12 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     return $data;
                 })
                 ->modalWidth(MaxWidth::SevenExtraLarge)
-                ->label('Tambah'),
+                ->label('Tambah')
+                ->successNotification(
+                    Notification::make()
+                        ->title('Pengeluaran ATK berhasil dibuat!')
+                        ->success()
+                ),
         ];
     }
     
@@ -144,7 +149,12 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->authorize(true), // Bypass authorization for view action
                 EditAction::make()
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
+                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Pengeluaran ATK berhasil diperbarui!')
+                            ->success()
+                    ),
                 DeleteAction::make()
                     ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
                 EditAction::make('resubmit_request')
@@ -374,7 +384,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                         
                         Notification::make()
                             ->title('Pengeluaran ATK berhasil di-reject!')
-                            ->success()
+                            ->warning()
                             ->send();
                     }),
                 Action::make('approve_as_ga_admin')

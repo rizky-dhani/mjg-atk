@@ -326,8 +326,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record) && 
-                        UserRoleChecker::isDivisionHead($record))
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -346,8 +345,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record) && 
-                        UserRoleChecker::isDivisionHead($record))
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -372,8 +370,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -391,8 +388,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -417,9 +413,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        UserRoleChecker::isHcgHead())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -440,9 +434,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        UserRoleChecker::isHcgHead())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
