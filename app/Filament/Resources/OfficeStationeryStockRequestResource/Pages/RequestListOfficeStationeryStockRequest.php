@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OfficeStationeryStockRequestResource\Pages;
 
+use App\Helpers\RequestStatusChecker;
 use Filament\Actions;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
@@ -14,6 +15,7 @@ use Filament\Tables\Filters\SelectFilter;
 use App\Models\OfficeStationeryStockRequest;
 use App\Filament\Resources\OfficeStationeryStockRequestResource;
 use App\Helpers\UserRoleChecker;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class RequestListOfficeStationeryStockRequest extends ListRecords
 {
@@ -34,16 +36,16 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
     } 
     public function table(Table $table): Table
     {
-        $query = OfficeStationeryStockRequest::query()
-            ->whereIn('status', [
-                OfficeStationeryStockRequest::STATUS_PENDING,
-                OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD,
-                OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
-                OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-            ]);
-
         return $table
-            ->modifyQueryUsing(fn() => $query->orderByDesc('request_number')->orderByDesc('created_at'))
+            ->modifyQueryUsing(function($query, $record){
+                if(UserRoleChecker::isIpcAdmin()){
+                    $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)->orderByDesc('created_at');
+                }elseif(UserRoleChecker::isIpcHead()){
+                    $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)->orderByDesc('created_at');
+                }elseif(UserRoleChecker::isDivisionHead($record)){
+                    $query->orderByDesc('created_at')->orderByDesc('request_number');
+                }
+            })
             ->columns([
                 TextColumn::make('request_number')
                     ->searchable()
@@ -113,11 +115,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -136,11 +134,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -164,10 +158,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isIpcAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -186,10 +177,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isIpcAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -214,10 +202,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isIpcHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -236,10 +221,7 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isIpcHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')

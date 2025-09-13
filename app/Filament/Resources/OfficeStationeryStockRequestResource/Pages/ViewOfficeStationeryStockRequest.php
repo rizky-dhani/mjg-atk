@@ -210,15 +210,15 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                                 ->label('Rejected By')
                                 ->disabled()
                                 ->formatStateUsing(function ($record) {
-                                    if (RequestStatusChecker::rejectedByDivHead($record)) {
+                                    if (RequestStatusChecker::atkStockRequestRejectedByDivHead($record)) {
                                         return $record->rejectionHead->name ?? '';
-                                    } elseif (RequestStatusChecker::rejectedByIpcAdmin($record)) {
+                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcAdmin($record)) {
                                         return $record->rejectionIpc->name ?? '';
-                                    } elseif (RequestStatusChecker::rejectedByIpcHead($record)) {
+                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcHead($record)) {
                                         return $record->rejectionIpcHead->name ?? '';
-                                    } elseif (RequestStatusChecker::rejectedByGaAdmin($record)) {
+                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByGaAdmin($record)) {
                                         return $record->rejectionGaAdmin->name ?? '';
-                                    } elseif (RequestStatusChecker::rejectedByHcgHead($record)) {
+                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByHcgHead($record)) {
                                         return $record->rejectionHcgHead->name ?? '';
                                     }
                                     return '';
@@ -258,11 +258,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -283,11 +279,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk reject Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -313,10 +305,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isIpcAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -337,10 +326,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isIpcAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -366,10 +352,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isIpcHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -390,10 +373,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isIpcHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -420,10 +400,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->modalHeading('Penyesuaian Stok Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian stok pada Permintaan ATK ini?')
                     ->modalWidth(MaxWidth::Screen)
-                    ->visible(fn ($record) =>
-                        $record->needsStockAdjustmentApproval() &&
-                        UserRoleChecker::isIpcAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->form(function ($record) {
                         
@@ -525,15 +502,12 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     }),
             
             Action::make('approve_as_second_ipc_head')
-                ->label('Approve (Post Adjustment)')
+                ->label('Approve ')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->modalHeading('Approve Permintaan ATK')
                 ->modalSubheading('Apakah Anda yakin ingin approve Permintaan ATK ini setelah penyesuaian stok?')
-                ->visible(fn ($record) =>
-                    $record->needsSecondIpcHeadApproval() &&
-                    $record->isIncrease() && UserRoleChecker::isIpcHead()
-                )
+                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
                 ->requiresConfirmation()
                 ->action(function ($record) {
                     $record->update([
@@ -549,15 +523,12 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 }),
 
             Action::make('reject_as_second_ipc_head')
-                ->label('Reject (Post Adjustment)')
+                ->label('Reject ')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->modalHeading('Reject Permintaan ATK')
                 ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini setelah penyesuaian stok?')
-                ->visible(fn ($record) =>
-                    $record->needsSecondIpcHeadApproval() &&
-                    $record->isIncrease() && UserRoleChecker::isIpcHead()
-                )
+                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
                 ->form([
                     Textarea::make('rejection_reason')
                         ->required()
@@ -583,10 +554,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsGaAdminApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -607,10 +575,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsGaAdminApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') && UserRoleChecker::isDivisionAdmin()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -636,10 +601,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsHcgHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('HCG') && UserRoleChecker::isDivisionHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->databaseTransaction()
                     ->action(function ($record) {
@@ -690,10 +652,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) =>
-                        $record->needsHcgHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('HCG') && UserRoleChecker::isDivisionHead()
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromHcgHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()

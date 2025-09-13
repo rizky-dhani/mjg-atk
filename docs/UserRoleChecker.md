@@ -40,7 +40,7 @@ UserRoleChecker::isIpcAdmin()
 ### Division Checking Methods
 
 - `isInDivision(int $divisionId)`: Check if the user belongs to a specific division
-- `isInDivisionWithInitial(string $divisionInitial)`: Check if the user belongs to a division with a specific initial
+- `isInDivisionWithInitial(string|array $divisionInitial)`: Check if the user belongs to a division with a specific initial. Accepts either a single string or an array of division initials. When an array is provided, returns true if the user belongs to any of the specified divisions.
 - `canApproveInDivision($record)`: Check if the user can approve a request in their division
 - `canViewRecord($record)`: Check if the user can view a record based on their role and division
 - `canEditRecord($record)`: Check if the user can edit a record based on their role and division
@@ -102,4 +102,14 @@ Example of adding a new method:
 public static function isGaAdmin(): bool
 {
     return self::isInDivisionWithInitial('GA') && self::hasRole('Admin');
+}
+
+/**
+ * Check if the user is in either IPC or GA division
+ *
+ * @return bool
+ */
+public static function isIpcOrGaDivision(): bool
+{
+    return self::isInDivisionWithInitial(['IPC', 'GA']);
 }

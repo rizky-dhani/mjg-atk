@@ -152,7 +152,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => RequestStatusChecker::canResubmitOfficeStationeryStockUsage($record) && UserRoleChecker::getRequesterId($record))
+                    ->visible(fn($record) => RequestStatusChecker::stockRequestIsRejected($record))
                     ->form([
                         Grid::make(1)->schema([
                             Section::make('Rejection Information')
@@ -337,10 +337,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -359,10 +356,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -387,10 +381,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
-                        (UserRoleChecker::isDivisionAdmin() && auth()->user()->division && auth()->user()->division->name === 'General Affairs')
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -408,10 +399,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD &&
-                        (UserRoleChecker::isDivisionAdmin() && UserRoleChecker::isInDivisionWithInitial('GA'))
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -436,10 +424,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
-                        (UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('HCG'))
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -460,10 +445,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN &&
-                        (UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('MKS'))
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')

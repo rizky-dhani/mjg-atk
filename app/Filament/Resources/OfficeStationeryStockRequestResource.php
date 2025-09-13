@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages\MyDivisionOfficeStationeryStockRequest;
 use App\Filament\Resources\OfficeStationeryStockRequestResource\Pages\RequestListOfficeStationeryStockRequest;
+use App\Helpers\RequestStatusChecker;
 use App\Helpers\UserRoleChecker;
 use Filament\Forms;
 use App\Models\item;
@@ -35,7 +36,6 @@ class OfficeStationeryStockRequestResource extends Resource
     protected static ?string $navigationLabel = 'Pemasukan ATK';
     protected static ?string $modelLabel = 'Pemasukan ATK';
     protected static ?string $pluralModelLabel = 'Pemasukan ATK';
-    protected static ?int $navigationSort = 2;
     protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
@@ -351,9 +351,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -373,9 +371,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockRequest::STATUS_PENDING && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
                             ->required()
@@ -400,10 +396,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -423,10 +416,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -452,10 +442,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -475,10 +462,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->needsIpcHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -507,10 +491,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian stok untuk Pemasukan ATK ini?')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
                     ->visible(fn ($record) =>
-                        $record->needsStockAdjustmentApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record))
                     ->form(function ($record) {
                         return [
                             Forms\Components\Repeater::make('items')
@@ -671,7 +652,7 @@ class OfficeStationeryStockRequestResource extends Resource
                             
                             // Check against maximum limit
                             if ($divisionInventorySetting && $newStock > $divisionInventorySetting->max_limit) {
-                                $validationErrors[] = "Item {$item->item->name} would exceed the maximum limit of {$divisionInventorySetting->max_limit} units (new total would be {$newStock} units).";
+                                $validationErrors[] = "Item {$item->item->name} melebihi batas maksimal yaitu {$divisionInventorySetting->max_limit} units (kuantitas baru stok yaitu {$newStock} unit).";
                             }
                         }
                         
@@ -707,14 +688,11 @@ class OfficeStationeryStockRequestResource extends Resource
                     }),
                 
                 Tables\Actions\Action::make('approve_as_second_ipc_head')
-                    ->label('Approve (Post Adjustment)')
+                    ->label('Approve ')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->needsSecondIpcHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -730,14 +708,11 @@ class OfficeStationeryStockRequestResource extends Resource
                     }),
 
                 Tables\Actions\Action::make('reject_as_second_ipc_head')
-                    ->label('Reject (Post Adjustment)')
+                    ->label('Reject ')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->needsSecondIpcHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -763,10 +738,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('GA')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -786,10 +758,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->needsGaAdminApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('GA')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -815,10 +784,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->needsHcgHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('HCG')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->databaseTransaction()
                     ->action(function ($record) {
@@ -868,10 +834,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->needsHcgHeadApproval() && 
-                        $record->isIncrease() && UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::isInDivisionWithInitial('HCG')
-                    )
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -951,8 +914,8 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->label('Status')
                                     ->formatStateUsing(fn ($state) => match ($state) {
                                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head (Post Adjustment)',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head (Post Adjustment)',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head ',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head ',
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',

@@ -43,11 +43,6 @@ class OfficeStationeryStockPerDivisionResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Forms\Components\TextInput::make('current_stock')
-                    ->numeric()
-                    ->required()
-                    ->minValue(0)
-                    ->step(1),
             ]);
     }
 

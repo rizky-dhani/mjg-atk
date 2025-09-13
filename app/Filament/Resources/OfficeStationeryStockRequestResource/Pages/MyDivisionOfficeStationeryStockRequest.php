@@ -145,7 +145,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::isDivisionHead() && UserRoleChecker::canApproveInDivision($record))
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -161,7 +161,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_PENDING && UserRoleChecker::isDivisionHead() && UserRoleChecker::canApproveInDivision($record))
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
                         $record->update([
@@ -178,7 +178,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && UserRoleChecker::isIpcAdmin())
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -194,7 +194,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && UserRoleChecker::isIpcAdmin())
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
                     ->requiresConfirmation()
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
@@ -212,7 +212,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->needsIpcHeadApproval() && $record->isIncrease() && UserRoleChecker::isIpcHead())
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -228,7 +228,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn($record) => $record->needsIpcHeadApproval() && $record->isIncrease() && UserRoleChecker::isIpcHead())
+                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                     ->requiresConfirmation()
                     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
@@ -247,7 +247,7 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => RequestStatusChecker::canResubmitOfficeStationeryStockRequest($record) && UserRoleChecker::isDivisionAdmin() && UserRoleChecker::canApproveInDivision($record))
+                    ->visible(fn($record) => RequestStatusChecker::canResubmitOfficeStationeryStockRequest($record) && UserRoleChecker::getRequesterId($record))
                     ->form([
                         Section::make('Rejection Information')
                             ->schema([
@@ -255,15 +255,15 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                                     ->label('Rejected By')
                                     ->disabled()
                                     ->formatStateUsing(function($record){
-                                        if (RequestStatusChecker::rejectedByDivHead($record)) {
+                                        if (RequestStatusChecker::atkStockRequestRejectedByDivHead($record)) {
                                             return $record->rejectionHead->name ?? '';
-                                        } elseif (RequestStatusChecker::rejectedByIpcAdmin($record)) {
+                                        } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcAdmin($record)) {
                                             return $record->rejectionIpc->name ?? '';
-                                        } elseif (RequestStatusChecker::rejectedByIpcHead($record)) {
+                                        } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcHead($record)) {
                                             return $record->rejectionIpcHead->name ?? '';
-                                        } elseif (RequestStatusChecker::rejectedByGaAdmin($record)) {
+                                        } elseif (RequestStatusChecker::atkStockRequestRejectedByGaAdmin($record)) {
                                             return $record->rejectionGaAdmin->name ?? '';
-                                        } elseif (RequestStatusChecker::rejectedByHcgHead($record)) {
+                                        } elseif (RequestStatusChecker::atkStockRequestRejectedByHcgHead($record)) {
                                             return $record->rejectionHcgHead->name ?? '';
                                         }
                                         return '';

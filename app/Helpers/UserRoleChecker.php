@@ -34,33 +34,35 @@ class UserRoleChecker
     /**
      * Check if the user belongs to a division with a specific initial
      *
-     * @param string $divisionInitial
+     * @param string|array $divisionInitial
      * @return bool
      */
-    public static function isInDivisionWithInitial(string $divisionInitial): bool
+    public static function isInDivisionWithInitial(string|array $divisionInitial): bool
     {
+        // Get the authenticated user
         $user = auth()->user();
-        return $user && $user->division && $user->division->initial === $divisionInitial;
-    }
-
-    /**
-     * Check if the user is a Head in their division
-     *
-     * @return bool
-     */
-    public static function isDivisionHead(): bool
-    {
-        return self::hasRole('Head');
-    }
-
-    /**
-     * Check if the user is an Admin in their division
-     *
-     * @return bool
-     */
-    public static function isDivisionAdmin(): bool
-    {
-        return self::hasRole('Admin');
+        
+        // Return false if no user is authenticated
+        if (!$user) {
+            return false;
+        }
+        
+        // Get user's division initial using null-safe operator
+        $userDivisionInitial = $user->division?->initial;
+        
+        // If no division assigned to user, return false
+        if (!$userDivisionInitial) {
+            return false;
+        }
+        
+        // Handle both string and array inputs
+        if (is_array($divisionInitial)) {
+            // Check if user's division initial is in the array of initials
+            return in_array($userDivisionInitial, $divisionInitial, true);
+        }
+        
+        // Handle string input (backward compatibility)
+        return $userDivisionInitial === $divisionInitial;
     }
 
     /**
@@ -72,6 +74,27 @@ class UserRoleChecker
     {
         return self::hasRole('Super Admin');
     }
+    
+    /**
+     * Check if the user is an Admin in their division
+     *
+     * @return bool
+     */
+    public static function isDivisionAdmin(): bool
+    {
+        return self::hasRole('Admin');
+    }
+
+    /**
+     * Check if the user is a Head in their division
+     *
+     * @return bool
+     */
+    public static function isDivisionHead($record): bool
+    {
+        $user = auth()->user();
+        return $user && $user->division_id === $record->division_id;
+    }
 
     /**
      * Check if the user is an IPC Admin
@@ -82,15 +105,45 @@ class UserRoleChecker
     {
         return self::isInDivisionWithInitial('IPC') && self::hasRole('Admin');
     }
-
+    
     /**
      * Check if the user is an IPC Head
-     *
-     * @return bool
-     */
+    *
+    * @return bool
+    */
     public static function isIpcHead(): bool
     {
         return self::isInDivisionWithInitial('IPC') && self::hasRole('Head');
+    }
+    
+    /**
+     * Check if the user is an GA Admin
+     *
+     * @return bool
+     */
+    public static function isGaAdmin(): bool
+    {
+        return self::isInDivisionWithInitial('GA') && self::hasRole('Admin');
+    }
+    
+    /**
+     * Check if the user is an HCG Head
+     *
+     * @return bool
+     */
+    public static function isHcgHead(): bool
+    {
+        return self::isInDivisionWithInitial('HCG') && self::hasRole('Head');
+    }
+    
+    /**
+     * Check if the user is an Marketing Support Head
+     *
+     * @return bool
+     */
+    public static function isMksHead(): bool
+    {
+        return self::isInDivisionWithInitial('MKS') && self::hasRole('Head');
     }
 
     /**
@@ -100,6 +153,18 @@ class UserRoleChecker
      * @return bool
      */
     public static function canApproveInDivision($record): bool
+    {
+        $user = auth()->user();
+        return $user && $user->division_id === $record->division_id;
+    }
+
+    /**
+     * Check if the creator division is the same as the record division_id
+     *
+     * @param mixed $record
+     * @return bool
+     */
+    public static function getCreatorDivisionId($record)
     {
         $user = auth()->user();
         return $user && $user->division_id === $record->division_id;
@@ -176,4 +241,6 @@ class UserRoleChecker
         $user = auth()->user();
         return $user ? $user->division_id : null;
     }
+
+
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Helpers\RequestStatusChecker;
 use App\Helpers\UserRoleChecker;
 use Filament\Forms;
 use Filament\Support\Enums\MaxWidth;
@@ -31,7 +32,6 @@ class OfficeStationeryStockUsageResource extends Resource
     protected static ?string $navigationLabel = 'Pengeluaran ATK';
     protected static ?string $modelLabel = 'Pengeluaran ATK';
     protected static ?string $pluralModelLabel = 'Pengeluaran ATK';
-    protected static ?int $navigationSort = 5;
     protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
@@ -326,9 +326,8 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::canApproveInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record) && 
+                        UserRoleChecker::isDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -347,9 +346,8 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_PENDING && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::canApproveInDivision($record)
-                    )
+                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record) && 
+                        UserRoleChecker::isDivisionHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -375,9 +373,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        UserRoleChecker::isDivisionAdmin() && UserRoleChecker::isInDivisionWithInitial('GA')
-                    )
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin())
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -396,9 +392,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        UserRoleChecker::isDivisionAdmin() && UserRoleChecker::isInDivisionWithInitial('GA')
-                    )
+                        $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin())
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -425,8 +419,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->color('success')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('HCG')
-                    )
+                        UserRoleChecker::isHcgHead())
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -449,8 +442,7 @@ class OfficeStationeryStockUsageResource extends Resource
                     ->color('danger')
                     ->visible(fn ($record) => 
                         $record->status === OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN && 
-                        UserRoleChecker::isDivisionHead() && UserRoleChecker::isInDivisionWithInitial('HCG')
-                    )
+                        UserRoleChecker::isHcgHead())
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')

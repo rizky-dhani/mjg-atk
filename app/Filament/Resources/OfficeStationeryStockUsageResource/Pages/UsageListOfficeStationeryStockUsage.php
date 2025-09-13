@@ -4,7 +4,9 @@ namespace App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
 
 use Filament\Actions;
 use Filament\Tables\Table;
+use App\Helpers\UserRoleChecker;
 use Filament\Tables\Actions\Action;
+use App\Helpers\RequestStatusChecker;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -119,7 +121,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => $record->canBeApprovedByDivisionHead())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -138,7 +140,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->canBeApprovedByDivisionHead())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -162,7 +164,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => $record->canBeApprovedByGaAdmin())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -181,7 +183,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->canBeApprovedByGaAdmin())
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -206,7 +208,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => $record->canBeApprovedByHcgHead())
+                    ->visible(fn ($record) =>  RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -228,7 +230,7 @@ class UsageListOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => $record->canBeApprovedByHcgHead())
+                    ->visible(fn ($record) =>  RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
