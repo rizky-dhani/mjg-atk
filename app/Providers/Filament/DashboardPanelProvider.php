@@ -85,25 +85,40 @@ class DashboardPanelProvider extends PanelProvider
 
                 // Pengeluaran ATK
                 NavigationItem::make('Pengeluaran ATK (Divisi Saya)')
-                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('my-divisions'))
-                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.my-divisions'))
+                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('my-division'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.my-division'))
                     ->icon('heroicon-o-list-bullet')
                     ->group('Alat Tulis Kantor')
                     ->sort(5),
-                NavigationItem::make('Pengeluaran ATK')
-                    ->visible(fn() => UserRoleChecker::isInDivisionWithInitial(['IPC', 'GA']))
-                    ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('usage-list'))
-                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.request-list'))
-                    ->icon('heroicon-o-document-text')
-                    ->group('Alat Tulis Kantor')
-                    ->sort(6),
+                // NavigationItem::make('Pengeluaran ATK')
+                //     ->visible(fn() => UserRoleChecker::isInDivisionWithInitial(['IPC', 'GA']))
+                //     ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('usage-list'))
+                //     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.request-list'))
+                //     ->icon('heroicon-o-document-text')
+                //     ->group('Alat Tulis Kantor')
+                //     ->sort(6),
                 NavigationItem::make('Pengeluaran ATK')
                     ->visible(fn() => UserRoleChecker::isInDivisionWithInitial(['IPC', 'GA']))
                     ->url(fn() => (string) OfficeStationeryStockUsageResource::getUrl('index'))
                     ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.index'))
                     ->icon('heroicon-o-arrow-up-tray')
                     ->group('Alat Tulis Kantor')
-                    ->sort(7),
+                    ->sort(6),
+
+                // Pengeluaran Media Cetak
+                NavigationItem::make('Pengeluaran Media Cetak (Divisi Saya)')
+                    ->visible(function(){
+                        $user = auth()->user();
+                        // Only allow users from Marketing divisions to access this page
+                        if ($user->division && strpos($user->division->name, 'Marketing') !== false) {
+                            return $user->hasRole(['Admin', 'Head']);
+                        }
+                    })
+                    ->url(fn() => (string) \App\Filament\Resources\MarketingMediaStockUsageResource::getUrl('my-division'))
+                    ->isActiveWhen(fn(): string => request()->routeIs('filament.dashboard.resources.marketing-media-stock-usages.my-division'))
+                    ->icon('heroicon-o-list-bullet')
+                    ->group('Media Cetak')
+                    ->sort(5),
 
                 // Pemasukan Media Cetak
                 NavigationItem::make('Permintaan Media Cetak (Divisi Saya)')
