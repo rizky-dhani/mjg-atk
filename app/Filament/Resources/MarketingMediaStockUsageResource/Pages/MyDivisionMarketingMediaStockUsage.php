@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OfficeStationeryStockUsageResource\Pages;
+namespace App\Filament\Resources\MarketingMediaStockUsageResource\Pages;
 
 use Filament\Actions;
 use Filament\Forms\Form;
@@ -8,7 +8,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\OfficeStationeryItem;
+use App\Models\MarketingMediaItem;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -24,23 +24,23 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\SelectFilter;
-use App\Models\OfficeStationeryStockUsage;
+use App\Models\MarketingMediaStockUsage;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
-use App\Models\OfficeStationeryStockPerDivision;
-use App\Models\OfficeStationeryDivisionInventorySetting;
+use App\Models\MarketingMediaStockPerDivision;
+use App\Models\MarketingMediaDivisionInventorySetting;
 use Filament\Forms\Components\Actions\Action as FormAction;
-use App\Filament\Resources\OfficeStationeryStockUsageResource;
+use App\Filament\Resources\MarketingMediaStockUsageResource;
 use App\Helpers\RequestStatusChecker;
 use App\Helpers\UserRoleChecker;
 
-class MyDivisionOfficeStationeryStockUsage extends ListRecords
+class MyDivisionMarketingMediaStockUsage extends ListRecords
 {
-    protected static string $resource = OfficeStationeryStockUsageResource::class;
-    protected static ?string $navigationGroup = 'Alat Tulis Kantor';
-    protected static ?string $navigationLabel = 'Pengeluaran ATK (Divisi Saya)';
-    protected static ?string $modelLabel = 'Pengeluaran ATK (Divisi Saya)';
-    protected static ?string $pluralModelLabel = 'Pengeluaran ATK (Divisi Saya)';
+    protected static string $resource = MarketingMediaStockUsageResource::class;
+    protected static ?string $navigationGroup = 'Media Cetak';
+    protected static ?string $navigationLabel = 'Pengeluaran Media Cetak (Divisi Saya)';
+    protected static ?string $modelLabel = 'Pengeluaran Media Cetak (Divisi Saya)';
+    protected static ?string $pluralModelLabel = 'Pengeluaran Media Cetak (Divisi Saya)';
 
     protected function getHeaderActions(): array
     {
@@ -55,7 +55,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                 ->label('Tambah')
                 ->successNotification(
                     Notification::make()
-                        ->title('Pengeluaran ATK berhasil dibuat!')
+                        ->title('Pengeluaran Media Cetak berhasil dibuat!')
                         ->success()
                 ),
         ];
@@ -63,18 +63,18 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
     
     public function getBreadcrumb(): string
     {
-        return 'Pengeluaran ATK (Divisi Saya)';
+        return 'Pengeluaran Media Cetak (Divisi Saya)';
     }
 
     public function getTitle(): string
     {
-        return 'Pengeluaran ATK (Divisi Saya)';
+        return 'Pengeluaran Media Cetak (Divisi Saya)';
     }
 
     public function table(Table $table): Table
     {
         $user = auth()->user();
-        $query = OfficeStationeryStockUsage::query()->where('division_id', $user->division_id)->orderByDesc('usage_number')->orderByDesc('created_at');
+        $query = MarketingMediaStockUsage::query()->where('division_id', $user->division_id)->orderByDesc('usage_number')->orderByDesc('created_at');
 
         return $table
             ->modifyQueryUsing(fn() => $query)
@@ -92,30 +92,30 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                 TextColumn::make('type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        OfficeStationeryStockUsage::TYPE_DECREASE => 'danger',
+                        MarketingMediaStockUsage::TYPE_DECREASE => 'danger',
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
+                        MarketingMediaStockUsage::TYPE_DECREASE => 'Decrease',
                         default => ucfirst($state),
                     }),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        OfficeStationeryStockUsage::STATUS_PENDING => 'warning',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD, OfficeStationeryStockUsage::STATUS_COMPLETED => 'success',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
+                        MarketingMediaStockUsage::STATUS_PENDING => 'warning',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD, MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD, MarketingMediaStockUsage::STATUS_COMPLETED => 'success',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                         default => 'secondary',
                     })
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        OfficeStationeryStockUsage::STATUS_PENDING => 'Pending',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
-                        OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
+                        MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     }),
                 TextColumn::make('items_count')
                     ->label('Items')
@@ -129,19 +129,19 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->preload(),
                 SelectFilter::make('type')
                     ->options([
-                        OfficeStationeryStockUsage::TYPE_DECREASE => 'Decrease',
+                        MarketingMediaStockUsage::TYPE_DECREASE => 'Decrease',
                     ]),
                 SelectFilter::make('status')
                     ->multiple()
                     ->options([
-                        OfficeStationeryStockUsage::STATUS_PENDING => 'Pending',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                        OfficeStationeryStockUsage::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
-                        OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD => 'Rejected by HCG Head',
-                        OfficeStationeryStockUsage::STATUS_COMPLETED => 'Completed',
+                        MarketingMediaStockUsage::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockUsage::STATUS_COMPLETED => 'Completed',
                     ]),
             ])
             ->actions([
@@ -149,17 +149,17 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->authorize(true), // Bypass authorization for view action
                 EditAction::make()
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
+                    ->visible(fn ($record) => $record->status === MarketingMediaStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
                     ->successNotification(
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil diperbarui!')
+                            ->title('Pengeluaran Media Cetak berhasil diperbarui!')
                             ->success()
                     ),
                 DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
+                    ->visible(fn ($record) => $record->status === MarketingMediaStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record))
                     ->successNotification(
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil dihapus!')
+                            ->title('Pengeluaran Media Cetak berhasil dihapus!')
                             ->success()
                     ),
                 // Approval Actions
@@ -168,17 +168,17 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
+                        RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
                             'approval_head_id' => auth()->user()->id,
                             'approval_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
+                            ->title('Pengeluaran Media Cetak berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -187,7 +187,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
+                        RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -197,14 +197,14 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD,
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD,
                             'rejection_head_id' => auth()->user()->id,
                             'rejection_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->title('Pengeluaran Media Cetak berhasil di-reject!')
                             ->success()
                             ->send();
                     }),
@@ -213,7 +213,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => RequestStatusChecker::stockRequestIsRejected($record))
+                    ->visible(fn($record) => RequestStatusChecker::canResubmitMarketingMediaStockUsage($record))
                     ->form([
                         Grid::make(1)->schema([
                             Section::make('Rejection Information')
@@ -226,8 +226,8 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                                 return $record->rejectionHead->name ?? '';
                                             } elseif ($record->rejection_ga_admin_id) {
                                                 return $record->rejectionGaAdmin->name ?? '';
-                                            } elseif ($record->rejection_hcg_head_id) {
-                                                return $record->rejectionHcgHead->name ?? '';
+                                            } elseif ($record->rejection_marketing_head_id) {
+                                                return $record->rejectionMarketingSupportHead->name ?? '';
                                             }
                                             return '';
                                         }),
@@ -237,7 +237,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                         ->disabled(),
                                 ])
                                 ->columns(2)
-                                ->visible(fn ($record) => RequestStatusChecker::stockUsageIsRejected($record)),
+                                ->visible(fn ($record) => RequestStatusChecker::canResubmitMarketingMediaStockUsage($record)),
                             Repeater::make('items')
                                 ->addable(false)
                                 ->relationship()
@@ -282,7 +282,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                             if (!$categoryId) {
                                                 return [];
                                             }
-                                            return OfficeStationeryItem::where('category_id', $categoryId)->pluck('name', 'id');
+                                            return MarketingMediaItem::where('category_id', $categoryId)->pluck('name', 'id');
                                         })
                                         ->searchable()
                                         ->preload()
@@ -298,7 +298,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                                 return '';
                                             }
 
-                                            $setting = OfficeStationeryDivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                            $setting = MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -306,7 +306,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                                 return 'No inventory limit set for this item';
                                             }
 
-                                            $stock = OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
+                                            $stock = MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
                                                 ->where('item_id', $itemId)
                                                 ->first();
 
@@ -335,10 +335,10 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                                     }
 
                                                     // Get division_id from the record
-                                                    $record = OfficeStationeryStockUsage::find(request()->route('record'));
+                                                    $record = MarketingMediaStockUsage::find(request()->route('record'));
                                                     $divisionId = $record ? $record->division_id : auth()->user()->division_id;
 
-                                                    $stock = OfficeStationeryStockPerDivision::where('division_id', $divisionId)
+                                                    $stock = MarketingMediaStockPerDivision::where('division_id', $divisionId)
                                                         ->where('item_id', $itemId)
                                                         ->first();
 
@@ -361,10 +361,10 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                 ->reorderableWithButtons()
                                 ->collapsible(),
                         ]),
-                        Section::make('Pengeluaran ATK Information (Optional)')
+                        Section::make('Pengeluaran Media Cetak Information (Optional)')
                             ->schema([
                                 Hidden::make('type')
-                                    ->default(OfficeStationeryStockUsage::TYPE_DECREASE),
+                                    ->default(MarketingMediaStockUsage::TYPE_DECREASE),
                                 Textarea::make('notes')
                                     ->maxLength(65535)
                                     ->columnSpanFull()
@@ -377,18 +377,18 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
 
                         // Reset status to pending and clear rejection information
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_PENDING,
+                            'status' => MarketingMediaStockUsage::STATUS_PENDING,
                             'rejection_head_id' => null,
                             'rejection_head_at' => null,
                             'rejection_ga_admin_id' => null,
                             'rejection_ga_admin_at' => null,
-                            'rejection_hcg_head_id' => null,
-                            'rejection_hcg_head_at' => null,
+                            'rejection_marketing_head_id' => null,
+                            'rejection_marketing_head_at' => null,
                             'rejection_reason' => null,
                         ]);
 
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil diresubmit!')
+                            ->title('Pengeluaran Media Cetak berhasil diresubmit!')
                             ->success()
                             ->send();
                     }),
@@ -398,17 +398,17 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
+                        RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
                             'approval_head_id' => auth()->user()->id,
                             'approval_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
+                            ->title('Pengeluaran Media Cetak berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -417,7 +417,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
+                        RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -427,14 +427,14 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD,
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD,
                             'rejection_head_id' => auth()->user()->id,
                             'rejection_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->title('Pengeluaran Media Cetak berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -442,17 +442,17 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
                             'approval_ga_admin_id' => auth()->user()->id,
                             'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
+                            ->title('Pengeluaran Media Cetak berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -460,7 +460,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -470,43 +470,43 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN,
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN,
                             'rejection_ga_admin_id' => auth()->user()->id,
                             'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->title('Pengeluaran Media Cetak berhasil di-reject!')
                             ->success()
                             ->send();
                     }),
-                Action::make('approve_as_hcg_head')
+                Action::make('approve_as_mkt_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromMksHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_COMPLETED,
-                            'approval_hcg_head_id' => auth()->user()->id,
-                            'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockUsage::STATUS_COMPLETED,
+                            'approval_marketing_head_id' => auth()->user()->id,
+                            'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
-                        // Process the Pengeluaran ATK
+                        // Process the Pengeluaran Media Cetak
                         $record->processStockUsage();
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve dan stok item berhasil diperbaharui!')
+                            ->title('Pengeluaran Media Cetak berhasil di-approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
-                Action::make('reject_as_hcg_head')
+                Action::make('reject_as_mkt_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::marketingMediaStockUsageNeedApprovalFromMksHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -516,14 +516,14 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
-                            'rejection_hcg_head_id' => auth()->user()->id,
-                            'rejection_hcg_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD,
+                            'rejection_marketing_head_id' => auth()->user()->id,
+                            'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->title('Pengeluaran Media Cetak berhasil di-reject!')
                             ->success()
                             ->send();
                     }),

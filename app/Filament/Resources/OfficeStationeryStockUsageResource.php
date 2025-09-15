@@ -227,11 +227,8 @@ class OfficeStationeryStockUsageResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function($query){
-                // Filter based on user role
-                $user = auth()->user();
-                
                 // GA Admins see only requests with status from Approved by Head to Completed (approval workflow)
-                if ($user->division?->initial === 'GA' && $user->hasRole('Admin') || $user->division?->initial === 'HCG' && $user->hasRole('Head')) {
+                if (UserRoleChecker::isGaAdmin() || UserRoleChecker::isHcgHead()) {
                     // Filter records to show only status from Approved by Head to Completed
                     $statuses = [
                         OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
@@ -293,6 +290,7 @@ class OfficeStationeryStockUsageResource extends Resource
             ->filters([
                 SelectFilter::make('division_id')
                     ->label('Division')
+                    ->visible(fn() => UserRoleChecker::isInDivisionWithInitial(['GA', 'HCG'] && UserRoleChecker::hasRole(['Admin', 'Head'])))
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload(),
@@ -315,57 +313,7 @@ class OfficeStationeryStockUsageResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => $record->status === OfficeStationeryStockUsage::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
                 // Approval Actions
-                Tables\Actions\Action::make('approve_as_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
-                            ->success()
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('reject_as_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => 
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD,
-                            'rejection_head_id' => auth()->user()->id,
-                            'rejection_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
-                            ->success()
-                            ->send();
-                    }),
                 Tables\Actions\Action::make('approve_as_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
@@ -602,7 +550,7 @@ class OfficeStationeryStockUsageResource extends Resource
     {
         return [
             'index' => Pages\ListOfficeStationeryStockUsages::route('/'),
-            'my-divisions' => Pages\MyDivisionOfficeStationeryStockUsage::route('/my-divisions'),
+            'my-division' => Pages\MyDivisionOfficeStationeryStockUsage::route('/my-division'),
             'usage-list' => Pages\UsageListOfficeStationeryStockUsage::route('/usage-list'),
             'view' => Pages\ViewOfficeStationeryStockUsage::route('/{record}'),
         ];

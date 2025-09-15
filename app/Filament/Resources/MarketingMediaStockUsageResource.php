@@ -2,19 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\MarketingMediaStockUsageResource\Pages;
-use App\Filament\Resources\MarketingMediaStockUsageResource\RelationManagers;
-use App\Models\MarketingMediaStockUsage;
-use App\Models\CompanyDivision;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Tables;
 use Filament\Infolists;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\CompanyDivision;
+use App\Helpers\UserRoleChecker;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
+use App\Helpers\RequestStatusChecker;
+use App\Models\MarketingMediaStockUsage;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\MarketingMediaStockUsageResource\Pages;
+use App\Filament\Resources\MarketingMediaStockUsageResource\RelationManagers;
 
 class MarketingMediaStockUsageResource extends Resource
 {
@@ -124,6 +127,21 @@ class MarketingMediaStockUsageResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function($query){
+                // GA Admins see only requests with status from Approved by Head to Completed (approval workflow)
+                if (UserRoleChecker::isGaAdmin() || UserRoleChecker::isMksHead()) {
+                    // Filter records to show only status from Approved by Head to Completed
+                    $statuses = [
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
+                        MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockUsage::STATUS_COMPLETED,
+                    ];
+                    
+                    $query->whereIn('status', $statuses)->orderByDesc('created_at')->orderByDesc('usage_number');
+                }
+                return $query;
+
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('usage_number')
                     ->searchable()
@@ -191,132 +209,94 @@ class MarketingMediaStockUsageResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === MarketingMediaStockUsage::STATUS_PENDING && auth()->user()->id === $record->requested_by),
-                
                 // Approval Actions
-                Tables\Actions\Action::make('approve_as_head')
-                    ->label('Approve (Head)')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now(),
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengeluaran Media Cetak approved successfully')
-                            ->success()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('reject_as_head')
-                    ->label('Reject (Head)')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_PENDING && 
-                        auth()->user()->hasRole('Head') &&
-                        auth()->user()->division_id === $record->division_id
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now(),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengeluaran Media Cetak rejected successfully')
-                            ->warning()
-                            ->send();
-                    }),
-                
                 Tables\Actions\Action::make('approve_as_ga_admin')
-                    ->label('Approve (GA Admin)')
+                    ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        $record->isDecrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
-                    ->databaseTransaction()
                     ->action(function ($record) {
-                        // Update stock levels
-                        foreach ($record->items as $item) {
-                            $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
-                                ->where('item_id', $item->item_id)
-                                ->lockForUpdate()
-                                ->first();
-                                
-                            if ($officeStationeryStockPerDivision) {
-                                // Store previous stock
-                                $item->previous_stock = $officeStationeryStockPerDivision->current_stock;
-                                
-                                // Update stock
-                                $officeStationeryStockPerDivision->decrement('current_stock', $item->quantity);
-                                
-                                // Store new stock
-                                $item->new_stock = $officeStationeryStockPerDivision->current_stock;
-                                $item->save();
-                            }
-                        }
-                        
                         $record->update([
-                            'status' => MarketingMediaStockUsage::STATUS_COMPLETED,
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
                             'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now(),
+                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengeluaran Media Cetak approved by GA Admin and stock updated')
+                        Notification::make()
+                            ->title('Pengeluaran ATK berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
-                
                 Tables\Actions\Action::make('reject_as_ga_admin')
-                    ->label('Reject (GA Admin)')
+                    ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => 
-                        $record->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD && 
-                        $record->isDecrease() && auth()->user()->division?->initial === 'GA' &&
-                        auth()->user()->hasRole('Admin')
-                    )
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
+                            ->label('Rejection Reason')
                             ->required()
                             ->maxLength(65535),
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN,
-                            'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now(),
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengeluaran Media Cetak rejected by GA Admin successfully')
-                            ->warning()
+                        Notification::make()
+                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('approve_as_marketing_head')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD,
+                            'approval_marketing_head_id' => auth()->user()->id,
+                            'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
+                        ]);
+                        
+                        // Process the Pengeluaran ATK
+                        $record->processStockUsage();
+                        
+                        Notification::make()
+                            ->title('Pengeluaran ATK berhasil di-approve dan stok item berhasil diperbaharui!')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('reject_as_marketing_head')
+                    ->label('Reject')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('rejection_reason')
+                            ->label('Rejection Reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD,
+                            'rejection_marketing_head_id' => auth()->user()->id,
+                            'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Pengeluaran ATK berhasil di-reject!')
+                            ->success()
                             ->send();
                     }),
             ])
@@ -513,18 +493,18 @@ class MarketingMediaStockUsageResource extends Resource
                             ->visible(fn ($record) => $record->rejection_ga_admin_id !== null),
                         Infolists\Components\TextEntry::make('supervisorMarketing.name')
                             ->label('HCG Head Approve')
-                            ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
-                        Infolists\Components\TextEntry::make('approval_mkt_head_at')
+                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
+                        Infolists\Components\TextEntry::make('approval_marketing_head_at')
                             ->label('HCG Head Approve At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->approval_mkt_head_id !== null),
+                            ->visible(fn ($record) => $record->approval_marketing_head_id !== null),
                         Infolists\Components\TextEntry::make('rejectionSupervisorMarketing.name')
                             ->label('HCG Head Rejection')
-                            ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
-                        Infolists\Components\TextEntry::make('rejection_mkt_head_at')
+                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
+                        Infolists\Components\TextEntry::make('rejection_marketing_head_at')
                             ->label('HCG Head Rejection At')
                             ->dateTime()
-                            ->visible(fn ($record) => $record->rejection_mkt_head_id !== null),
+                            ->visible(fn ($record) => $record->rejection_marketing_head_id !== null),
                         Infolists\Components\TextEntry::make('rejection_reason')
                             ->label('Rejection Reason')
                             ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD, MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD]))
@@ -568,6 +548,7 @@ class MarketingMediaStockUsageResource extends Resource
         return [
             'index' => Pages\ListMarketingMediaStockUsages::route('/'),
             'view' => Pages\ViewMarketingMediaStockUsage::route('/{record}'),
+            'my-division' => Pages\MyDivisionMarketingMediaStockUsage::route('/my-division'),
         ];
     }
 }

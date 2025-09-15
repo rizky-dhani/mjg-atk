@@ -226,13 +226,8 @@ class OfficeStationeryStockRequestResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function($query){
-                // Filter based on user role
-                $user = auth()->user();
-                
                 // IPC & HCG Admins & Heads can see all requests (for approval workflow)
-                if (($user->division?->initial === 'IPC' && ($user->hasRole('Admin') || $user->hasRole('Head'))) ||
-                    ($user->division?->initial === 'GA' && ($user->hasRole('Admin'))) ||
-                    ($user->division?->initial === 'HCG' && ($user->hasRole('Admin') || $user->hasRole('Head')))) {
+                if (UserRoleChecker::isIpcAdmin()||UserRoleChecker::isIpcHead()|| UserRoleChecker::isGaAdmin() ||UserRoleChecker::isDivisionHead()) {
                                 // Filter records to show only status from Approved by Head IPC (Pre Adjustment) to Completed
                 $statuses = [
                     OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
@@ -303,6 +298,7 @@ class OfficeStationeryStockRequestResource extends Resource
             ->filters([
                 SelectFilter::make('division_id')
                     ->label('Division')
+                    ->visible(fn() => UserRoleChecker::isInDivisionWithInitial(['IPC', 'GA'] && UserRoleChecker::hasRole(['Admin', 'Head'])))
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload(),
