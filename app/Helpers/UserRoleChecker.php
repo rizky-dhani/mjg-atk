@@ -136,6 +136,33 @@ class UserRoleChecker
     }
     
     /**
+     * Check if the user is in any Marketing division
+     *
+     * @return bool
+     */
+    public static function isInMarketingDivision(): bool
+    {
+        // Get the authenticated user
+        $user = auth()->user();
+        
+        // Return false if no user is authenticated
+        if (!$user) {
+            return false;
+        }
+        
+        // Get user's division name using null-safe operator
+        $userDivisionName = $user->division?->name;
+        
+        // If no division assigned to user, return false
+        if (!$userDivisionName) {
+            return false;
+        }
+        
+        // Check if the division name contains "Marketing"
+        return stripos($userDivisionName, 'Marketing') !== false;
+    }
+
+    /**
      * Check if the user is an Marketing Support Head
      *
      * @return bool
