@@ -111,48 +111,48 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
             ->actions([
                 ViewAction::make(),
                 // Approval Actions up to IPC Head
-                Action::make('approve_as_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
+                // Action::make('approve_as_head')
+                //     ->label('Approve')
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
+                //     ->requiresConfirmation()
+                //     ->action(function ($record) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD,
+                //             'approval_head_id' => auth()->user()->id,
+                //             'approval_head_at' => now()->timezone('Asia/Jakarta'),
+                //         ]);
                         
-                        Notification::make()
-                            ->title('Pemasukan ATK berhasil di-approve!')
-                            ->success()
-                            ->send();
-                    }),
+                //         Notification::make()
+                //             ->title('Pemasukan ATK berhasil di-approve!')
+                //             ->success()
+                //             ->send();
+                //     }),
                 
-                Action::make('reject_as_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
-                            'rejection_head_id' => auth()->user()->id,
-                            'rejection_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
+                // Action::make('reject_as_head')
+                //     ->label('Reject')
+                //     ->icon('heroicon-o-x-circle')
+                //     ->color('danger')
+                //     ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromDivisionHead($record))
+                //     ->form([
+                //         Textarea::make('rejection_reason')
+                //             ->required()
+                //             ->maxLength(65535),
+                //     ])
+                //     ->action(function ($record, array $data) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
+                //             'rejection_head_id' => auth()->user()->id,
+                //             'rejection_head_at' => now()->timezone('Asia/Jakarta'),
+                //             'rejection_reason' => $data['rejection_reason'],
+                //         ]);
                         
-                        Notification::make()
-                            ->title('Pemasukan ATK berhasil di-reject!')
-                            ->warning()
-                            ->send();
-                    }),
+                //         Notification::make()
+                //             ->title('Pemasukan ATK berhasil di-reject!')
+                //             ->warning()
+                //             ->send();
+                //     }),
                 
                 Action::make('approve_as_ipc')
                     ->label('Approve')

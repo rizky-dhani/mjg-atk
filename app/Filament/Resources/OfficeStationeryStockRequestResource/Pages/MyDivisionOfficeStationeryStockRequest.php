@@ -187,73 +187,73 @@ class MyDivisionOfficeStationeryStockRequest extends ListRecords
                         Notification::make()->title('Permintaan ATK berhasil di-reject!')->warning()->send();
                     }),
 
-                Action::make('approve_as_ipc')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
+                // Action::make('approve_as_ipc')
+                //     ->label('Approve')
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                //     ->requiresConfirmation()
+                //     ->action(function ($record) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
+                //             'approval_ipc_id' => auth()->user()->id,
+                //             'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
+                //         ]);
 
-                        Notification::make()->title('Permintaan ATK berhasil di-approve!')->success()->send();
-                    }),
+                //         Notification::make()->title('Permintaan ATK berhasil di-approve!')->success()->send();
+                //     }),
 
-                Action::make('reject_as_ipc')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
-                    ->requiresConfirmation()
-                    ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
-                            'rejection_ipc_id' => auth()->user()->id,
-                            'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
+                // Action::make('reject_as_ipc')
+                //     ->label('Reject')
+                //     ->icon('heroicon-o-x-circle')
+                //     ->color('danger')
+                //     ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                //     ->requiresConfirmation()
+                //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
+                //     ->action(function ($record, array $data) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
+                //             'rejection_ipc_id' => auth()->user()->id,
+                //             'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
+                //             'rejection_reason' => $data['rejection_reason'],
+                //         ]);
 
-                        Notification::make()->title('Permintaan ATK berhasil di-reject!')->warning()->send();
-                    }),
+                //         Notification::make()->title('Permintaan ATK berhasil di-reject!')->warning()->send();
+                //     }),
 
-                Action::make('approve_as_ipc_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
+                // Action::make('approve_as_ipc_head')
+                //     ->label('Approve')
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                //     ->requiresConfirmation()
+                //     ->action(function ($record) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                //             'approval_ipc_head_id' => auth()->user()->id,
+                //             'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                //         ]);
 
-                        Notification::make()->title('Permintaan ATK berhasil di-approve!')->success()->send();
-                    }),
+                //         Notification::make()->title('Permintaan ATK berhasil di-approve!')->success()->send();
+                //     }),
 
-                Action::make('reject_as_ipc_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
-                    ->requiresConfirmation()
-                    ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'rejection_ipc_head_id' => auth()->user()->id,
-                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
+                // Action::make('reject_as_ipc_head')
+                //     ->label('Reject')
+                //     ->icon('heroicon-o-x-circle')
+                //     ->color('danger')
+                //     ->visible(fn($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                //     ->requiresConfirmation()
+                //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
+                //     ->action(function ($record, array $data) {
+                //         $record->update([
+                //             'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                //             'rejection_ipc_head_id' => auth()->user()->id,
+                //             'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                //             'rejection_reason' => $data['rejection_reason'],
+                //         ]);
 
-                        Notification::make()->title('Permintaan ATK berhasil di-reject!')->warning()->send();
-                    }),
+                //         Notification::make()->title('Permintaan ATK berhasil di-reject!')->warning()->send();
+                //     }),
 
                 EditAction::make('resubmit_request')
                     ->label('Resubmit')
