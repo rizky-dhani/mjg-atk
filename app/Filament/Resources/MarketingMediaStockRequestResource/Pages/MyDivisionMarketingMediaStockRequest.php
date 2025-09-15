@@ -4,11 +4,13 @@ namespace App\Filament\Resources\MarketingMediaStockRequestResource\Pages;
 
 use Filament\Actions;
 use Filament\Forms\Form;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Table;
+use App\Helpers\UserRoleChecker;
+use App\Models\MarketingMediaItem;
 use Filament\Forms\Components\Grid;
 use Filament\Tables\Actions\Action;
-use App\Models\MarketingMediaItem;
+use Filament\Support\Enums\MaxWidth;
+use App\Helpers\RequestStatusChecker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
@@ -140,7 +142,7 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromDivisionHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
@@ -155,9 +157,8 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                 Action::make('reject_as_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
+                    ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromDivisionHead($record))
                     ->color('danger')
-                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && auth()->user()->hasRole('Head') && auth()->user()->division_id === $record->division_id)
-                    ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
@@ -169,80 +170,80 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                         Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
                     }),
 
-                Action::make('approve_as_ipc')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
+                // Action::make('approve_as_ipc')
+                //     ->label('Approve')
+                //     ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromIpcAdmin($record))
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->requiresConfirmation()
+                //     ->action(function ($record) {
+                //         $record->update([
+                //             'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
+                //             'approval_ipc_id' => auth()->user()->id,
+                //             'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
+                //         ]);
 
-                        Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
-                    }),
+                //         Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
+                //     }),
 
-                Action::make('reject_as_ipc')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn($record) => $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Admin'))
-                    ->requiresConfirmation()
-                    ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
-                            'rejection_ipc_id' => auth()->user()->id,
-                            'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
+                // Action::make('reject_as_ipc')
+                //     ->label('Reject')
+                //     ->icon('heroicon-o-x-circle')
+                //     ->color('danger')
+                //     ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromIpcHead($record))
+                //     ->requiresConfirmation()
+                //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
+                //     ->action(function ($record, array $data) {
+                //         $record->update([
+                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
+                //             'rejection_ipc_id' => auth()->user()->id,
+                //             'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
+                //             'rejection_reason' => $data['rejection_reason'],
+                //         ]);
 
-                        Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
-                    }),
+                //         Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
+                //     }),
 
-                Action::make('approve_as_ipc_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn($record) => $record->needsIpcHeadApproval() && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Head'))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
+                // Action::make('approve_as_ipc_head')
+                //     ->label('Approve')
+                //     ->icon('heroicon-o-check-circle')
+                //     ->color('success')
+                //     ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromIpcHead($record))
+                //     ->requiresConfirmation()
+                //     ->action(function ($record) {
+                //         $record->update([
+                //             'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                //             'approval_ipc_head_id' => auth()->user()->id,
+                //             'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                //         ]);
 
-                        Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
-                    }),
+                //         Notification::make()->title('Permintaan Media Cetak berhasil di approve!')->success()->send();
+                //     }),
 
-                Action::make('reject_as_ipc_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn($record) => $record->needsIpcHeadApproval() && $record->isIncrease() && auth()->user()->division?->initial === 'IPC' && auth()->user()->hasRole('Head'))
-                    ->requiresConfirmation()
-                    ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'rejection_ipc_head_id' => auth()->user()->id,
-                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
+                // Action::make('reject_as_ipc_head')
+                //     ->label('Reject')
+                //     ->icon('heroicon-o-x-circle')
+                //     ->color('danger')
+                //     ->visible(fn($record) => RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromIpcHead($record))
+                //     ->requiresConfirmation()
+                //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
+                //     ->action(function ($record, array $data) {
+                //         $record->update([
+                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                //             'rejection_ipc_head_id' => auth()->user()->id,
+                //             'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                //             'rejection_reason' => $data['rejection_reason'],
+                //         ]);
 
-                        Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
-                    }),
+                //         Notification::make()->title('Permintaan Media Cetak berhasil di reject!')->warning()->send();
+                //     }),
 
                 EditAction::make('resubmit_request')
                     ->label('Resubmit')
                     ->icon('heroicon-o-arrow-path')
                     ->color('primary')
                     ->modalWidth(MaxWidth::SevenExtraLarge)
-                    ->visible(fn($record) => ($record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD || $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC || $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) && auth()->user()->hasRole('Admin') && auth()->user()->division_id === $record->division_id)
+                    ->visible(fn($record) => RequestStatusChecker::canResubmitMarketingMediaStockRequest($record) && UserRoleChecker::getRequesterId($record))
                     ->form([
                         Section::make('Rejection Information')
                             ->schema([

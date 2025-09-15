@@ -29,21 +29,40 @@ class MarketingMediaStockRequestResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\Section::make('Request Information')
-                    ->schema([
-                        Forms\Components\Hidden::make('type')
-                            ->default(MarketingMediaStockRequest::TYPE_INCREASE),
-                        Forms\Components\Textarea::make('notes')
-                            ->maxLength(65535)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-                
-                Forms\Components\Section::make('Request Items')
+        ->schema([
+                Forms\Components\Grid::make(1)
                     ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship()
+                            ->cloneable()
+                            ->extraItemActions([
+                                \Filament\Forms\Components\Actions\Action::make('add_new_after')
+                                    ->icon('heroicon-m-plus')
+                                    ->color('primary')
+                                    ->action(function (array $arguments, \Filament\Forms\Components\Repeater $component) {
+                                        $state = $component->getState();
+                                        $currentKey = $arguments['item'];
+                                        
+                                        $newKey = uniqid('item_');
+                                        // Pre-populate with empty values for proper binding
+                                        $newItem = [
+                                            'category_id' => null,
+                                            'item_id' => null,
+                                            'quantity' => null,
+                                            'notes' => null,
+                                        ];
+                                        
+                                        // Insert at correct position
+                                        $keys = array_keys($state);
+                                        $currentIndex = array_search($currentKey, $keys);
+                                        
+                                        $newState = array_slice($state, 0, $currentIndex + 1, true) +
+                                                [$newKey => $newItem] +
+                                                array_slice($state, $currentIndex + 1, null, true);
+                                        
+                                        $component->state($newState);
+                                    }),
+                            ])
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->label('Category')
@@ -63,7 +82,8 @@ class MarketingMediaStockRequestResource extends Resource
                                     })
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->live(),
                                 Forms\Components\TextInput::make('quantity')
                                     ->required()
                                     ->numeric()
@@ -90,7 +110,7 @@ class MarketingMediaStockRequestResource extends Resource
                                         $maxLimit = $setting->max_limit;
                                         $availableSpace = $maxLimit - $currentStock;
                                         
-                                        return "Current stock: {$currentStock}, Max limit: {$maxLimit}, Available space: {$availableSpace}";
+                                        return "Current: {$currentStock} | Max: {$maxLimit} | Available: {$availableSpace}";
                                     })
                                     ->live()
                                     ->afterStateUpdated(function (callable $get, callable $set, $state) {
@@ -121,22 +141,73 @@ class MarketingMediaStockRequestResource extends Resource
                                             
                                             // Show notification to user
                                             \Filament\Notifications\Notification::make()
-                                                ->title('Quantity adjusted')
-                                                ->body("The requested quantity has been adjusted to the maximum available space: {$availableSpace}")
+                                                ->title('Kuantitas melebih batas maksimal')
+                                                ->body("Kuantitas penyesuaian melebihi batas maksimal, maksimal kuantitas yang bisa diminta: {$availableSpace}")
                                                 ->warning()
                                                 ->send();
                                         }
-                                    }),
+                                    })
+                                    ->rules([
+                                        function () {
+                                            return function (string $attribute, $value, \Closure $fail, $livewire) {
+                                                // Extract the repeater index from the attribute name
+                                                // e.g., "data.items.0.quantity" -> index 0
+                                                preg_match('/items\.(\d+)\.quantity/', $attribute, $matches);
+                                                $index = $matches[1] ?? null;
+                                                
+                                                if ($index === null) {
+                                                    return;
+                                                }
+                                                
+                                                // Get the item_id for this repeater item
+                                                $itemId = data_get($livewire, "data.items.{$index}.item_id");
+                                                
+                                                if (!$itemId || !$value) {
+                                                    return;
+                                                }
+                                                
+                                                $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', auth()->user()->division_id)
+                                                    ->where('item_id', $itemId)
+                                                    ->first();
+                                                    
+                                                if (!$setting) {
+                                                    return;
+                                                }
+                                                
+                                                $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', auth()->user()->division_id)
+                                                    ->where('item_id', $itemId)
+                                                    ->first();
+                                                    
+                                                $currentStock = $stock ? $stock->current_stock : 0;
+                                                $maxLimit = $setting->max_limit;
+                                                $availableSpace = $maxLimit - $currentStock;
+                                                
+                                                if ($value > $availableSpace) {
+                                                    $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
+                                                }
+                                            };
+                                        },
+                                    ]),
                                 Forms\Components\Textarea::make('notes')
                                     ->maxLength(1000)
-                                    ->columnSpanFull(),
+                                    ->rows(1)
+                                    ->autosize(),
                             ])
-                            ->columns(3)
+                            ->columns(4)
                             ->minItems(1)
                             ->addActionLabel('Add Item')
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
+                Forms\Components\Section::make('Pemasukan Media Cetak Information (Optional)')
+                    ->schema([
+                        Forms\Components\Hidden::make('type')
+                            ->default(MarketingMediaStockRequest::TYPE_INCREASE),
+                        Forms\Components\Textarea::make('notes')
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -252,203 +323,162 @@ class MarketingMediaStockRequestResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === MarketingMediaStockRequest::STATUS_PENDING && UserRoleChecker::getRequesterId($record)),
-                
                 // Approval Actions
-                Tables\Actions\Action::make('approve_as_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now(),
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di approve!')
-                            ->success()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('reject_as_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
-                        UserRoleChecker::isDivisionHead() &&
-                        UserRoleChecker::canApproveInDivision($record)
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now(),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di reject!')
-                            ->warning()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('approve_as_ipc')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
-                        UserRoleChecker::isDivisionAdmin()
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di approve!')
-                            ->success()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('reject_as_ipc')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
-                        UserRoleChecker::isDivisionAdmin()
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now(),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di reject!')
-                            ->warning()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('approve_as_ipc_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
-                        UserRoleChecker::isDivisionHead()
-                    )
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di approve!')
-                            ->success()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('reject_as_ipc_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('IPC') &&
-                        UserRoleChecker::isDivisionHead()
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now(),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di reject!')
-                            ->warning()
-                            ->send();
-                    }),
-                
-                Tables\Actions\Action::make('adjust_and_approve_stock')
+                Tables\Actions\EditAction::make('adjust_and_approve_stock')
                     ->label('Adjust & Approve Stock')
                     ->icon('heroicon-o-pencil-square')
                     ->color('primary')
+                    ->modalHeading('Penyesuaian Stok Pemasukan Media Cetak')
+                    ->modalSubheading('Apakah Anda yakin ingin melakukan penyesuaian stok untuk Pemasukan Media Cetak ini?')
+                    ->modalWidth(\Filament\Support\Enums\MaxWidth::SevenExtraLarge)
                     ->visible(fn ($record) =>
-                        $record->needsStockAdjustmentApproval() &&
-                        UserRoleChecker::isDivisionAdmin() &&
-                        UserRoleChecker::isInDivisionWithInitial('IPC')
+                        RequestStatusChecker::marketingMediaStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record))
+                    ->form(function ($record) {
+                        return [
+                            Forms\Components\Repeater::make('items')
+                                ->relationship()
+                                ->schema([
+                                    Forms\Components\TextInput::make('item_name')
+                                        ->label('Item')
+                                        ->disabled()
+                                        ->extraInputAttributes(['class' => 'whitespace-normal'])
+                                        ->formatStateUsing(fn ($record) => $record?->item?->name ?? ''),
+                                    Forms\Components\TextInput::make('quantity')
+                                        ->label('Requested Quantity')
+                                        ->disabled(),
+                                    Forms\Components\TextInput::make('adjusted_quantity')
+                                        ->label('Adjusted Quantity')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->required()
+                                        ->default(fn ($record) => $record?->quantity ?? 0)
+                                        ->helperText(function (callable $get, $record) {
+                                            if (!$record) {
+                                                return '';
+                                            }
+                                            
+                                            $itemId = $record->item_id;
+                                            if (!$itemId) {
+                                                return '';
+                                            }
+                                            
+                                            $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            if (!$setting) {
+                                                return 'No inventory limit set for this item';
+                                            }
+                                            
+                                            $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            $currentStock = $stock ? $stock->current_stock : 0;
+                                            $maxLimit = $setting->max_limit;
+                                            $availableSpace = $maxLimit - $currentStock;
+                                            
+                                            return "Current: {$currentStock} | Max: {$maxLimit} | Available: {$availableSpace}";
+                                        })
+                                        ->live()
+                                        ->afterStateUpdated(function (callable $get, callable $set, $state, $record) {
+                                            if (!$record || !$state) {
+                                                return;
+                                            }
+                                            
+                                            $itemId = $record->item_id;
+                                            if (!$itemId) {
+                                                return;
+                                            }
+                                            
+                                            $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            if (!$setting) {
+                                                return;
+                                            }
+                                            
+                                            $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                ->where('item_id', $itemId)
+                                                ->first();
+                                                
+                                            $currentStock = $stock ? $stock->current_stock : 0;
+                                            $maxLimit = $setting->max_limit;
+                                            $availableSpace = $maxLimit - $currentStock;
+                                            
+                                            if ($state > $availableSpace) {
+                                                // Reset to available space
+                                                $set('adjusted_quantity', $availableSpace);
+                                                
+                                                // Show notification to user
+                                                \Filament\Notifications\Notification::make()
+                                                    ->title('Kuantitas melebih batas maksimal')
+                                                    ->body("Kuantitas penyesuaian melebihi batas maksimal, maksimal kuantitas yang bisa diminta: {$availableSpace}")
+                                                    ->warning()
+                                                    ->send();
+                                            }
+                                        })
+                                        ->rules([
+                                            function ($record) {
+                                                return function (string $attribute, $value, \Closure $fail) use ($record) {
+                                                    if (!$record || !$value) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $itemId = $record->item_id;
+                                                    if (!$itemId) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $setting = \App\Models\MarketingMediaDivisionInventorySetting::where('division_id', $record->stockRequest->division_id)
+                                                        ->where('item_id', $itemId)
+                                                        ->first();
+                                                        
+                                                    if (!$setting) {
+                                                        return;
+                                                    }
+                                                    
+                                                    $stock = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->stockRequest->division_id)
+                                                        ->where('item_id', $itemId)
+                                                        ->first();
+                                                        
+                                                    $currentStock = $stock ? $stock->current_stock : 0;
+                                                    $maxLimit = $setting->max_limit;
+                                                    $availableSpace = $maxLimit - $currentStock;
+                                                    
+                                                    if ($value > $availableSpace) {
+                                                        $fail("Kuantitas yang diminta ({$value}) melebihi batas maksimal yaitu ({$availableSpace}) untuk item ini.");
+                                                    }
+                                                };
+                                            },
+                                        ]),
+                                ])
+                                ->columns(3)
+                                ->disabled(fn () => !$record->needsStockAdjustmentApproval())
+                                ->addable(false)
+                                ->deletable(false)
+                                ->reorderable(false)
+                                ->required()
+                        ];
+                    })
+                    ->successNotification(
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pemasukan Media Cetak penyesuaian stok berhasil di-approve!')
+                            ->success()
                     )
-                    ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Repeater::make('items')
-                            ->relationship('items')
-                            ->schema([
-                                Forms\Components\TextInput::make('item.name')
-                                    ->label('Item')
-                                    ->disabled(),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label('Requested Quantity')
-                                    ->disabled(),
-                                Forms\Components\TextInput::make('adjusted_quantity')
-                                    ->label('Adjusted Quantity')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->required()
-                                    ->default(fn ($state, $record) => $record->quantity),
-                            ])
-                            ->columns(3)
-                            ->disabled(fn ($record) => !$record->needsStockAdjustmentApproval())
-                    ])
-                    ->action(function ($record, array $data) {
+                    ->mutateFormDataUsing(function (array $data, $record) {
                         // Validate adjusted quantities against maximum limits
                         $validationErrors = [];
-                        foreach ($record->items as $item) {
-                            $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
+                        foreach ($record->items as $index => $item) {
+                            if (!$item) {
+                                continue;
+                            }
                             
-                            // Get current stock and maximum limit
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
+                            
+                            // Get Current and maximum limit
                             $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
                                 ->where('item_id', $item->item_id)
                                 ->first();
@@ -463,36 +493,39 @@ class MarketingMediaStockRequestResource extends Resource
                             
                             // Check against maximum limit
                             if ($divisionInventorySetting && $newStock > $divisionInventorySetting->max_limit) {
-                                $validationErrors[] = "Item {$item->item->name} would exceed the maximum limit of {$divisionInventorySetting->max_limit} units (new total would be {$newStock} units).";
+                                $validationErrors[] = "Item {$item->item->name} melebihi batas maksimal yaitu {$divisionInventorySetting->max_limit} units (kuantitas baru stok yaitu {$newStock} unit).";
                             }
                         }
                         
                         // If there are validation errors, display them and stop the process
                         if (!empty($validationErrors)) {
                             \Filament\Notifications\Notification::make()
-                                ->title('Stock adjustment exceeds maximum limits')
-                                ->body(implode("\n", $validationErrors))
+                                ->title('Penyesuaian stok melebihi batas maksimum')
+                                ->body(implode("", $validationErrors))
                                 ->danger()
                                 ->send();
                             return;
                         }
                         
                         // Save adjusted quantities
-                        foreach ($record->items as $item) {
-                            $item->adjusted_quantity = $item->adjusted_quantity ?? $item->quantity;
+                        foreach ($record->items as $index => $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
+                            // Get adjusted quantity from form data
+                            $adjustedQuantity = $data['items'][$index]['adjusted_quantity'] ?? $item->quantity;
+                            $item->adjusted_quantity = $adjustedQuantity;
                             $item->save();
                         }
                         
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
                             'approval_stock_adjustment_id' => auth()->user()->id,
-                            'approval_stock_adjustment_at' => now(),
+                            'approval_stock_adjustment_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak penyesuaian stok berhasil di approve!')
-                            ->success()
-                            ->send();
+                        return $data;
                     }),
                 
                 Tables\Actions\Action::make('approve_as_ga_admin')
@@ -500,20 +533,17 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        $record->needsGaAdminApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') &&
-                        UserRoleChecker::isDivisionAdmin()
-                    )
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
                             'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now()
+                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta')
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di approve!')
+                            ->title('Pemasukan Media Cetak berhasil di-approve!')
                             ->success()
                             ->send();
                     }),
@@ -523,11 +553,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        $record->needsGaAdminApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('GA') &&
-                        UserRoleChecker::isDivisionAdmin()
-                    )
-                    ->requiresConfirmation()
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromGaAdmin($record))
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
                             ->required()
@@ -536,13 +562,59 @@ class MarketingMediaStockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-                            'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now(),
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di reject!')
+                            ->title('Pemasukan Media Cetak berhasil di-reject!')
+                            ->warning()
+                            ->send();
+                    }),
+                
+                Tables\Actions\Action::make('approve_as_second_ipc_head')
+                    ->label('Approve ')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) =>
+                        RequestStatusChecker::marketingMediaStockRequestNeedSecondApprovalFromIpcHead($record))
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                            'approval_ipc_head_id' => auth()->user()->id,
+                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta')
+                        ]);
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pemasukan Media Cetak berhasil di-approve!')
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('reject_as_second_ipc_head')
+                    ->label('Reject ')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) =>
+                        RequestStatusChecker::marketingMediaStockRequestNeedSecondApprovalFromIpcHead($record))
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('rejection_reason')
+                            ->required()
+                            ->maxLength(65535),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                            'rejection_ipc_head_id' => auth()->user()->id,
+                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                            'rejection_reason' => $data['rejection_reason'],
+                        ]);
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pemasukan Media Cetak berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -552,15 +624,16 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        $record->needsMarketingHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('MKS') &&
-                        UserRoleChecker::isDivisionHead()
-                    )
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMksHead($record))
                     ->requiresConfirmation()
                     ->databaseTransaction()
                     ->action(function ($record) {
                         // Update stock levels with adjusted quantities
                         foreach ($record->items as $item) {
+                            if (!$item) {
+                                continue;
+                            }
+                            
                             $adjustedQuantity = $item->adjusted_quantity ?? $item->quantity;
                             
                             $officeStationeryStockPerDivision = \App\Models\MarketingMediaStockPerDivision::where('division_id', $record->division_id)
@@ -584,13 +657,14 @@ class MarketingMediaStockRequestResource extends Resource
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_COMPLETED,
                             'approval_marketing_head_id' => auth()->user()->id,
-                            'approval_marketing_head_at' => now(),
+                            'approval_marketing_head_at' => now()->timezone('Asia/Jakarta'),
+                            // Automatically mark as delivered
                             'delivered_by' => auth()->user()->id,
                             'delivered_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di approve dan stok item berhasil diperbaharui!')
+                            ->title('Pemasukan Media Cetak berhasil di-approve dan stok item berhasil diperbaharui!')
                             ->success()
                             ->send();
                     }),
@@ -600,10 +674,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        $record->needsMarketingHeadApproval() &&
-                        $record->isIncrease() && UserRoleChecker::isInDivisionWithInitial('MKS') &&
-                        UserRoleChecker::isDivisionHead()
-                    )
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMksHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -613,13 +684,13 @@ class MarketingMediaStockRequestResource extends Resource
                     ->action(function ($record, array $data) {
                         $record->update([
                             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
-                            'approval_marketing_head_id' => auth()->user()->id,
-                            'approval_marketing_head_at' => now(),
+                            'rejection_marketing_head_id' => auth()->user()->id,
+                            'rejection_marketing_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Pemasukan Media Cetak berhasil di reject!')
+                            ->title('Pemasukan Media Cetak berhasil di-reject!')
                             ->warning()
                             ->send();
                     }),
@@ -766,7 +837,7 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->label('Type')
                                     ->formatStateUsing(fn ($state) => match ($state) {
                                         MarketingMediaStockRequest::TYPE_INCREASE => 'Stock Increase',
-                                        default => ucfirst(str_replace('_', ' ', $state)),
+                                        default => ucfirst($state),
                                     })
                                     ->badge()
                                     ->color(fn ($state) => match ($state) {
@@ -777,17 +848,21 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->label('Notes'),
                             ]),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->id('stock-request-detail'),
+                    
                 \Filament\Infolists\Components\Section::make('Pemasukan Media Cetak Status')
                     ->schema([
-                        \Filament\Infolists\Components\Grid::make(5)
+                        \Filament\Infolists\Components\Grid::make(6)
                             ->schema([
                                 \Filament\Infolists\Components\TextEntry::make('status')
                                     ->label('Status')
                                     ->formatStateUsing(fn ($state) => match ($state) {
                                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head (Post Adjustment)',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head (Post Adjustment)',
+                                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD => 'Approved by IPC Head ',
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD => 'Rejected by IPC Head ',
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
@@ -797,7 +872,7 @@ class MarketingMediaStockRequestResource extends Resource
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
                                     ->badge()
-                                    ->color(fn ($state) => match ($state) {
+                                    ->color(fn (string $state): string => match ($state) {
                                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
@@ -808,7 +883,8 @@ class MarketingMediaStockRequestResource extends Resource
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                                         default => 'secondary',
-                                    }),
+                                    })
+                                    ->columnSpan(6),
                                 \Filament\Infolists\Components\TextEntry::make('divisionHead.name')
                                     ->label('Head Approve')
                                     ->placeholder('-')
@@ -917,18 +993,31 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->dateTime()
                                     ->placeholder('-')
                                     ->visible(fn ($record) => $record->rejection_ga_head_id !== null),
+                                \Filament\Infolists\Components\TextEntry::make('deliverer.name')
+                                    ->label('Completed By')
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === MarketingMediaStockRequest::STATUS_COMPLETED),
+                                \Filament\Infolists\Components\TextEntry::make('delivered_at')
+                                    ->label('Completed At')
+                                    ->dateTime()
+                                    ->placeholder('-')
+                                    ->visible(fn ($record) => $record->delivered_by !== null && $record->status === MarketingMediaStockRequest::STATUS_COMPLETED),
                                 \Filament\Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
                                     ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD]))
                                     ->columnSpan(6),
                             ]),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->id('stock-request-status'),
+
                 \Filament\Infolists\Components\Section::make('Pemasukan Media Cetak Items')
                     ->schema([
                         \Filament\Infolists\Components\RepeatableEntry::make('items')
                             ->schema([
-                                \Filament\Infolists\Components\Grid::make(4)
+                                \Filament\Infolists\Components\Grid::make(5)
                                     ->schema([
                                         \Filament\Infolists\Components\TextEntry::make('item.name')
                                             ->label('Name'),
@@ -946,7 +1035,10 @@ class MarketingMediaStockRequestResource extends Resource
                             ])
                             ->columns(1),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->collapsible()
+                    ->persistCollapsed()
+                    ->id('stock-request-items'),
             ]);
     }
 
