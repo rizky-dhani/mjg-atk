@@ -213,7 +213,7 @@ class RequestStatusChecker
 
     // Marketing Media Stock Request Approval
     /**
-     * Check if an Office Stationery Stock Request need approval from Division Head
+     * Check if a Marketing Media Stock Request need approval from Division Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -224,7 +224,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need approval from IPC Admin
+     * Check if a Marketing Media Stock Request need approval from IPC Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -235,7 +235,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need approval from IPC Head
+     * Check if a Marketing Media Stock Request need approval from IPC Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -246,7 +246,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need stock adjustment approval from IPC Admin
+     * Check if a Marketing Media Stock Request need stock adjustment approval from IPC Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -257,7 +257,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need second approval from IPC Head after Stock Adjustment approved
+     * Check if a Marketing Media Stock Request need second approval from IPC Head after Stock Adjustment approved
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -268,7 +268,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need approval from GA Admin
+     * Check if a Marketing Media Stock Request need approval from GA Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -279,7 +279,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need approval from HCG Head
+     * Check if a Marketing Media Stock Request need approval from MKS Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
