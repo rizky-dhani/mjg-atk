@@ -268,7 +268,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                         
                         // Check against maximum limit
                         if ($divisionInventorySetting && $newStock > $divisionInventorySetting->max_limit) {
-                            $validationErrors[] = "Item {$item->item->name} would exceed the maximum limit of {$divisionInventorySetting->max_limit} units (new total would be {$newStock} units).";
+                            $validationErrors[] = "Item {$item->item->name} melebihi batas maksimal yaitu {$divisionInventorySetting->max_limit} units (kuantitas baru stok yaitu {$newStock} unit).";
                         }
                     }
                     
