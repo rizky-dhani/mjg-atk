@@ -136,6 +136,16 @@ class UserRoleChecker
     }
     
     /**
+     * Check if the user is a GA Head
+     *
+     * @return bool
+     */
+    public static function isGaHead(): bool
+    {
+        return self::isInDivisionWithInitial('GA') && self::hasRole('Head');
+    }
+    
+    /**
      * Check if the user is in any Marketing division
      *
      * @return bool

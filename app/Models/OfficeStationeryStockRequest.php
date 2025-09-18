@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use App\Models\Traits\HasDynamicApproval;
 
 class OfficeStationeryStockRequest extends Model
 {
+    use HasDynamicApproval;
+
     protected $table = 'os_stock_requests';
     protected $fillable = [
         'request_number',
@@ -22,20 +25,6 @@ class OfficeStationeryStockRequest extends Model
         'approval_head_at',
         'rejection_head_id',
         'rejection_head_at',
-        'approval_ipc_id',
-        'approval_ipc_at',
-        'rejection_ipc_id',
-        'rejection_ipc_at',
-        'approval_ipc_head_id',
-        'approval_ipc_head_at',
-        'rejection_ipc_head_id',
-        'rejection_ipc_head_at',
-        'delivered_by',
-        'delivered_at',
-        'approval_stock_adjustment_id',
-        'approval_stock_adjustment_at',
-        'rejection_stock_adjustment_id',
-        'rejection_stock_adjustment_at',
         'approval_ga_admin_id',
         'approval_ga_admin_at',
         'rejection_ga_admin_id',
@@ -44,22 +33,44 @@ class OfficeStationeryStockRequest extends Model
         'approval_ga_head_at',
         'rejection_ga_head_id',
         'rejection_ga_head_at',
+        'delivered_by',
+        'delivered_at',
+        'approval_stock_adjustment_id',
+        'approval_stock_adjustment_at',
+        'rejection_stock_adjustment_id',
+        'rejection_stock_adjustment_at',
+        'approval_ipc_head_id',
+        'approval_ipc_head_at',
+        'rejection_ipc_head_id',
+        'rejection_ipc_head_at',
+        'approval_second_ga_admin_id',
+        'approval_second_ga_admin_at',
+        'rejection_second_ga_admin_id',
+        'rejection_second_ga_admin_at',
+        'approval_hcg_head_id',
+        'approval_hcg_head_at',
+        'rejection_hcg_head_id',
+        'rejection_hcg_head_at',
+        'current_step_id',
+        'approval_status'
     ];
     protected $casts = [
         'approved_at' => 'datetime',
         'delivered_at' => 'datetime',
         'approval_head_at' => 'datetime',
         'rejection_head_at' => 'datetime',
-        'approval_ipc_at' => 'datetime',
-        'rejection_ipc_at' => 'datetime',
-        'approval_ipc_head_at' => 'datetime',
-        'rejection_ipc_head_at' => 'datetime',
-        'approval_stock_adjustment_at' => 'datetime',
-        'rejection_stock_adjustment_at' => 'datetime',
         'approval_ga_admin_at' => 'datetime',
         'rejection_ga_admin_at' => 'datetime',
         'approval_ga_head_at' => 'datetime',
         'rejection_ga_head_at' => 'datetime',
+        'approval_stock_adjustment_at' => 'datetime',
+        'rejection_stock_adjustment_at' => 'datetime',
+        'approval_ipc_head_at' => 'datetime',
+        'rejection_ipc_head_at' => 'datetime',
+        'approval_second_ga_admin_at' => 'datetime',
+        'rejection_second_ga_admin_at' => 'datetime',
+        'approval_hcg_head_at' => 'datetime',
+        'rejection_hcg_head_at' => 'datetime',
     ];
 
     const TYPE_INCREASE = 'increase';
@@ -67,18 +78,19 @@ class OfficeStationeryStockRequest extends Model
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED_BY_HEAD = 'approved_by_head';
     const STATUS_REJECTED_BY_HEAD = 'rejected_by_head';
-    const STATUS_APPROVED_BY_IPC = 'approved_by_ipc';
-    const STATUS_REJECTED_BY_IPC = 'rejected_by_ipc';
-    const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
-    const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
-    const STATUS_APPROVED_BY_SECOND_IPC_HEAD = 'approved_by_second_ipc_head';
-    const STATUS_REJECTED_BY_SECOND_IPC_HEAD = 'rejected_by_second_ipc_head';
-    const STATUS_DELIVERED = 'delivered';
-    const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
     const STATUS_APPROVED_BY_GA_ADMIN = 'approved_by_ga_admin';
     const STATUS_REJECTED_BY_GA_ADMIN = 'rejected_by_ga_admin';
+    const STATUS_APPROVED_BY_GA_HEAD = 'approved_by_ga_head';
+    const STATUS_REJECTED_BY_GA_HEAD = 'rejected_by_ga_head';
+    const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
+    const STATUS_REJECTED_STOCK_ADJUSTMENT = 'rejected_stock_adjustment';
+    const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
+    const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
+    const STATUS_APPROVED_BY_SECOND_GA_ADMIN = 'approved_by_second_ga_admin';
+    const STATUS_REJECTED_BY_SECOND_GA_ADMIN = 'rejected_by_second_ga_admin';
     const STATUS_APPROVED_BY_HCG_HEAD = 'approved_by_hcg_head';
     const STATUS_REJECTED_BY_HCG_HEAD = 'rejected_by_hcg_head';
+    const STATUS_DELIVERED = 'delivered';
     const STATUS_COMPLETED = 'completed';
 
     protected static function boot()
@@ -90,6 +102,11 @@ class OfficeStationeryStockRequest extends Model
                 // Generate request number using the helper
                 $model->request_number = \App\Helpers\StockNumberGenerator::generateOfficeStationeryRequestNumber($model->division_id);
             }
+        });
+        
+        // Initialize approval when creating
+        static::created(function ($model) {
+            $model->initializeApproval();
         });
     }
 
@@ -128,33 +145,33 @@ class OfficeStationeryStockRequest extends Model
     /**
      * Get the user who approved this.
      */
-    public function ipcAdmin(): BelongsTo
+    public function gaAdmin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_ipc_id');
+        return $this->belongsTo(User::class, 'approval_ga_admin_id');
     }
 
     /**
      * Get the user who rejected this.
      */
-    public function rejectionIpc(): BelongsTo
+    public function rejectionGaAdmin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'rejection_ipc_id');
+        return $this->belongsTo(User::class, 'rejection_ga_admin_id');
     }
 
     /**
-     * Get the IPC Head who approved this.
+     * Get the GA Head who approved this.
      */
-    public function ipcHead(): BelongsTo
+    public function gaHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_ipc_head_id');
+        return $this->belongsTo(User::class, 'approval_ga_head_id');
     }
 
     /**
-     * Get the IPC Head who rejected this.
+     * Get the GA Head who rejected this.
      */
-    public function rejectionIpcHead(): BelongsTo
+    public function rejectionGaHead(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'rejection_ipc_head_id');
+        return $this->belongsTo(User::class, 'rejection_ga_head_id');
     }
 
     /**
@@ -174,19 +191,35 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
+     * Get the GA Head who approved this.
+     */
+    public function ipcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approval_ipc_head_id');
+    }
+
+    /**
+     * Get the GA Head who rejected this.
+     */
+    public function rejectionIpcHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejection_ipc_head_id');
+    }
+    
+    /**
      * Get the GA Admin who approved this.
      */
-    public function gaAdmin(): BelongsTo
+    public function secondGaAdmin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approval_ga_admin_id');
+        return $this->belongsTo(User::class, 'approval_second_ga_admin_id');
     }
 
     /**
      * Get the GA Admin who rejected this.
      */
-    public function rejectionGaAdmin(): BelongsTo
+    public function rejectionSecondGaAdmin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'rejection_ga_admin_id');
+        return $this->belongsTo(User::class, 'rejection_second_ga_admin_id');
     }
 
     /**
@@ -230,21 +263,53 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Check if request needs IPC approval (only for increase requests).
+     * Check if request needs GA Admin approval (only for increase requests).
      */
-    public function needsIpcApproval(): bool
+    public function needsGaAdminApproval(): bool
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_HEAD;
     }
-
+    
+    /**
+     * Check if request needs GA Head approval (only for increase requests).
+     */
+    public function needsGaHeadApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
+    }
+    
+    /**
+     * Check if request needs stock adjustment approval from IPC Admin (only for increase requests).
+     */
+    public function needsStockAdjustmentApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_HEAD;
+    }
+    
     /**
      * Check if request needs IPC Head approval (only for increase requests).
      */
     public function needsIpcHeadApproval(): bool
     {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC;
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_STOCK_ADJUSTMENT;
     }
-
+    
+    /**
+     * Check if request needs second GA Admin approval (only for increase requests).
+     */
+    public function needsSecondGaAdminApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
+    }
+    
+    /**
+     * Check if request needs HCG Head approval.
+     */
+    public function needsHcgHeadApproval(): bool
+    {
+        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_SECOND_GA_ADMIN;
+    }
+    
     /**
      * Check if request can be delivered (only for increase requests).
      */
@@ -252,44 +317,12 @@ class OfficeStationeryStockRequest extends Model
     {
         return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_HCG_HEAD;
     }
-
+    
     /**
      * Check if request can be marked as completed (only for increase requests).
      */
     public function canBeCompleted(): bool
     {
         return $this->isIncrease() && $this->status === self::STATUS_DELIVERED;
-    }
-
-    /**
-     * Check if request needs stock adjustment approval (only for increase requests).
-     */
-    public function needsStockAdjustmentApproval(): bool
-    {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_IPC_HEAD;
-    }
-
-    /**
-     * Check if request needs GA Admin approval (only for increase requests).
-     */
-    public function needsGaAdminApproval(): bool
-    {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_SECOND_IPC_HEAD;
-    }
-
-    /**
-     * Check if request needs second IPC Head approval (only for increase requests).
-     */
-    public function needsSecondIpcHeadApproval(): bool
-    {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_STOCK_ADJUSTMENT;
-    }
-
-    /**
-     * Check if request needs HCG Head approval.
-     */
-    public function needsHcgHeadApproval(): bool
-    {
-        return $this->isIncrease() && $this->status === self::STATUS_APPROVED_BY_GA_ADMIN;
     }
 }

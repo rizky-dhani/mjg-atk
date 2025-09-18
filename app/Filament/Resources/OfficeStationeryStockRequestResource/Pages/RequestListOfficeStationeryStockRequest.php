@@ -38,10 +38,10 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
     {
         return $table
             ->modifyQueryUsing(function($query){
-                if(UserRoleChecker::isIpcAdmin()){
+                if(UserRoleChecker::isGaAdmin()){
                     $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)->orderByDesc('created_at');
-                }elseif(UserRoleChecker::isIpcHead()){
-                    $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC)->orderByDesc('created_at');
+                }elseif(UserRoleChecker::isGaHead()){
+                    $query->where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN)->orderByDesc('created_at');
                 }elseif(UserRoleChecker::isDivisionHead()){
                     $query->orderByDesc('created_at')->orderByDesc('request_number');
                 }
@@ -70,18 +70,18 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                         default => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,  OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'danger',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,  OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'danger',
                         default => 'secondary',
                     }),
                 TextColumn::make('items_count')
@@ -100,10 +100,10 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                     ])
 
@@ -154,17 +154,17 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                 //             ->send();
                 //     }),
                 
-                Action::make('approve_as_ipc')
+                Action::make('approve_as_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                            'approval_ga_admin_id' => auth()->user()->id,
+                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
@@ -173,11 +173,11 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc')
+                Action::make('reject_as_ga_admin')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -186,9 +186,9 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
-                            'rejection_ipc_id' => auth()->user()->id,
-                            'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -198,17 +198,17 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('approve_as_ipc_head')
+                Action::make('approve_as_ga_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta')
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                            'approval_ga_head_id' => auth()->user()->id,
+                            'approval_ga_head_at' => now()->timezone('Asia/Jakarta')
                         ]);
                         
                         Notification::make()
@@ -217,11 +217,11 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc_head')
+                Action::make('reject_as_ga_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('rejection_reason')
@@ -230,9 +230,9 @@ class RequestListOfficeStationeryStockRequest extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'rejection_ipc_head_id' => auth()->user()->id,
-                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'rejection_ga_head_id' => auth()->user()->id,
+                            'rejection_ga_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         

@@ -21,45 +21,64 @@ return new class extends Migration
                 'pending',
                 'approved_by_head',
                 'rejected_by_head',
-                'approved_by_ipc',
-                'rejected_by_ipc',
-                'approved_by_ipc_head',
-                'rejected_by_ipc_head',
-                'delivered',
-                'approved_stock_adjustment',
-                'approved_by_second_ipc_head',
-                'rejected_by_second_ipc_head',
                 'approved_by_ga_admin',
                 'rejected_by_ga_admin',
+                'approved_by_ga_head',
+                'rejected_by_ga_head',
+                'delivered',
+                'approved_stock_adjustment',
+                'approved_by_ipc_head',
+                'rejected_by_ipc_head',
+                'approved_by_second_ga_admin',
+                'rejected_by_second_ga_admin',
                 'approved_by_hcg_head',
                 'rejected_by_hcg_head',
                 'completed'])->default('pending');
             $table->text('notes')->nullable();
             $table->text('rejection_reason')->nullable();
+
             $table->foreignId('approval_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('approval_head_at')->nullable();
+
             $table->foreignId('rejection_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('rejection_head_at')->nullable();
-            $table->foreignId('approval_ipc_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('approval_ipc_at')->nullable();
-            $table->foreignId('rejection_ipc_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('rejection_ipc_at')->nullable();
-            $table->foreignId('approval_ipc_head_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('approval_ipc_head_at')->nullable();
-            $table->foreignId('rejection_ipc_head_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('rejection_ipc_head_at')->nullable();
-            $table->foreignId('delivered_by')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('delivered_at')->nullable();
-            $table->foreignId('approval_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('approval_stock_adjustment_at')->nullable();
-            $table->foreignId('rejection_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->timestamp('rejection_stock_adjustment_at')->nullable();
+
             $table->foreignId('approval_ga_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('approval_ga_admin_at')->nullable();
+
             $table->foreignId('rejection_ga_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('rejection_ga_admin_at')->nullable();
+
+            $table->foreignId('approval_ga_head_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('approval_ga_head_at')->nullable();
+
+            $table->foreignId('rejection_ga_head_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('rejection_ga_head_at')->nullable();
+
+            $table->foreignId('delivered_by')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('delivered_at')->nullable();
+
+            $table->foreignId('approval_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('approval_stock_adjustment_at')->nullable();
+
+            $table->foreignId('rejection_stock_adjustment_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('rejection_stock_adjustment_at')->nullable();
+
+            $table->foreignId('approval_ipc_head_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('approval_ipc_head_at')->nullable();
+
+            $table->foreignId('rejection_ipc_head_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('rejection_ipc_head_at')->nullable();
+
+            $table->foreignId('approval_second_ga_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('approval_second_ga_admin_at')->nullable();
+
+            $table->foreignId('rejection_second_ga_admin_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->timestamp('rejection_second_ga_admin_at')->nullable();
+
             $table->foreignId('approval_hcg_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('approval_hcg_head_at')->nullable();
+
             $table->foreignId('rejection_hcg_head_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('rejection_hcg_head_at')->nullable();
             $table->timestamps();

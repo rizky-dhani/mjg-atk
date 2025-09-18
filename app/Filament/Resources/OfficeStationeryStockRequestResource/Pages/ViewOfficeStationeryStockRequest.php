@@ -212,15 +212,11 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                                 ->formatStateUsing(function ($record) {
                                     if (RequestStatusChecker::atkStockRequestRejectedByDivHead($record)) {
                                         return $record->rejectionHead->name ?? '';
-                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcAdmin($record)) {
-                                        return $record->rejectionIpc->name ?? '';
-                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByIpcHead($record)) {
-                                        return $record->rejectionIpcHead->name ?? '';
                                     } elseif (RequestStatusChecker::atkStockRequestRejectedByGaAdmin($record)) {
                                         return $record->rejectionGaAdmin->name ?? '';
-                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByHcgHead($record)) {
-                                        return $record->rejectionHcgHead->name ?? '';
-                                    }
+                                    } elseif (RequestStatusChecker::atkStockRequestRejectedByGaHead($record)) {
+                                        return $record->rejectionGaHead->name ?? '';
+                                    } 
                                     return '';
                                 }),
                             Textarea::make('rejection_reason')
@@ -299,19 +295,19 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('approve_as_ipc')
+                Action::make('approve_as_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now('Asia/Jakarta')
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                            'approval_ga_admin_id' => auth()->user()->id,
+                            'approval_ga_admin_at' => now('Asia/Jakarta')
                         ]);
                         
                         Notification::make()
@@ -320,13 +316,13 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc')
+                Action::make('reject_as_ga_admin')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcAdmin($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaAdmin($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -334,9 +330,9 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
-                            'rejection_ipc_id' => auth()->user()->id,
-                            'rejection_ipc_at' => now('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                            'rejection_ga_admin_id' => auth()->user()->id,
+                            'rejection_ga_admin_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -346,19 +342,19 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('approve_as_ipc_head')
+                Action::make('approve_as_ga_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->modalHeading('Approve Permintaan ATK')
                     ->modalSubheading('Apakah anda yakin untuk approve Permintaan ATK ini?')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaHead($record))
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now('Asia/Jakarta')
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                            'approval_ga_head_id' => auth()->user()->id,
+                            'approval_ga_head_at' => now('Asia/Jakarta')
                         ]);
                         
                         Notification::make()
@@ -367,13 +363,13 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc_head')
+                Action::make('reject_as_ga_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->modalHeading('Reject Permintaan ATK')
                     ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini?')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                    ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromGaHead($record))
                     ->form([
                         Textarea::make('rejection_reason')
                             ->required()
@@ -381,9 +377,9 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'rejection_ipc_head_id' => auth()->user()->id,
-                            'rejection_ipc_head_at' => now('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'rejection_ga_head_id' => auth()->user()->id,
+                            'rejection_ga_head_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         
@@ -501,17 +497,17 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
             
-            Action::make('approve_as_second_ipc_head')
+            Action::make('approve_as_ipc_head')
                 ->label('Approve ')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->modalHeading('Approve Permintaan ATK')
                 ->modalSubheading('Apakah Anda yakin ingin approve Permintaan ATK ini setelah penyesuaian stok?')
-                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
+                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                 ->requiresConfirmation()
                 ->action(function ($record) {
                     $record->update([
-                        'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
+                        'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
                         'approval_ipc_head_id' => auth()->user()->id,
                         'approval_ipc_head_at' => now('Asia/Jakarta')
                     ]);
@@ -522,13 +518,13 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ->send();
                 }),
 
-            Action::make('reject_as_second_ipc_head')
+            Action::make('reject_as_ipc_head')
                 ->label('Reject ')
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
                 ->modalHeading('Reject Permintaan ATK')
                 ->modalSubheading('Apakah Anda yakin ingin reject Permintaan ATK ini setelah penyesuaian stok?')
-                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedSecondApprovalFromIpcHead($record))
+                ->visible(fn ($record) => RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
                 ->form([
                     Textarea::make('rejection_reason')
                         ->required()
@@ -536,7 +532,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
+                        'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
                         'rejection_ipc_head_id' => auth()->user()->id,
                         'rejection_ipc_head_at' => now('Asia/Jakarta'),
                         'rejection_reason' => $data['rejection_reason'],
@@ -548,7 +544,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                         ->send();
                 }),
             
-            Action::make('approve_as_ga_admin')
+            Action::make('approve_as_second_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -558,9 +554,9 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
-                            'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now('Asia/Jakarta')
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
+                            'approval_second_ga_admin_id' => auth()->user()->id,
+                            'approval_second_ga_admin_at' => now('Asia/Jakarta')
                         ]);
                         
                         Notification::make()
@@ -569,7 +565,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                             ->send();
                     }),
                 
-                Action::make('reject_as_ga_admin')
+                Action::make('reject_as_second_ga_admin')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
@@ -583,9 +579,9 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
-                            'rejection_ga_admin_id' => auth()->user()->id,
-                            'rejection_ga_admin_at' => now('Asia/Jakarta'),
+                            'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
+                            'rejection_second_ga_admin_id' => auth()->user()->id,
+                            'rejection_second_ga_admin_at' => now('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         

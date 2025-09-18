@@ -22,14 +22,36 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request need approval from IPC Admin
+     * Check if an Office Stationery Stock Request need approval from GA Admin
      *
      * @param OfficeStationeryStockRequest $record
      * @return bool
      */
-    public static function atkStockRequestNeedApprovalFromIpcAdmin($record): bool
+    public static function atkStockRequestNeedApprovalFromGaAdmin($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isIpcAdmin();
+        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need approval from GA Head
+     *
+     * @param OfficeStationeryStockRequest $record
+     * @return bool
+     */
+    public static function atkStockRequestNeedApprovalFromGaHead($record): bool
+    {
+        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isGaHead();
+    }
+    
+    /**
+     * Check if an Office Stationery Stock Request need stock adjustment approval from GA Admin
+     *
+     * @param OfficeStationeryStockRequest $record
+     * @return bool
+     */
+    public static function atkStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record): bool
+    {
+        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD && UserRoleChecker::isIpcAdmin();
     }
     
     /**
@@ -40,40 +62,19 @@ class RequestStatusChecker
      */
     public static function atkStockRequestNeedApprovalFromIpcHead($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC && UserRoleChecker::isIpcHead();
-    }
-    
-    /**
-     * Check if an Office Stationery Stock Request need stock adjustment approval from IPC Admin
-     *
-     * @param OfficeStationeryStockRequest $record
-     * @return bool
-     */
-    public static function atkStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record): bool
-    {
-        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD && UserRoleChecker::isIpcAdmin();
-    }
-    
-    /**
-     * Check if an Office Stationery Stock Request need second approval from IPC Head after Stock Adjustment approved
-     *
-     * @param OfficeStationeryStockRequest $record
-     * @return bool
-     */
-    public static function atkStockRequestNeedSecondApprovalFromIpcHead($record): bool
-    {
         return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT && UserRoleChecker::isIpcHead();
     }
     
+    
     /**
-     * Check if an Office Stationery Stock Request need approval from GA Admin
+     * Check if an Office Stationery Stock Request need second approval from GA Admin
      *
      * @param OfficeStationeryStockRequest $record
      * @return bool
      */
-    public static function atkStockRequestNeedApprovalFromGaAdmin($record): bool
+    public static function atkStockRequestNeedSecondApprovalFromGaAdmin($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD && UserRoleChecker::isGaAdmin();
+        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD && UserRoleChecker::isGaAdmin();
     }
     
     /**
@@ -84,7 +85,7 @@ class RequestStatusChecker
      */
     public static function atkStockRequestNeedApprovalFromHcgHead($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isHcgHead();
+        return $record->status === OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN && UserRoleChecker::isHcgHead();
     }
 
     // ATK Stock Request Rejection
@@ -100,28 +101,6 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request is rejected by IPC Admin
-     *
-     * @param OfficeStationeryStockRequest $record
-     * @return bool
-     */
-    public static function atkStockRequestRejectedByIpcAdmin($record): bool
-    {
-        return $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC && $record->rejection_ipc_id;
-    }
-
-    /**
-     * Check if an Office Stationery Stock Request is rejected by IPC Head
-     *
-     * @param OfficeStationeryStockRequest $record
-     * @return bool
-     */
-    public static function atkStockRequestRejectedByIpcHead($record): bool
-    {
-        return $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD && $record->rejection_ipc_head_id;
-    }
-    
-    /**
      * Check if an Office Stationery Stock Request is rejected by GA Admin
      *
      * @param OfficeStationeryStockRequest $record
@@ -133,14 +112,14 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request is rejected by HCG Head
+     * Check if an Office Stationery Stock Request is rejected by GA Head
      *
      * @param OfficeStationeryStockRequest $record
      * @return bool
      */
-    public static function atkStockRequestRejectedByHcgHead($record): bool
+    public static function atkStockRequestRejectedByGaHead($record): bool
     {
-        return $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD && $record->rejection_hcg_head_id;
+        return $record->status === OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD && $record->rejection_ga_head_id;
     }
     
     // ATK Stock Usage Approval
@@ -224,25 +203,25 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if a Marketing Media Stock Request need approval from IPC Admin
+     * Check if a Marketing Media Stock Request need approval from GA Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestNeedApprovalFromIpcAdmin($record): bool
+    public static function marketingMediaStockRequestNeedApprovalFromGaAdmin($record): bool
     {
-        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isIpcAdmin();
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD && UserRoleChecker::isGaAdmin();
     }
     
     /**
-     * Check if a Marketing Media Stock Request need approval from IPC Head
+     * Check if a Marketing Media Stock Request need approval from GA Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestNeedApprovalFromIpcHead($record): bool
+    public static function marketingMediaStockRequestNeedApprovalFromGaHead($record): bool
     {
-        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC && UserRoleChecker::isIpcHead();
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isGaHead();
     }
     
     /**
@@ -253,29 +232,29 @@ class RequestStatusChecker
      */
     public static function marketingMediaStockRequestNeedStockAdjustmentApprovalFromIpcAdmin($record): bool
     {
-        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD && UserRoleChecker::isIpcAdmin();
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD && UserRoleChecker::isIpcAdmin();
     }
     
     /**
-     * Check if a Marketing Media Stock Request need second approval from IPC Head after Stock Adjustment approved
+     * Check if a Marketing Media Stock Request need approval from IPC Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestNeedSecondApprovalFromIpcHead($record): bool
+    public static function marketingMediaStockRequestNeedApprovalFromIpcHead($record): bool
     {
         return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT && UserRoleChecker::isIpcHead();
     }
     
     /**
-     * Check if a Marketing Media Stock Request need approval from GA Admin
+     * Check if a Marketing Media Stock Request need second approval from GA Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestNeedApprovalFromGaAdmin($record): bool
+    public static function marketingMediaStockRequestNeedSecondApprovalFromGaAdmin($record): bool
     {
-        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD && UserRoleChecker::isGaAdmin();
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD && UserRoleChecker::isGaAdmin();
     }
     
     /**
@@ -286,12 +265,13 @@ class RequestStatusChecker
      */
     public static function marketingMediaStockRequestNeedApprovalFromMksHead($record): bool
     {
-        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN && UserRoleChecker::isMksHead();
+        return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN && UserRoleChecker::isMksHead();
     }
+    
 
     // Marketing Media Stock Request Rejection
     /**
-     * Check if an Office Stationery Stock Request is rejected by Division Head
+     * Check if an Marketing Media Stock Request is rejected by Division Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -302,29 +282,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request is rejected by IPC Admin
-     *
-     * @param MarketingMediaStockRequest $record
-     * @return bool
-     */
-    public static function marketingMediaStockRequestRejectedByIpcAdmin($record): bool
-    {
-        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC && $record->rejection_ipc_id;
-    }
-
-    /**
-     * Check if an Office Stationery Stock Request is rejected by IPC Head
-     *
-     * @param MarketingMediaStockRequest $record
-     * @return bool
-     */
-    public static function marketingMediaStockRequestRejectedByIpcHead($record): bool
-    {
-        return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD && $record->rejection_ipc_head_id;
-    }
-    
-    /**
-     * Check if an Office Stationery Stock Request is rejected by GA Admin
+     * Check if an Marketing Media Stock Request is rejected by GA Admin
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -335,7 +293,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Request is rejected by HCG Head
+     * Check if a Marketing Media Stock Request is rejected by MKS Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
@@ -347,7 +305,7 @@ class RequestStatusChecker
     
     // Marketing Media Stock Usage Approval
     /**
-     * Check if an Office Stationery Stock Usage need approval from Division Head
+     * Check if an Marketing Media Stock Usage need approval from Division Head
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -358,7 +316,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Usage need approval from GA Admin
+     * Check if an Marketing Media Stock Usage need approval from GA Admin
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -369,7 +327,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Usage need approval from HCG Head
+     * Check if a Marketing Media Stock Usage need approval from MKS Head
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -381,7 +339,7 @@ class RequestStatusChecker
     
     // Marketing Media Stock Usage Rejection
     /**
-     * Check if an Office Stationery Stock Usage rejected by Division Head
+     * Check if an Marketing Media Stock Usage rejected by Division Head
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -392,7 +350,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Usage rejected by GA Admin
+     * Check if an Marketing Media Stock Usage rejected by GA Admin
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -403,7 +361,7 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if an Office Stationery Stock Usage rejected by HCG Head
+     * Check if an Marketing Media Stock Usage rejected by MKS Head
      *
      * @param MarketingMediaStockUsage $record
      * @return bool
@@ -411,16 +369,6 @@ class RequestStatusChecker
     public static function marketingMediaStockUsageRejectedByMksHead($record): bool
     {
         return $record->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD && $record->rejection_marketing_head_id;
-    }
-    /**
-     * Check if a Marketing Media Stock Request is rejected by Marketing Support Head
-     *
-     * @param MarketingMediaStockRequest $record
-     * @return bool
-     */
-    public static function rejectedByMarketingHead($record): bool
-    {
-        return $record->rejection_marketing_head_id;
     }
 
     /**
@@ -455,8 +403,8 @@ class RequestStatusChecker
     {
         return in_array($request->status, [
             OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
-            OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
-            OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+            OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+            OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
         ]);
     }
 
@@ -485,8 +433,8 @@ class RequestStatusChecker
     {
         return $request->rejection_reason && in_array($request->status, [
             MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
-            MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
-            MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
         ]);
     }
 
