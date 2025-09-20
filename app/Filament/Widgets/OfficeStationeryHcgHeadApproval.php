@@ -20,7 +20,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
     protected function getStats(): array
     {
         // Get requests that need GA Admin approval
-        $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN)
+        $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN)
             ->count();
             
         // Get usages that need GA Admin approval
@@ -30,7 +30,7 @@ class OfficeStationeryHcgHeadApproval extends BaseWidget
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN
                     ])
                 )
                 ->description('Pemasukan Barang')

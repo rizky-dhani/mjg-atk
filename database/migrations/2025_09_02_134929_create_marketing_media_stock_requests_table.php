@@ -31,8 +31,8 @@ return new class extends Migration
                 'rejected_by_ipc_head',
                 'approved_by_second_ga_admin',
                 'rejected_by_second_ga_admin',
-                'approved_by_hcg_head',
-                'rejected_by_hcg_head',
+                'approved_by_mkt_head',
+                'rejected_by_mkt_head',
                 'completed'])->default('pending');
             $table->text('notes')->nullable();
             $table->text('rejection_reason')->nullable();

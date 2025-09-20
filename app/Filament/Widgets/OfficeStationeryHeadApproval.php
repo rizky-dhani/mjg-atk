@@ -35,7 +35,7 @@ class OfficeStationeryHeadApproval extends BaseWidget
         return [
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-requests.my-division', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_PENDING
                     ])
                 )
@@ -45,7 +45,7 @@ class OfficeStationeryHeadApproval extends BaseWidget
                 
             Stat::make('Waiting for Approval', $usagesCount)
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-usages.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-usages.my-division', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_PENDING
                     ])
                 )

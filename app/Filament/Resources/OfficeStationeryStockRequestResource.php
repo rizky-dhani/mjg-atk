@@ -533,6 +533,46 @@ class OfficeStationeryStockRequestResource extends Resource
                         return $data;
                     }),
                 
+                Tables\Actions\Action::make('approve_as_ipc_head')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) =>
+                        RequestStatusChecker::atkStockRequestNeedApprovalFromIpcHead($record))
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                            'approval_ipc_head_id' => auth()->user()->id,
+                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Pemasukan ATK berhasil di-approve!')
+                            ->success()
+                            ->send();
+                    }),
+                
+                Tables\Actions\Action::make('approve_as_second_ga_admin')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) =>
+                        RequestStatusChecker::atkStockRequestNeedSecondApprovalFromGaAdmin($record))
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
+                            'approval_second_ga_admin_id' => auth()->user()->id,
+                            'approval_second_ga_admin_at' => now()->timezone('Asia/Jakarta'),
+                        ]);
+                        
+                        Notification::make()
+                            ->title('Pemasukan ATK berhasil di-approve!')
+                            ->success()
+                            ->send();
+                    }),
+                
                 Tables\Actions\Action::make('approve_as_hcg_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')

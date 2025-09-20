@@ -32,12 +32,12 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 'status' => [
                     'values' => [
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD,
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC,
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,
                         OfficeStationeryStockRequest::STATUS_DELIVERED,
                         OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
-                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD
                     ],
                 ],
@@ -52,10 +52,10 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                 'status' => [
                     'values' => [
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC,
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
                     ],
                 ],
@@ -104,10 +104,11 @@ class DivisionOfficeStationeryStatus extends BaseWidget
             ->where('status', OfficeStationeryStockRequest::STATUS_PENDING)
             ->count();
         $inProgressStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
-            ->whereNotIn('status', [OfficeStationeryStockRequest::STATUS_PENDING, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,  OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD, OfficeStationeryStockRequest::STATUS_COMPLETED])
+            ->whereNotIn('status', [OfficeStationeryStockRequest::STATUS_PENDING, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,  OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD, 
+            OfficeStationeryStockRequest::STATUS_COMPLETED])
             ->count();
         $rejectedStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
-            ->whereIn('status', [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD])
+            ->whereIn('status', [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,  OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD])
             ->count();
         $completedStockRequestCount = OfficeStationeryStockRequest::where('division_id', $divisionId)
             ->where('status', OfficeStationeryStockRequest::STATUS_COMPLETED)

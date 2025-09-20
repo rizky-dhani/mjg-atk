@@ -69,12 +69,12 @@ class MarketingMediaStockUsageSeeder extends Seeder
             if ($stockUsage->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_HEAD) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 $stockUsage->save();
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_GA_ADMIN) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 
                 // Get GA admin
                 $gaAdmin = User::whereHas('roles', function ($query) {
@@ -85,13 +85,13 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 
                 if ($gaAdmin) {
                     $stockUsage->approval_ga_admin_id = $gaAdmin->id;
-                    $stockUsage->approval_ga_admin_at = now();
+                    $stockUsage->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
                     $stockUsage->save();
                 }
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_APPROVED_BY_MKT_HEAD) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 
                 // Get GA admin
                 $gaAdmin = User::whereHas('roles', function ($query) {
@@ -102,7 +102,7 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 
                 if ($gaAdmin) {
                     $stockUsage->approval_ga_admin_id = $gaAdmin->id;
-                    $stockUsage->approval_ga_admin_at = now();
+                    $stockUsage->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
                 }
                 
                 // Get Marketing Support Head
@@ -113,15 +113,15 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 })->first();
                 
                 if ($marketingSupportHead) {
-                    $stockUsage->approval_MKT_HEAD_id = $marketingSupportHead->id;
-                    $stockUsage->approval_MKT_HEAD_at = now();
+                    $stockUsage->approval_marketing_head_id = $marketingSupportHead->id;
+                    $stockUsage->approval_marketing_head_at = now()->timezone('Asia/Jakarta');
                 }
                 
                 $stockUsage->save();
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_COMPLETED) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 
                 // Get GA admin
                 $gaAdmin = User::whereHas('roles', function ($query) {
@@ -132,7 +132,7 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 
                 if ($gaAdmin) {
                     $stockUsage->approval_ga_admin_id = $gaAdmin->id;
-                    $stockUsage->approval_ga_admin_at = now();
+                    $stockUsage->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
                 }
                 
                 // Get Marketing Support Head
@@ -143,21 +143,21 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 })->first();
                 
                 if ($marketingSupportHead) {
-                    $stockUsage->approval_MKT_HEAD_id = $marketingSupportHead->id;
-                    $stockUsage->approval_MKT_HEAD_at = now();
+                    $stockUsage->approval_marketing_head_id = $marketingSupportHead->id;
+                    $stockUsage->approval_marketing_head_at = now()->timezone('Asia/Jakarta');
                 }
                 
                 $stockUsage->save();
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_HEAD) {
                 $headUser = $headUsers->random();
                 $stockUsage->rejection_head_id = $headUser->id;
-                $stockUsage->rejection_head_at = now();
+                $stockUsage->rejection_head_at = now()->timezone('Asia/Jakarta');
                 $stockUsage->rejection_reason = 'Rejected by head due to insufficient stock';
                 $stockUsage->save();
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_GA_ADMIN) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 
                 // Get GA admin
                 $gaAdmin = User::whereHas('roles', function ($query) {
@@ -168,14 +168,14 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 
                 if ($gaAdmin) {
                     $stockUsage->rejection_ga_admin_id = $gaAdmin->id;
-                    $stockUsage->rejection_ga_admin_at = now();
+                    $stockUsage->rejection_ga_admin_at = now()->timezone('Asia/Jakarta');
                     $stockUsage->rejection_reason = 'Rejected by GA admin due to documentation issues';
                     $stockUsage->save();
                 }
             } elseif($stockUsage->status === MarketingMediaStockUsage::STATUS_REJECTED_BY_MKT_HEAD) {
                 $headUser = $headUsers->random();
                 $stockUsage->approval_head_id = $headUser->id;
-                $stockUsage->approval_head_at = now();
+                $stockUsage->approval_head_at = now()->timezone('Asia/Jakarta');
                 
                 // Get GA admin
                 $gaAdmin = User::whereHas('roles', function ($query) {
@@ -186,7 +186,7 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 
                 if ($gaAdmin) {
                     $stockUsage->approval_ga_admin_id = $gaAdmin->id;
-                    $stockUsage->approval_ga_admin_at = now();
+                    $stockUsage->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
                 }
                 
                 // Get Marketing Support Head
@@ -197,8 +197,8 @@ class MarketingMediaStockUsageSeeder extends Seeder
                 })->first();
                 
                 if ($marketingSupportHead) {
-                    $stockUsage->rejection_MKT_HEAD_id = $marketingSupportHead->id;
-                    $stockUsage->rejection_MKT_HEAD_at = now();
+                    $stockUsage->rejection_marketing_head_id = $marketingSupportHead->id;
+                    $stockUsage->rejection_marketing_head_at = now()->timezone('Asia/Jakarta');
                     $stockUsage->rejection_reason = 'Rejected by Marketing Support Head due to budget concerns';
                 }
                 

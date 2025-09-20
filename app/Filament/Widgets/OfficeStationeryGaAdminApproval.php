@@ -22,7 +22,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
         $user = Auth::user();
         
         // Get requests that need GA Admin approval
-        $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD)
+        $requestsCount = OfficeStationeryStockRequest::where('status', OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD)
             ->count();
             
         // Get usages that need GA Admin approval
@@ -32,8 +32,8 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
         return [
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD
+                    route('filament.dashboard.resources.office-stationery-stock-requests.request-list', [
+                        'tableFilters[status][values][0]' => OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD
                     ])
                 )
                 ->description('Pemasukan Barang')
@@ -42,7 +42,7 @@ class OfficeStationeryGaAdminApproval extends BaseWidget
                 
             Stat::make('Waiting for Approval', $usagesCount)
                 ->url(
-                    route('filament.dashboard.resources.office-stationery-stock-usages.index', [
+                    route('filament.dashboard.resources.office-stationery-stock-usages.usage-list', [
                         'tableFilters[status][values][0]' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD
                     ])
                 )

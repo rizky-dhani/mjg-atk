@@ -258,12 +258,12 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if a Marketing Media Stock Request need approval from MKS Head
+     * Check if a Marketing Media Stock Request need approval from MKT Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestNeedApprovalFromMksHead($record): bool
+    public static function marketingMediaStockRequestNeedApprovalFromMktHead($record): bool
     {
         return $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN && UserRoleChecker::isMksHead();
     }
@@ -293,12 +293,12 @@ class RequestStatusChecker
     }
     
     /**
-     * Check if a Marketing Media Stock Request is rejected by MKS Head
+     * Check if a Marketing Media Stock Request is rejected by MKT Head
      *
      * @param MarketingMediaStockRequest $record
      * @return bool
      */
-    public static function marketingMediaStockRequestRejectedByMksHead($record): bool
+    public static function marketingMediaStockRequestRejectedByMktHead($record): bool
     {
         return $record->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD && $record->rejection_marketing_head_id;
     }

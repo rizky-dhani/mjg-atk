@@ -94,162 +94,197 @@ class MarketingMediaStockRequestSeeder extends Seeder
                 'division_id' => $division->id,
                 'type' => MarketingMediaStockRequest::TYPE_INCREASE,
                 'status' => [
-                    MarketingMediaStockRequest::STATUS_PENDING, 
-                    MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, 
-                    MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, 
-                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, 
-                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, 
-                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                    MarketingMediaStockRequest::STATUS_DELIVERED, 
-                    MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    MarketingMediaStockRequest::STATUS_PENDING,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                    MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
+                    MarketingMediaStockRequest::STATUS_DELIVERED,
                     MarketingMediaStockRequest::STATUS_COMPLETED
-                ][rand(0, 13)],
+                ][rand(0, 15)],
                 'notes' => 'Sample marketing media request ' . $i,
             ]);
 
             // Set approval fields based on status
             if ($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_DELIVERED) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now();
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_second_ga_admin_id = $gaAdmin->id;
+                $request->approval_second_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now();
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_second_ga_admin_id = $gaAdmin->id;
+                $request->approval_second_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->approval_marketing_head_id = $marketingSupportHead->id;
-                $request->approval_marketing_head_at = now();
+                $request->approval_marketing_head_at = now()->timezone('Asia/Jakarta');
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_DELIVERED) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_second_ga_admin_id = $gaAdmin->id;
+                $request->approval_second_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_marketing_head_id = $marketingSupportHead->id;
+                $request->approval_marketing_head_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_by = $ipc->id;
+                $request->delivered_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_COMPLETED) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now();
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_second_ga_admin_id = $gaAdmin->id;
+                $request->approval_second_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->approval_marketing_head_id = $marketingSupportHead->id;
-                $request->approval_marketing_head_at = now();
+                $request->approval_marketing_head_at = now()->timezone('Asia/Jakarta');
+                $request->delivered_by = $ipc->id;
+                $request->delivered_at = now()->timezone('Asia/Jakarta');
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD) {
                 $request->rejection_head_id = $head->id;
-                $request->rejection_head_at = now();
+                $request->rejection_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by head due to budget constraints';
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->rejection_ipc_id = $ipc->id;
-                $request->rejection_ipc_at = now();
-                $request->rejection_reason = 'Rejected by IPC due to stock availability';
-                $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
-                $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->rejection_ipc_head_id = $ipc->id;
-                $request->rejection_ipc_head_at = now();
-                $request->rejection_reason = 'Rejected by IPC Head due to policy violation';
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_ga_admin_id = $gaAdmin->id;
-                $request->rejection_ga_admin_at = now();
-                $request->rejection_reason = 'Rejected by GA Admin due to documentation issues';
+                $request->rejection_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_reason = 'Rejected by GA Admin due to budget constraints';
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->rejection_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_reason = 'Rejected by GA Head due to policy violation';
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_ipc_head_id = $ipc->id;
+                $request->rejection_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_reason = 'Rejected by IPC Head due to policy violation';
+                $request->save();
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN) {
+                $request->approval_head_id = $head->id;
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_admin_id = $gaAdmin->id;
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_second_ga_admin_id = $gaAdmin->id;
+                $request->rejection_second_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->rejection_reason = 'Rejected by Second GA Admin due to documentation issues';
                 $request->save();
             } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD) {
                 $request->approval_head_id = $head->id;
-                $request->approval_head_at = now();
-                $request->approval_ipc_id = $ipc->id;
-                $request->approval_ipc_at = now();
-                $request->approval_ipc_head_id = $ipc->id;
-                $request->approval_ipc_head_at = now();
-                $request->delivered_by = $ipc->id;
-                $request->delivered_at = now();
-                $request->approval_stock_adjustment_id = $ipc->id;
-                $request->approval_stock_adjustment_at = now();
+                $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;
-                $request->approval_ga_admin_at = now();
+                $request->approval_ga_admin_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ga_head_id = $gaAdmin->id; // Using GA Admin as GA Head for simplicity
+                $request->approval_ga_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_stock_adjustment_id = $ipc->id;
+                $request->approval_stock_adjustment_at = now()->timezone('Asia/Jakarta');
+                $request->approval_ipc_head_id = $ipc->id;
+                $request->approval_ipc_head_at = now()->timezone('Asia/Jakarta');
+                $request->approval_second_ga_admin_id = $gaAdmin->id;
+                $request->approval_second_ga_admin_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_marketing_head_id = $marketingSupportHead->id;
-                $request->rejection_marketing_head_at = now();
+                $request->rejection_marketing_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by Marketing Support Head due to budget approval';
                 $request->save();
             }
