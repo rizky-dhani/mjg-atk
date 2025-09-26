@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class OfficeStationeryItem extends Model
@@ -61,5 +62,21 @@ class OfficeStationeryItem extends Model
     public function stocks(): HasMany
     {
         return $this->hasMany(OfficeStationeryStockPerDivision::class, 'item_id');
+    }
+
+    /**
+     * Get the prices for this item.
+     */
+    public function prices(): MorphMany
+    {
+        return $this->morphMany(ItemPrice::class, 'item');
+    }
+
+    /**
+     * Get the latest active price for this item.
+     */
+    public function getLatestPrice()
+    {
+        return $this->prices()->active()->orderBy('effective_date', 'desc')->first();
     }
 }

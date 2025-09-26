@@ -15,6 +15,7 @@ class MarketingMediaStockUsageItem extends Model
         'previous_stock',
         'new_stock',
         'notes',
+        'price_id',
     ];
     
     protected $table = 'mm_stock_usage_items';
@@ -47,5 +48,13 @@ class MarketingMediaStockUsageItem extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MarketingMediaCategory::class);
+    }
+
+    /**
+     * Get the price for this usage item.
+     */
+    public function price(): BelongsTo
+    {
+        return $this->belongsTo(ItemPrice::class, 'price_id');
     }
 }
