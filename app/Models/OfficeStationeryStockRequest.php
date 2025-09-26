@@ -6,11 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-use App\Models\Traits\HasDynamicApproval;
 
 class OfficeStationeryStockRequest extends Model
 {
-    use HasDynamicApproval;
 
     protected $table = 'os_stock_requests';
     protected $fillable = [
