@@ -22,18 +22,18 @@ class MarketingMediaGaHeadApproval extends BaseWidget
         $user = Auth::user();
         
         // Get requests that need GA Head approval (GA Admin approved)
-        $requestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT)
+        $requestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN)
             ->where('type', MarketingMediaStockRequest::TYPE_INCREASE)
             ->count();
 
         return [
-            Stat::make('Pemasukan Barang (After Stock Adjustment)', $requestsCount)
-                ->description('Stock Adjustment Approved Requests')
+            Stat::make('Permintaan Media Cetak', $requestsCount)
+                ->description('Stock Requests')
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('purple')
                 ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-requests.index', [
-                        'tableFilters[status][values][0]' => MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT
+                    route('filament.dashboard.resources.marketing-media-stock-requests.usage-list', [
+                        'tableFilters[status][values][0]' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN
                     ])
                 )
                 ->icon('heroicon-o-document-text'),
@@ -44,6 +44,6 @@ class MarketingMediaGaHeadApproval extends BaseWidget
     {
         $user = Auth::user();
         // Only show to IPC Heads
-        return $user && $user->hasRole('Head') && $user->division && $user->division->initial === 'IPC';
+        return $user && $user->hasRole('Head') && $user->division && $user->division->initial === 'GA';
     }
 }

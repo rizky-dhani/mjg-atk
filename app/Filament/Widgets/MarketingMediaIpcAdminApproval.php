@@ -22,21 +22,10 @@ class MarketingMediaIpcAdminApproval extends BaseWidget
         $user = Auth::user();
         
         // Get requests that need IPC Admin approval
-        $requestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD)
-            ->count();
-        $stockAdjustmentCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD)
+        $stockAdjustmentCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD)
             ->count();
 
         return [
-            Stat::make('Pemasukan Barang', $requestsCount)
-                ->url(
-                    route('filament.dashboard.resources.marketing-media-stock-requests.index', [
-                        'tableFilters[status][values][0]' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD
-                    ])
-                )
-                ->description('Waiting for Approval')
-                ->color('primary')
-                ->icon('heroicon-o-document-text'),
             Stat::make('Pemasukan Barang', $stockAdjustmentCount)
                 ->url(
                     route('filament.dashboard.resources.marketing-media-stock-requests.index', [

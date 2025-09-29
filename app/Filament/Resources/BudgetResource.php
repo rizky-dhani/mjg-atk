@@ -39,8 +39,9 @@ class BudgetResource extends Resource
                 Forms\Components\Select::make('division_id')
                     ->label('Division')
                     ->relationship('division', 'name')
+                    ->getOptionLabelFromRecordUsing(fn (CompanyDivision $record) => "{$record->name} ({$record->initial})")
                     ->required()
-                    ->searchable()
+                    ->searchable(['name', 'initial'])
                     ->preload(),
                 
                 Forms\Components\Select::make('type')
@@ -76,30 +77,36 @@ class BudgetResource extends Resource
                     ->label('Division')
                     ->sortable()
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'ATK' => 'info',
                         'Marketing Media' => 'success',
                         default => 'gray',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('initial_amount')
                     ->label('Initial Budget')
                     ->money('IDR')
+                    ->formatStateUsing(function ($record) {
+                        return 'Rp. '.number_format($record->initial_amount, 0, ',', '.');
+                    })
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('current_amount')
                     ->label('Current Budget')
                     ->money('IDR')
+                    ->formatStateUsing(function ($record) {
+                        return 'Rp. '.number_format($record->current_amount, 0, ',', '.');
+                    })
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -111,14 +118,12 @@ class BudgetResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()->modal(),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()->modal(),
             ]);
     }
 

@@ -116,7 +116,7 @@ class OfficeStationeryItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ItemPricesRelationManager::class,
         ];
     }
 

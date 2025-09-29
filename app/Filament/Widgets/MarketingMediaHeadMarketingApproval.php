@@ -18,7 +18,7 @@ class MarketingMediaHeadMarketingApproval extends BaseWidget
         $user = Auth::user();
             
         // Get Marketing Media that need Head approval for the user's division
-        $requestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN)
+        $requestsCount = MarketingMediaStockRequest::where('status', MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN)
         ->where('division_id', $user->division_id)
         ->count();
         
@@ -31,7 +31,7 @@ class MarketingMediaHeadMarketingApproval extends BaseWidget
             Stat::make('Waiting for Approval', $requestsCount)
                 ->url(
                     route('filament.dashboard.resources.office-stationery-stock-requests.index', [
-                        'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN
+                        'tableFilters[status][value]' => MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN
                     ])
                 )
                 ->description('Pemasukan Barang')

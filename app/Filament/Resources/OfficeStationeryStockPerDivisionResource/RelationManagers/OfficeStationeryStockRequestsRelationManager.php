@@ -76,17 +76,32 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                                         OfficeStationeryStockRequest::STATUS_PENDING => 'Pending',
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Approved by IPC Admin',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN => 'Approved by GA Admin (Second)',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD => 'Approved by HCG Head',
                                         OfficeStationeryStockRequest::STATUS_DELIVERED => 'Delivered',
                                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'Completed',
                                         default => ucfirst(str_replace('_', ' ', $state)),
                                     })
                                     ->color(fn ($state) => match ($state) {
-                                        OfficeStationeryStockRequest::STATUS_PENDING => 'warning',
-                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HEAD, OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC => 'success',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC => 'danger',
-                                        OfficeStationeryStockRequest::STATUS_DELIVERED, OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
+                                        OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_DELIVERED,
+                                        OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
                                         default => 'secondary',
                                     }),
                                 Infolists\Components\TextEntry::make('divisionHead.name')
@@ -208,7 +223,7 @@ class OfficeStationeryStockRequestsRelationManager extends RelationManager
                                     ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
+                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
                                     ->columnSpan(5),
                             ]),
                     ])

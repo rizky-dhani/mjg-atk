@@ -271,7 +271,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                 ->schema([
                                     Select::make('category_id')
                                         ->label('Category')
-                                        ->relationship('item.category', 'name')
+                                        ->options(\App\Models\OfficeStationeryCategory::pluck('name', 'id'))
                                         ->searchable()
                                         ->reactive()
                                         ->preload(),
@@ -282,12 +282,21 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                             if (!$categoryId) {
                                                 return [];
                                             }
-                                            return OfficeStationeryItem::where('category_id', $categoryId)->pluck('name', 'id');
+                                            return OfficeStationeryItem::where('office_stationery_category_id', $categoryId)->pluck('name', 'id');
                                         })
                                         ->searchable()
                                         ->preload()
                                         ->required()
-                                        ->live(),
+                                        ->reactive()
+                                        ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                            // Update category when item is selected, only for the current field
+                                            if ($state) {
+                                                $item = OfficeStationeryItem::find($state);
+                                                if ($item) {
+                                                    $set('category_id', $item->office_stationery_category_id);
+                                                }
+                                            }
+                                        }),
                                     TextInput::make('quantity')
                                         ->required()
                                         ->numeric()
@@ -361,6 +370,84 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                 ->reorderableWithButtons()
                                 ->collapsible(),
                         ]),
+                        Section::make('Budget Information')
+                            ->schema([
+                                TextInput::make('total_cost')
+                                    ->label('Total Cost')
+                                    ->disabled()
+                                    ->formatStateUsing(function (callable $get) {
+                                        $items = $get('items') ?? [];
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\ItemPrice::where('item_type', get_class($item))
+                                                        ->where('item_id', $item->id)
+                                                        ->active()
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        return 'Rp ' . number_format($totalCost, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                                TextInput::make('remaining_budget')
+                                    ->label('Remaining Budget')
+                                    ->disabled()
+                                    ->formatStateUsing(function () {
+                                        $budgetService = new \App\Services\BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        
+                                        return 'Rp ' . number_format($remainingBudget, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                                TextInput::make('new_budget')
+                                    ->label('New Budget')
+                                    ->disabled()
+                                    ->formatStateUsing(function (callable $get) {
+                                        $items = $get('items') ?? [];
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\ItemPrice::where('item_type', get_class($item))
+                                                        ->where('item_id', $item->id)
+                                                        ->active()
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        $budgetService = new \App\Services\BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        $newBudget = $remainingBudget - $totalCost;
+                                        
+                                        return 'Rp ' . number_format($newBudget, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                            ])
+                            ->columns(3)
+                            ->visible(function () {
+                                // Only show this section if the user's division has a budget
+                                $budgetService = new \App\Services\BudgetService();
+                                $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                return $remainingBudget !== null;
+                            }),
                         Section::make('Pengeluaran ATK Information (Optional)')
                             ->schema([
                                 Hidden::make('type')

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\BudgetService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -204,13 +205,15 @@ class OfficeStationeryStockUsage extends Model
      */
     public function processStockUsage(): void
     {
-
+        // Calculate the total cost of the usage
+        $totalCost = 0;
+        
         foreach ($this->items as $item) {
             // Get the current stock for this item in this division
             $stock = OfficeStationeryStockPerDivision::where('division_id', $this->division_id)
                 ->where('item_id', $item->item_id)
                 ->first();
-
+                
             if ($stock) {
                 // Store previous stock level for reference
                 $item->previous_stock = $stock->current_stock;
@@ -229,8 +232,23 @@ class OfficeStationeryStockUsage extends Model
                 // Store new stock level for reference
                 $item->new_stock = $stock->current_stock;
                 $item->save();
+                
+                // Calculate the cost of this item
+                $itemPrice = ItemPrice::where('item_type', get_class($item->item))
+                    ->where('item_id', $item->item_id)
+                    ->active()
+                    ->orderBy('effective_date', 'desc')
+                    ->first();
+                
+                if ($itemPrice) {
+                    $totalCost += $itemPrice->price * $item->quantity;
+                }
             }
         }
+        
+        // Deduct the total cost from the division's ATK budget
+        $budgetService = new BudgetService();
+        $budgetService->adjustBudget($this->division_id, $totalCost, 'ATK');
         
         // Update usage status to completed
         $this->status = self::STATUS_COMPLETED;

@@ -92,22 +92,22 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                     )
                     ->formatStateUsing(
                         fn($state) => match ($state) {
-                            MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
-                            MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
-                            MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved (Post Adjustment)',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected (Post Adjustment)',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN => 'Approved by GA Admin (Post Adjustment)',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN => 'Rejected by GA Admin (Post Adjustment)',
-                            MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
-                            MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
-                            MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
+                        MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
+                        MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
+                        MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN => 'Approved by GA Admin (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN => 'Rejected by GA Admin (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'Rejected by Marketing Support Head',
+                        MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                         },
                     ),
                 TextColumn::make('items_count')->label('Items')->counts('items'),
@@ -126,8 +126,8 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
                         MarketingMediaStockRequest::STATUS_DELIVERED => 'Delivered',
                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT => 'Stock Adjustment Approved',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved (Post Adjustment)',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected (Post Adjustment)',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved By IPC Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected By IPC Head',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN => 'Approved by GA Admin (Post Adjustment)',
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN => 'Rejected by GA Admin (Post Adjustment)',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD => 'Approved by Marketing Support Head',
@@ -195,7 +195,7 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                 //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                 //     ->action(function ($record, array $data) {
                 //         $record->update([
-                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
+                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                 //             'rejection_ipc_id' => auth()->user()->id,
                 //             'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
                 //             'rejection_reason' => $data['rejection_reason'],
@@ -229,7 +229,7 @@ class MyDivisionMarketingMediaStockRequest extends ListRecords
                 //     ->form([Textarea::make('rejection_reason')->required()->maxLength(65535)])
                 //     ->action(function ($record, array $data) {
                 //         $record->update([
-                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                 //             'rejection_ipc_head_id' => auth()->user()->id,
                 //             'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
                 //             'rejection_reason' => $data['rejection_reason'],

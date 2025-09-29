@@ -34,12 +34,12 @@ class DivisionMarketingMediaStatus extends BaseWidget
                 'status' => [
                     'values' => [
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,
                         MarketingMediaStockRequest::STATUS_DELIVERED,
                         MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_IPC_HEAD,
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD
                     ],
                 ],
@@ -54,10 +54,10 @@ class DivisionMarketingMediaStatus extends BaseWidget
                 'status' => [
                     'values' => [
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD,
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD,
                     ],
                 ],
@@ -104,10 +104,13 @@ class DivisionMarketingMediaStatus extends BaseWidget
             ->where('status', MarketingMediaStockRequest::STATUS_PENDING)
             ->count();
         $inProgressStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
-            ->whereNotIn('status', [MarketingMediaStockRequest::STATUS_PENDING, MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD, MarketingMediaStockRequest::STATUS_COMPLETED])
+            ->whereNotIn('status', [MarketingMediaStockRequest::STATUS_PENDING, MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, 
+            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+            MarketingMediaStockRequest::STATUS_COMPLETED])
             ->count();
         $rejectedStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
-            ->whereIn('status', [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD])
+            ->whereIn('status', [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, 
+            MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN])
             ->count();
         $completedStockRequestCount = MarketingMediaStockRequest::where('division_id', $divisionId)
             ->where('status', MarketingMediaStockRequest::STATUS_COMPLETED)

@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Helpers\RequestStatusChecker;
 use App\Helpers\UserRoleChecker;
+use App\Models\Budget;
+use App\Models\ItemPrice;
+use App\Services\BudgetService;
 use Filament\Forms;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
@@ -52,11 +55,15 @@ class OfficeStationeryStockUsageResource extends Resource
                                     ->action(function (array $arguments, Repeater $component) {
                                         $items = $component->getState();
                                         $currentKey = $arguments['item'];
-                                        
-                                        // Create new item
-                                        $newItem = [];
+                                        // New repeater item with default state
+                                        $newItem = [
+                                            'category_id' => null,
+                                            'item_id'     => null,
+                                            'quantity'    => null,
+                                            'notes'       => null,
+                                        ];
                                         $newKey = uniqid();
-                                        
+
                                         // Insert after current item
                                         $newItems = [];
                                         foreach ($items as $key => $item) {
@@ -65,16 +72,17 @@ class OfficeStationeryStockUsageResource extends Resource
                                                 $newItems[$newKey] = $newItem;
                                             }
                                         }
-                                        
+
                                         $component->state($newItems);
                                     }),
                             ])
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->label('Category')
-                                    ->relationship('item.category', 'name')
+                                    ->options(\App\Models\OfficeStationeryCategory::pluck('name', 'id'))
                                     ->searchable()
                                     ->reactive()
+                                    ->live()
                                     ->preload(),
                                 Forms\Components\Select::make('item_id')
                                     ->label('Item')
@@ -90,6 +98,52 @@ class OfficeStationeryStockUsageResource extends Resource
                                     ->preload()
                                     ->required()
                                     ->live()
+                                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                        // Update category when item is selected
+                                        if ($state) {
+                                            $item = \App\Models\OfficeStationeryItem::find($state);
+                                            if ($item && !$get('category_id')) {
+                                                $set('category_id', $item->category_id);
+                                            }
+                                        }
+                                        
+                                        // Calculate total cost and check budget
+                                        $items = $get('../../items');
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = ItemPrice::where('item_type', get_class($item))
+                                                        ->where('item_id', $item->id)
+                                                        ->active()
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // Get remaining budget for ATK
+                                        $budgetService = new BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        
+                                        // Calculate new budget after usage
+                                        $newBudget = $remainingBudget - $totalCost;
+                                        
+                                        // Show warning if budget is insufficient
+                                        if ($newBudget < 0) {
+                                            Notification::make()
+                                                ->title('Budget Warning')
+                                                ->body("The total cost (Rp " . number_format($totalCost, 2) . ") exceeds your remaining budget (Rp " . number_format($remainingBudget, 2) . ").")
+                                                ->warning()
+                                                ->send();
+                                        }
+                                    })
                                     ->rules([
                                         function () {
                                             return function (string $attribute, $value, \Closure $fail, $livewire) {
@@ -121,7 +175,7 @@ class OfficeStationeryStockUsageResource extends Resource
                                                 $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $divisionId)
                                                     ->where('item_id', $itemId)
                                                     ->first();
-                                                    
+                                                
                                                 $currentStock = $stock ? $stock->current_stock : 0;
                                                 
                                                 if ($value > $currentStock) {
@@ -140,67 +194,39 @@ class OfficeStationeryStockUsageResource extends Resource
                                             return '';
                                         }
                                         
-                                        // Get division_id from the form or from the record
-                                        $divisionId = null;
-                                        if (request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.create')) {
-                                            $divisionId = auth()->user()->division_id;
-                                        } else {
-                                            $record = OfficeStationeryStockUsage::find(request()->route('record'));
-                                            $divisionId = $record ? $record->division_id : auth()->user()->division_id;
-                                        }
-                                        
-                                        $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $divisionId)
+                                        $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
                                             ->where('item_id', $itemId)
                                             ->first();
                                             
                                         $currentStock = $stock ? $stock->current_stock : 0;
                                         
-                                        return "Current: {$currentStock}";
+                                        return "Current stock: {$currentStock}";
                                     })
                                     ->live()
-                                    ->rules([
-                                        function () {
-                                            return function (string $attribute, $value, \Closure $fail, $livewire) {
-                                                // Extract the repeater index from the attribute name
-                                                // e.g., "data.items.0.quantity" -> index 0
-                                                preg_match('/items\.(\d+)\.quantity/', $attribute, $matches);
-                                                $index = $matches[1] ?? null;
-                                                
-                                                if ($index === null) {
-                                                    return;
-                                                }
-                                                
-                                                // Get the item_id for this repeater item
-                                                $itemId = data_get($livewire, "data.items.{$index}.item_id");
-                                                
-                                                if (!$itemId || !$value) {
-                                                    return;
-                                                }
-                                                
-                                                // Get division_id from the form or from the record
-                                                $divisionId = null;
-                                                if (request()->routeIs('filament.dashboard.resources.office-stationery-stock-usages.create')) {
-                                                    $divisionId = auth()->user()->division_id;
-                                                } else {
-                                                    $record = OfficeStationeryStockUsage::find(request()->route('record'));
-                                                    $divisionId = $record ? $record->division_id : auth()->user()->division_id;
-                                                }
-                                                
-                                                $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', $divisionId)
-                                                    ->where('item_id', $itemId)
-                                                    ->first();
-                                                    
-                                                $currentStock = $stock ? $stock->current_stock : 0;
-                                                
-                                                // For decrease type, check if quantity exceeds available stock
-                                                // For increase type, no validation needed
-                                                $usageType = data_get($livewire, 'data.type') ?? OfficeStationeryStockUsage::TYPE_DECREASE;
-                                                if ($usageType === OfficeStationeryStockUsage::TYPE_DECREASE && $value > $currentStock) {
-                                                    $fail("The requested quantity ({$value}) exceeds the available stock ({$currentStock}) for this item.");
-                                                }
-                                            };
-                                        },
-                                    ]),
+                                    ->afterStateUpdated(function (callable $get, callable $set, $state) {
+                                        $itemId = $get('item_id');
+                                        if (!$itemId || !$state) {
+                                            return;
+                                        }
+                                        
+                                        $stock = \App\Models\OfficeStationeryStockPerDivision::where('division_id', auth()->user()->division_id)
+                                            ->where('item_id', $itemId)
+                                            ->first();
+                                            
+                                        $currentStock = $stock ? $stock->current_stock : 0;
+                                        
+                                        if ($state > $currentStock) {
+                                            // Reset to available stock
+                                            $set('quantity', $currentStock);
+                                            
+                                            // Show notification to user
+                                            Notification::make()
+                                                ->title('Quantity adjusted')
+                                                ->body("The requested quantity has been adjusted to the available stock: {$currentStock}")
+                                                ->warning()
+                                                ->send();
+                                        }
+                                    }),
                                 Forms\Components\Textarea::make('notes')
                                     ->maxLength(1000)
                                     ->rows(1)
@@ -212,6 +238,84 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->reorderableWithButtons()
                             ->collapsible(),
                     ]),
+                Forms\Components\Section::make('Budget Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('total_cost')
+                            ->label('Total Cost')
+                            ->disabled()
+                            ->formatStateUsing(function (callable $get) {
+                                $items = $get('items') ?? [];
+                                $totalCost = 0;
+                                
+                                foreach ($items as $itemData) {
+                                    if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                        $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                        if ($item) {
+                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
+                                                ->where('item_id', $item->id)
+                                                ->active()
+                                                ->orderBy('effective_date', 'desc')
+                                                ->first();
+                                            
+                                            if ($itemPrice) {
+                                                $totalCost += $itemPrice->price * $itemData['quantity'];
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                return 'Rp ' . number_format($totalCost, 0);
+                            })
+                            ->dehydrated(false), // Don't save to database
+                        Forms\Components\TextInput::make('remaining_budget')
+                            ->label('Remaining Budget')
+                            ->disabled()
+                            ->formatStateUsing(function () {
+                                $budgetService = new BudgetService();
+                                $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                
+                                return 'Rp ' . number_format($remainingBudget, 0);
+                            })
+                            ->dehydrated(false), // Don't save to database
+                        Forms\Components\TextInput::make('new_budget')
+                            ->label('New Budget')
+                            ->disabled()
+                            ->formatStateUsing(function (callable $get) {
+                                $items = $get('items') ?? [];
+                                $totalCost = 0;
+                                
+                                foreach ($items as $itemData) {
+                                    if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                        $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                        if ($item) {
+                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
+                                                ->where('item_id', $item->id)
+                                                ->active()
+                                                ->orderBy('effective_date', 'desc')
+                                                ->first();
+                                            
+                                            if ($itemPrice) {
+                                                $totalCost += $itemPrice->price * $itemData['quantity'];
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                $budgetService = new BudgetService();
+                                $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                $newBudget = $remainingBudget - $totalCost;
+                                
+                                return 'Rp ' . number_format($newBudget, 0);
+                            })
+                            ->dehydrated(false), // Don't save to database
+                    ])
+                    ->columns(3)
+                    ->visible(function () {
+                        // Only show this section if the user's division has a budget
+                        $budgetService = new BudgetService();
+                        $hasBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                        return $hasBudget !== null;
+                    }),
                 Forms\Components\Section::make('Pengeluaran ATK Information (Optional)')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
@@ -554,5 +658,41 @@ class OfficeStationeryStockUsageResource extends Resource
             'usage-list' => Pages\UsageListOfficeStationeryStockUsage::route('/usage-list'),
             'view' => Pages\ViewOfficeStationeryStockUsage::route('/{record}'),
         ];
+    }
+    
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Calculate the total cost of the usage
+        $totalCost = 0;
+        $usageItems = $data['items'] ?? [];
+        
+        foreach ($usageItems as $itemData) {
+            $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+            if ($item) {
+                $itemPrice = ItemPrice::where('item_type', get_class($item))
+                    ->where('item_id', $item->id)
+                    ->active()
+                    ->orderBy('effective_date', 'desc')
+                    ->first();
+                
+                if ($itemPrice) {
+                    $totalCost += $itemPrice->price * $itemData['quantity'];
+                }
+            }
+        }
+        
+        // Check if the division has sufficient budget for ATK
+        $budgetService = new BudgetService();
+        $hasSufficientBudget = $budgetService->hasSufficientBudget(
+            auth()->user()->division_id,
+            'ATK',
+            $totalCost
+        );
+        
+        if (!$hasSufficientBudget) {
+            throw new \Exception('Insufficient budget for this usage. Please check your available budget.');
+        }
+        
+        return $data;
     }
 }

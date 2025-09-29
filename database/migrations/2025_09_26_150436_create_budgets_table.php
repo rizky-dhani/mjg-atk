@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('division_id')->constrained('company_divisions')->cascadeOnUpdate()->restrictOnDelete();
-            $table->decimal('initial_amount', 15, 2);
-            $table->decimal('current_amount', 15, 2);
+            $table->integer('initial_amount');
+            $table->integer('current_amount')->nullable();
             $table->enum('type', ['ATK', 'Marketing Media']); // Budget type: ATK or Marketing Media
             $table->text('notes')->nullable();
             $table->timestamps();

@@ -532,7 +532,7 @@ class ViewOfficeStationeryStockRequest extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                        'status' => OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                         'rejection_ipc_head_id' => auth()->user()->id,
                         'rejection_ipc_head_at' => now('Asia/Jakarta'),
                         'rejection_reason' => $data['rejection_reason'],
