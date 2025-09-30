@@ -236,7 +236,7 @@ class OfficeStationeryStockRequestResource extends Resource
                     OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     OfficeStationeryStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
                     OfficeStationeryStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     OfficeStationeryStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                     OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                     OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
@@ -732,9 +732,9 @@ class OfficeStationeryStockRequestResource extends Resource
                                         OfficeStationeryStockRequest::STATUS_APPROVED_BY_HCG_HEAD,
                                         OfficeStationeryStockRequest::STATUS_DELIVERED,
                                         OfficeStationeryStockRequest::STATUS_COMPLETED => 'success',
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD => 'danger',
                                         default => 'secondary',
@@ -859,7 +859,7 @@ class OfficeStationeryStockRequestResource extends Resource
                                     ->visible(fn ($record) => $record->delivered_by !== null && $record->status === OfficeStationeryStockRequest::STATUS_COMPLETED),
                                 Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
+                                    ->visible(fn ($record) => in_array($record->status, [OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD, OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD]))
                                     ->columnSpan(6),
                             ]),
                     ])

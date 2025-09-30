@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\MarketingMediaItemPrice;
 
 class MarketingMediaStockUsageItem extends Model
 {
@@ -15,6 +16,7 @@ class MarketingMediaStockUsageItem extends Model
         'previous_stock',
         'new_stock',
         'notes',
+        'price_id',
     ];
     
     protected $table = 'mm_stock_usage_items';
@@ -47,5 +49,13 @@ class MarketingMediaStockUsageItem extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MarketingMediaCategory::class);
+    }
+
+    /**
+     * Get the price for this usage item.
+     */
+    public function price(): BelongsTo
+    {
+        return $this->belongsTo(MarketingMediaItemPrice::class, 'price_id');
     }
 }

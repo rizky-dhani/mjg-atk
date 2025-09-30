@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class MarketingMediaItem extends Model
@@ -61,5 +62,26 @@ class MarketingMediaItem extends Model
     public function stocks(): HasMany
     {
         return $this->hasMany(MarketingMediaStockPerDivision::class, 'item_id');
+    }
+
+    /**
+     * Get the prices for this item.
+     */
+    public function prices(): HasMany
+    {
+        return $this->hasMany(MarketingMediaItemPrice::class, 'item_id');
+    }
+
+    /**
+     * Get the latest active price for this item.
+     */
+    public function getLatestPrice()
+    {
+        return $this->prices()->where(function ($query) {
+            $query->whereNull('end_date')
+                  ->orWhere('end_date', '>', now());
+        })
+        ->orderBy('effective_date', 'desc')
+        ->first();
     }
 }

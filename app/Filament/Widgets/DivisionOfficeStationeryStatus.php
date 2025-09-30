@@ -54,7 +54,7 @@ class DivisionOfficeStationeryStatus extends BaseWidget
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HEAD,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
-                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                        OfficeStationeryStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                         OfficeStationeryStockRequest::STATUS_REJECTED_BY_HCG_HEAD,
                     ],

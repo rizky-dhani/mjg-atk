@@ -103,7 +103,7 @@ class MarketingMediaStockRequestSeeder extends Seeder
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
@@ -242,7 +242,7 @@ class MarketingMediaStockRequestSeeder extends Seeder
                 $request->rejection_ga_head_at = now()->timezone('Asia/Jakarta');
                 $request->rejection_reason = 'Rejected by GA Head due to policy violation';
                 $request->save();
-            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD) {
+            } elseif($request->status === MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD) {
                 $request->approval_head_id = $head->id;
                 $request->approval_head_at = now()->timezone('Asia/Jakarta');
                 $request->approval_ga_admin_id = $gaAdmin->id;

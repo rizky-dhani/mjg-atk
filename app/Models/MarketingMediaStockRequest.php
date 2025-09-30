@@ -41,10 +41,10 @@ class MarketingMediaStockRequest extends Model
         'approval_stock_adjustment_at',
         'rejection_stock_adjustment_id',
         'rejection_stock_adjustment_at',
-        'approval_second_ipc_head_id',
-        'approval_second_ipc_head_at',
-        'rejection_second_ipc_head_id',
-        'rejection_second_ipc_head_at',
+        'approval_ipc_head_id',
+        'approval_ipc_head_at',
+        'rejection_ipc_head_id',
+        'rejection_ipc_head_at',
         'approval_second_ga_admin_id',
         'approval_second_ga_admin_at',
         'rejection_second_ga_admin_id',
@@ -60,16 +60,14 @@ class MarketingMediaStockRequest extends Model
         'delivered_at' => 'datetime',
         'approval_head_at' => 'datetime',
         'rejection_head_at' => 'datetime',
-        'approval_ipc_at' => 'datetime',
-        'rejection_ipc_at' => 'datetime',
-        'approval_ipc_head_at' => 'datetime',
-        'rejection_ipc_head_at' => 'datetime',
-        'approval_stock_adjustment_at' => 'datetime',
-        'rejection_stock_adjustment_at' => 'datetime',
-        'approval_second_ipc_head_at' => 'datetime',
-        'rejection_second_ipc_head_at' => 'datetime',
         'approval_ga_admin_at' => 'datetime',
         'rejection_ga_admin_at' => 'datetime',
+        'approval_ga_head_at' => 'datetime',
+        'rejection_ga_head_at' => 'datetime',
+        'approval_stock_adjustment_at' => 'datetime',
+        'rejection_stock_adjustment_at' => 'datetime',
+        'approval_second_ga_admin_at' => 'datetime',
+        'rejection_second_ga_admin_at' => 'datetime',
         'approval_marketing_head_at' => 'datetime',
         'rejection_marketing_head_at' => 'datetime',
     ];
@@ -84,6 +82,7 @@ class MarketingMediaStockRequest extends Model
     const STATUS_APPROVED_BY_GA_HEAD = 'approved_by_ga_head';
     const STATUS_REJECTED_BY_GA_HEAD = 'rejected_by_ga_head';
     const STATUS_APPROVED_STOCK_ADJUSTMENT = 'approved_stock_adjustment';
+    const STATUS_REJECTED_STOCK_ADJUSTMENT = 'rejected_stock_adjustment';
     const STATUS_APPROVED_BY_IPC_HEAD = 'approved_by_ipc_head';
     const STATUS_REJECTED_BY_IPC_HEAD = 'rejected_by_ipc_head';
     const STATUS_APPROVED_BY_SECOND_GA_ADMIN = 'approved_by_second_ga_admin';
@@ -138,7 +137,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the IPC Admin who approved this.
+     * Get the GA Admin who approved this.
      */
     public function gaAdmin(): BelongsTo
     {
@@ -146,7 +145,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the IPC Admin who rejected this.
+     * Get the GA Admin who rejected this.
      */
     public function rejectionGaAdmin(): BelongsTo
     {
@@ -154,7 +153,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the IPC Head who approved this.
+     * Get the GA Head who approved this.
      */
     public function gaHead(): BelongsTo
     {
@@ -162,7 +161,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the IPC Head who rejected this.
+     * Get the GA Head who rejected this.
      */
     public function rejectionGaHead(): BelongsTo
     {
@@ -186,7 +185,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the second IPC Head who approved this.
+     * Get the IPC Head who approved this.
      */
     public function ipcHead(): BelongsTo
     {
@@ -194,7 +193,7 @@ class MarketingMediaStockRequest extends Model
     }
 
     /**
-     * Get the second IPC Head who rejected this.
+     * Get the IPC Head who rejected this.
      */
     public function rejectionIpcHead(): BelongsTo
     {

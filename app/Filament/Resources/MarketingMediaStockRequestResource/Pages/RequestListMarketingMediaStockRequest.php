@@ -60,8 +60,8 @@ class RequestListMarketingMediaStockRequest extends ListRecords
             ->whereIn('status', [
                 MarketingMediaStockRequest::STATUS_PENDING,
                 MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
-                MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
-                MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
+                MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,
             ]);
         return $table
             ->query($query)
@@ -89,18 +89,18 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                         MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                         default => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         MarketingMediaStockRequest::STATUS_PENDING => 'warning',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC, MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,  MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'danger',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,  MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'danger',
                         default => 'secondary',
                     }),
                 TextColumn::make('items_count')
@@ -119,83 +119,32 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                         MarketingMediaStockRequest::STATUS_PENDING => 'Pending',
                         MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD => 'Approved by Head',
                         MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD => 'Rejected by Head',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC => 'Approved by IPC',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC => 'Rejected by IPC',
-                        MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD => 'Approved by IPC Head',
-                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD => 'Rejected by IPC Head',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN => 'Approved by GA Admin',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN => 'Rejected by GA Admin',
+                        MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD => 'Approved by GA Head',
+                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD => 'Rejected by GA Head',
                         MarketingMediaStockRequest::STATUS_COMPLETED => 'Completed',
                     ])
 
             ])
             ->actions([
                 ViewAction::make(),
-                // Approval Actions up to IPC Head
-                // Action::make('approve_as_head')
-                //     ->label('Approve')
-                //     ->icon('heroicon-o-check-circle')
-                //     ->color('success')
-                //     ->visible(fn ($record) =>
-                //         $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
-                //         auth()->user()->hasRole('Head') &&
-                //         auth()->user()->division_id === $record->division_id
-                //     )
-                //     ->requiresConfirmation()
-                //     ->action(function ($record) {
-                //         $record->update([
-                //             'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD,
-                //             'approval_head_id' => auth()->user()->id,
-                //             'approval_head_at' => now()->timezone('Asia/Jakarta'),
-                //         ]);
-                        
-                //         Notification::make()
-                //             ->title('Pemasukan Media Cetak berhasil di approve!')
-                //             ->success()
-                //             ->send();
-                //     }),
                 
-                // Action::make('reject_as_head')
-                //     ->label('Reject')
-                //     ->icon('heroicon-o-x-circle')
-                //     ->color('danger')
-                //     ->visible(fn ($record) =>
-                //         $record->status === MarketingMediaStockRequest::STATUS_PENDING &&
-                //         auth()->user()->hasRole('Head') &&
-                //         auth()->user()->division_id === $record->division_id
-                //     )
-                //     ->form([
-                //         Textarea::make('rejection_reason')
-                //             ->required()
-                //             ->maxLength(65535),
-                //     ])
-                //     ->action(function ($record, array $data) {
-                //         $record->update([
-                //             'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD,
-                //             'rejection_head_id' => auth()->user()->id,
-                //             'rejection_head_at' => now()->timezone('Asia/Jakarta'),
-                //             'rejection_reason' => $data['rejection_reason'],
-                //         ]);
-                        
-                //         Notification::make()
-                //             ->title('Pemasukan Media Cetak berhasil di reject!')
-                //             ->warning()
-                //             ->send();
-                //     }),
-                
-                Action::make('approve_as_ipc')
+                Action::make('approve_as_ga_admin')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
                         $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
                         auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC,
-                            'approval_ipc_id' => auth()->user()->id,
-                            'approval_ipc_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_ADMIN,
+                            'approval_ga_admin_id' => auth()->user()->id,
+                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
                         ]);
                         
                         Notification::make()
@@ -204,13 +153,13 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc')
+                Action::make('reject_as_ga_admin')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
                         $record->status === MarketingMediaStockRequest::STATUS_APPROVED_BY_HEAD &&
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
                         auth()->user()->hasRole('Admin')
                     )
                     ->requiresConfirmation()
@@ -221,7 +170,7 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                             'rejection_ipc_id' => auth()->user()->id,
                             'rejection_ipc_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
@@ -233,21 +182,21 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('approve_as_ipc_head')
+                Action::make('approve_as_ga_head')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        $record->needsGaHeadApproval() &&
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                            'approval_ipc_head_id' => auth()->user()->id,
-                            'approval_ipc_head_at' => now()->timezone('Asia/Jakarta')
+                            'status' => MarketingMediaStockRequest::STATUS_APPROVED_BY_GA_HEAD,
+                            'approval_ga_head_id' => auth()->user()->id,
+                            'approval_ga_head_at' => now()->timezone('Asia/Jakarta')
                         ]);
                         
                         Notification::make()
@@ -256,13 +205,13 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                             ->send();
                     }),
                 
-                Action::make('reject_as_ipc_head')
+                Action::make('reject_as_ga_head')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        $record->needsIpcHeadApproval() &&
-                        $record->isIncrease() && auth()->user()->division?->initial === 'IPC' &&
+                        $record->needsGaHeadApproval() &&
+                        $record->isIncrease() && auth()->user()->division?->initial === 'GA' &&
                         auth()->user()->hasRole('Head')
                     )
                     ->requiresConfirmation()
@@ -273,9 +222,9 @@ class RequestListMarketingMediaStockRequest extends ListRecords
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                            'rejection_ipc_head_id' => auth()->user()->id,
-                            'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                            'rejection_ga_head_id' => auth()->user()->id,
+                            'rejection_ga_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                         

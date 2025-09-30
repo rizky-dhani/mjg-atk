@@ -102,10 +102,6 @@ class OfficeStationeryStockRequest extends Model
             }
         });
         
-        // Initialize approval when creating
-        static::created(function ($model) {
-            $model->initializeApproval();
-        });
     }
 
     /**
@@ -141,7 +137,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the user who approved this.
+     * Get the GA Admin who approved this.
      */
     public function gaAdmin(): BelongsTo
     {
@@ -149,7 +145,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the user who rejected this.
+     * Get the GA Admin who rejected this.
      */
     public function rejectionGaAdmin(): BelongsTo
     {
@@ -189,7 +185,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the GA Head who approved this.
+     * Get the IPC Head who approved this.
      */
     public function ipcHead(): BelongsTo
     {
@@ -197,7 +193,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the GA Head who rejected this.
+     * Get the IPC Head who rejected this.
      */
     public function rejectionIpcHead(): BelongsTo
     {
@@ -221,7 +217,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the GA Head who approved this.
+     * Get the HCG Head who approved this.
      */
     public function hcgHead(): BelongsTo
     {
@@ -229,7 +225,7 @@ class OfficeStationeryStockRequest extends Model
     }
 
     /**
-     * Get the GA Head who rejected this.
+     * Get the HCG Head who rejected this.
      */
     public function rejectionHcgHead(): BelongsTo
     {

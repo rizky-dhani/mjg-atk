@@ -20,16 +20,20 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             OfficeStationeryCategorySeeder::class,
             OfficeStationeryItemSeeder::class,
-            OfficeStationeryDivisionInventorySettingSeeder::class,
-            OfficeStationeryStockPerDivisionSeeder::class,
-            OfficeStationeryStockRequestSeeder::class,
-            OfficeStationeryStockUsageSeeder::class,
             MarketingMediaCategorySeeder::class,
             MarketingMediaItemSeeder::class,
+            OfficeStationeryDivisionInventorySettingSeeder::class,
             MarketingMediaDivisionInventorySettingSeeder::class,
+            OfficeStationeryStockPerDivisionSeeder::class,
             MarketingMediaStockPerDivisionSeeder::class,
+            OfficeStationeryItemPriceSeeder::class,
+            MarketingMediaItemPriceSeeder::class,
+            OfficeStationeryStockRequestSeeder::class,
             MarketingMediaStockRequestSeeder::class,
+            OfficeStationeryStockUsageSeeder::class,
             MarketingMediaStockUsageSeeder::class,
+            MarketingMediaItemPriceSeeder::class,
+            OfficeStationeryItemPriceSeeder::class
         ]);
 
     }

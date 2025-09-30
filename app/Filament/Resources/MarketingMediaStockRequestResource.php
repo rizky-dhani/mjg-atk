@@ -228,7 +228,7 @@ class MarketingMediaStockRequestResource extends Resource
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     MarketingMediaStockRequest::STATUS_APPROVED_STOCK_ADJUSTMENT,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_IPC_HEAD,
-                    MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                    MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_SECOND_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                     MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
@@ -609,7 +609,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ])
                     ->action(function ($record, array $data) {
                         $record->update([
-                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                            'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                             'rejection_ipc_head_id' => auth()->user()->id,
                             'rejection_ipc_head_at' => now()->timezone('Asia/Jakarta'),
                             'rejection_reason' => $data['rejection_reason'],
@@ -671,7 +671,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) =>
-                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMksHead($record))
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMktHead($record))
                     ->requiresConfirmation()
                     ->databaseTransaction()
                     ->action(function ($record) {
@@ -721,7 +721,7 @@ class MarketingMediaStockRequestResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn ($record) =>
-                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMksHead($record))
+                        RequestStatusChecker::marketingMediaStockRequestNeedApprovalFromMktHead($record))
                     ->requiresConfirmation()
                     ->form([
                         Forms\Components\Textarea::make('rejection_reason')
@@ -932,9 +932,9 @@ class MarketingMediaStockRequestResource extends Resource
                                         MarketingMediaStockRequest::STATUS_APPROVED_BY_MKT_HEAD,
                                         MarketingMediaStockRequest::STATUS_DELIVERED,
                                         MarketingMediaStockRequest::STATUS_COMPLETED => 'success',
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
-                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
+                                        MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN,
                                         MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD => 'danger',
                                         default => 'secondary',
@@ -1059,7 +1059,7 @@ class MarketingMediaStockRequestResource extends Resource
                                     ->visible(fn ($record) => $record->delivered_by !== null && $record->status === MarketingMediaStockRequest::STATUS_COMPLETED),
                                 \Filament\Infolists\Components\TextEntry::make('rejection_reason')
                                     ->label('Rejection Reason')
-                                    ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD]))
+                                    ->visible(fn ($record) => in_array($record->status, [MarketingMediaStockRequest::STATUS_REJECTED_BY_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD, MarketingMediaStockRequest::STATUS_REJECTED_BY_SECOND_GA_ADMIN, MarketingMediaStockRequest::STATUS_REJECTED_BY_MKT_HEAD]))
                                     ->columnSpan(6),
                             ]),
                     ])

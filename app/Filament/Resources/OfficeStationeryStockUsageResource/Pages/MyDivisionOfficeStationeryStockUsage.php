@@ -271,7 +271,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                 ->schema([
                                     Select::make('category_id')
                                         ->label('Category')
-                                        ->relationship('item.category', 'name')
+                                        ->options(\App\Models\OfficeStationeryCategory::pluck('name', 'id'))
                                         ->searchable()
                                         ->reactive()
                                         ->preload(),
@@ -282,12 +282,21 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                             if (!$categoryId) {
                                                 return [];
                                             }
-                                            return OfficeStationeryItem::where('category_id', $categoryId)->pluck('name', 'id');
+                                            return OfficeStationeryItem::where('office_stationery_category_id', $categoryId)->pluck('name', 'id');
                                         })
                                         ->searchable()
                                         ->preload()
                                         ->required()
-                                        ->live(),
+                                        ->reactive()
+                                        ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                                            // Update category when item is selected, only for the current field
+                                            if ($state) {
+                                                $item = OfficeStationeryItem::find($state);
+                                                if ($item) {
+                                                    $set('category_id', $item->office_stationery_category_id);
+                                                }
+                                            }
+                                        }),
                                     TextInput::make('quantity')
                                         ->required()
                                         ->numeric()
@@ -361,6 +370,84 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                 ->reorderableWithButtons()
                                 ->collapsible(),
                         ]),
+                        Section::make('Budget Information')
+                            ->schema([
+                                TextInput::make('total_cost')
+                                    ->label('Total Cost')
+                                    ->disabled()
+                                    ->formatStateUsing(function (callable $get) {
+                                        $items = $get('items') ?? [];
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_type', get_class($item))
+                                                        ->where('item_id', $item->id)
+                                                        ->active()
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        return 'Rp ' . number_format($totalCost, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                                TextInput::make('remaining_budget')
+                                    ->label('Remaining Budget')
+                                    ->disabled()
+                                    ->formatStateUsing(function () {
+                                        $budgetService = new \App\Services\BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        
+                                        return 'Rp ' . number_format($remainingBudget, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                                TextInput::make('new_budget')
+                                    ->label('New Budget')
+                                    ->disabled()
+                                    ->formatStateUsing(function (callable $get) {
+                                        $items = $get('items') ?? [];
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_type', get_class($item))
+                                                        ->where('item_id', $item->id)
+                                                        ->active()
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        $budgetService = new \App\Services\BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        $newBudget = $remainingBudget - $totalCost;
+                                        
+                                        return 'Rp ' . number_format($newBudget, 0);
+                                    })
+                                    ->dehydrated(false), // Don't save to database
+                            ])
+                            ->columns(3)
+                            ->visible(function () {
+                                // Only show this section if the user's division has a budget
+                                $budgetService = new \App\Services\BudgetService();
+                                $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                return $remainingBudget !== null;
+                            }),
                         Section::make('Pengeluaran ATK Information (Optional)')
                             ->schema([
                                 Hidden::make('type')
@@ -389,141 +476,6 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
 
                         Notification::make()
                             ->title('Pengeluaran ATK berhasil diresubmit!')
-                            ->success()
-                            ->send();
-                    }),
-                // Approval Actions
-                Action::make('approve_as_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) =>
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_HEAD,
-                            'approval_head_id' => auth()->user()->id,
-                            'approval_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('reject_as_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) =>
-                        RequestStatusChecker::atkStockUsageNeedApprovalFromDivisionHead($record))
-                    ->requiresConfirmation()
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HEAD,
-                            'rejection_head_id' => auth()->user()->id,
-                            'rejection_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
-                            ->warning()
-                            ->send();
-                    }),
-                Action::make('approve_as_ga_admin')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_APPROVED_BY_GA_ADMIN,
-                            'approval_ga_admin_id' => auth()->user()->id,
-                            'approval_ga_admin_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve!')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('reject_as_ga_admin')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromGaAdmin($record))
-                    ->requiresConfirmation()
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_GA_ADMIN,
-                            'rejection_ga_admin_id' => auth()->user()->id,
-                            'rejection_ga_admin_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('approve_as_hcg_head')
-                    ->label('Approve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_COMPLETED,
-                            'approval_hcg_head_id' => auth()->user()->id,
-                            'approval_hcg_head_at' => now()->timezone('Asia/Jakarta'),
-                        ]);
-                        
-                        // Process the Pengeluaran ATK
-                        $record->processStockUsage();
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-approve dan stok item berhasil diperbaharui!')
-                            ->success()
-                            ->send();
-                    }),
-                Action::make('reject_as_hcg_head')
-                    ->label('Reject')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => RequestStatusChecker::atkStockUsageNeedApprovalFromHcgHead($record))
-                    ->requiresConfirmation()
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->maxLength(65535),
-                    ])
-                    ->action(function ($record, array $data) {
-                        $record->update([
-                            'status' => OfficeStationeryStockUsage::STATUS_REJECTED_BY_HCG_HEAD,
-                            'rejection_hcg_head_id' => auth()->user()->id,
-                            'rejection_hcg_head_at' => now()->timezone('Asia/Jakarta'),
-                            'rejection_reason' => $data['rejection_reason'],
-                        ]);
-                        
-                        Notification::make()
-                            ->title('Pengeluaran ATK berhasil di-reject!')
                             ->success()
                             ->send();
                     }),

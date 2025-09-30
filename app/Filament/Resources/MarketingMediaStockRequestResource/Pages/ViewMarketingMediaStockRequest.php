@@ -128,7 +128,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC,
+                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_ADMIN,
                         'approval_ipc_id' => auth()->user()->id,
                         'approval_ipc_at' => now(),
                         'rejection_reason' => $data['rejection_reason'],
@@ -184,7 +184,7 @@ class ViewMarketingMediaStockRequest extends ViewRecord
                 ])
                 ->action(function ($record, array $data) {
                     $record->update([
-                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_IPC_HEAD,
+                        'status' => MarketingMediaStockRequest::STATUS_REJECTED_BY_GA_HEAD,
                         'approval_ipc_head_id' => auth()->user()->id,
                         'approval_ipc_head_at' => now(),
                         'rejection_reason' => $data['rejection_reason'],
