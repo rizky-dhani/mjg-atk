@@ -14,7 +14,7 @@ class OfficeStationeryItem extends Model
         'name',
         'slug',
         'max_stock',
-        'office_stationery_category_id',
+        'category_id',
     ];
 
     protected $casts = [
@@ -67,9 +67,9 @@ class OfficeStationeryItem extends Model
     /**
      * Get the prices for this item.
      */
-    public function prices(): MorphMany
+    public function prices()
     {
-        return $this->morphMany(ItemPrice::class, 'item');
+        return $this->hasMany(OfficeStationeryItemPrice::class, 'item_id');
     }
 
     /**
@@ -77,6 +77,11 @@ class OfficeStationeryItem extends Model
      */
     public function getLatestPrice()
     {
-        return $this->prices()->active()->orderBy('effective_date', 'desc')->first();
+        return $this->prices()->where(function ($query) {
+            $query->whereNull('end_date')
+                  ->orWhere('end_date', '>', now());
+        })
+        ->orderBy('effective_date', 'desc')
+        ->first();
     }
 }
