@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Budget;
-use App\Models\ItemPrice;
+// Remove this line - we don't need ItemPrice anymore
 use App\Services\BudgetService;
 use Filament\Forms;
 use Filament\Tables;
@@ -89,9 +89,11 @@ class MarketingMediaStockUsageResource extends Resource
                                             if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                                 $item = \App\Models\MarketingMediaItem::find($itemData['item_id']);
                                                 if ($item) {
-                                                    $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                        ->where('item_id', $item->id)
-                                                        ->active()
+                                                    $itemPrice = \App\Models\MarketingMediaItemPrice::where('item_id', $item->id)
+                                                        ->where(function ($query) {
+                                                            $query->whereNull('end_date')
+                                                                  ->orWhere('end_date', '>', now());
+                                                        })
                                                         ->orderBy('effective_date', 'desc')
                                                         ->first();
                                                     
@@ -226,9 +228,11 @@ class MarketingMediaStockUsageResource extends Resource
                                     if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                         $item = \App\Models\MarketingMediaItem::find($itemData['item_id']);
                                         if ($item) {
-                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                ->where('item_id', $item->id)
-                                                ->active()
+                                            $itemPrice = \App\Models\MarketingMediaItemPrice::where('item_id', $item->id)
+                                                ->where(function ($query) {
+                                                    $query->whereNull('end_date')
+                                                          ->orWhere('end_date', '>', now());
+                                                })
                                                 ->orderBy('effective_date', 'desc')
                                                 ->first();
                                             
@@ -263,9 +267,11 @@ class MarketingMediaStockUsageResource extends Resource
                                     if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                         $item = \App\Models\MarketingMediaItem::find($itemData['item_id']);
                                         if ($item) {
-                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                ->where('item_id', $item->id)
-                                                ->active()
+                                            $itemPrice = \App\Models\MarketingMediaItemPrice::where('item_id', $item->id)
+                                                ->where(function ($query) {
+                                                    $query->whereNull('end_date')
+                                                          ->orWhere('end_date', '>', now());
+                                                })
                                                 ->orderBy('effective_date', 'desc')
                                                 ->first();
                                             
@@ -731,9 +737,11 @@ class MarketingMediaStockUsageResource extends Resource
         foreach ($usageItems as $itemData) {
             $item = \App\Models\MarketingMediaItem::find($itemData['item_id']);
             if ($item) {
-                $itemPrice = ItemPrice::where('item_type', get_class($item))
-                    ->where('item_id', $item->id)
-                    ->active()
+                $itemPrice = \App\Models\MarketingMediaItemPrice::where('item_id', $item->id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
                     ->orderBy('effective_date', 'desc')
                     ->first();
                 

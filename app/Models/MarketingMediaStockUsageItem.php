@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\MarketingMediaItemPrice;
 
 class MarketingMediaStockUsageItem extends Model
 {
@@ -55,6 +56,6 @@ class MarketingMediaStockUsageItem extends Model
      */
     public function price(): BelongsTo
     {
-        return $this->belongsTo(ItemPrice::class, 'price_id');
+        return $this->belongsTo(MarketingMediaItemPrice::class, 'price_id');
     }
 }

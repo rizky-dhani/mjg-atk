@@ -212,9 +212,12 @@ class MarketingMediaStockUsage extends Model
                 $item->save();
                 
                 // Calculate the cost of this item
-                $itemPrice = ItemPrice::where('item_type', get_class($item->item))
+                $itemPrice = \App\Models\ItemPrice::where('item_type', get_class($item->item))
                     ->where('item_id', $item->item_id)
-                    ->active()
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
                     ->orderBy('effective_date', 'desc')
                     ->first();
                 
