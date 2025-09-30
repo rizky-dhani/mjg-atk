@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('division_id')->constrained('company_divisions')->cascadeOnUpdate()->restrictOnDelete();
             $table->integer('initial_amount');
             $table->integer('current_amount')->nullable();
+            $table->year('effective_year');
             $table->enum('type', ['ATK', 'Marketing Media']); // Budget type: ATK or Marketing Media
             $table->text('notes')->nullable();
             $table->timestamps();

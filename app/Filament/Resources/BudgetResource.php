@@ -63,7 +63,13 @@ class BudgetResource extends Resource
                     ->numeric()
                     ->disabled() // This will be calculated automatically
                     ->prefix('Rp'), // Indonesian Rupiah prefix
-                
+
+                Forms\Components\Select::make('effective_year')
+                    ->label('Effective Year')
+                    ->options(range(date('Y') - 30, date('Y') + 10))
+                    ->required()
+                    ->columnSpanFull(),
+
                 Forms\Components\Textarea::make('notes')
                     ->columnSpanFull(),
             ]);
@@ -101,6 +107,10 @@ class BudgetResource extends Resource
                         return 'Rp. '.number_format($record->current_amount, 0, ',', '.');
                     })
                     ->sortable(),
+                
+                Tables\Columns\TextColumn::make('effective_year')
+                    ->label('Effective Year')
+                    ->date('Y'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

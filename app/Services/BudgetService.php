@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Budget;
 use App\Models\OfficeStationeryItem;
 use App\Models\MarketingMediaItem;
-use App\Models\ItemPrice;
+// Remove this line - we don't need ItemPrice anymore
 
 class BudgetService
 {
@@ -55,18 +55,28 @@ class BudgetService
             // Determine if this is an OfficeStationeryItem or MarketingMediaItem
             if (str_contains(get_class($usageItem->item), 'OfficeStationery')) {
                 $item = $usageItem->item;
+                // Get the latest active price for this OfficeStationeryItem
+                $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
+                    ->orderBy('effective_date', 'desc')
+                    ->first();
+                
+                if ($itemPrice) {
+                    $totalCost += $itemPrice->price * $usageItem->quantity;
+                }
             } elseif (str_contains(get_class($usageItem->item), 'MarketingMedia')) {
                 $item = $usageItem->item;
-            }
-
-            if ($item) {
-                // Get the latest active price for this item
-                $itemPrice = ItemPrice::where('item_type', get_class($item))
-                ->where('item_id', $item->id)
-                ->active()
-                ->orderBy('effective_date', 'desc')
-                ->first();
-
+                $itemPrice = \App\Models\MarketingMediaItemPrice::where('item_id', $item->id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
+                    ->orderBy('effective_date', 'desc')
+                    ->first();
+                
                 if ($itemPrice) {
                     $totalCost += $itemPrice->price * $usageItem->quantity;
                 }

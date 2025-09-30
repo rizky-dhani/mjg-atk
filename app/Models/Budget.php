@@ -11,13 +11,14 @@ class Budget extends Model
         'division_id',
         'initial_amount',
         'current_amount',
+        'effective_year',
         'type',
         'notes',
     ];
 
     protected $casts = [
-        'initial_amount' => 'decimal:2',
-        'current_amount' => 'decimal:2',
+        'initial_amount' => 'integer',
+        'current_amount' => 'integer',
     ];
 
     /**
