@@ -55,6 +55,6 @@ class OfficeStationeryStockUsageItem extends Model
      */
     public function price(): BelongsTo
     {
-        return $this->belongsTo(ItemPrice::class, 'price_id');
+        return $this->belongsTo(OfficeStationeryItemPrice::class, 'price_id');
     }
 }

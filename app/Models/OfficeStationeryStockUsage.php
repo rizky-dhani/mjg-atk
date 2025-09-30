@@ -234,9 +234,11 @@ class OfficeStationeryStockUsage extends Model
                 $item->save();
                 
                 // Calculate the cost of this item
-                $itemPrice = ItemPrice::where('item_type', get_class($item->item))
-                    ->where('item_id', $item->item_id)
-                    ->active()
+                $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->item_id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
                     ->orderBy('effective_date', 'desc')
                     ->first();
                 

@@ -2,20 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Helpers\RequestStatusChecker;
-use App\Helpers\UserRoleChecker;
-use App\Models\Budget;
-use App\Models\ItemPrice;
-use App\Services\BudgetService;
 use Filament\Forms;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use App\Models\Budget;
+// Remove this line - we don't need ItemPrice anymore
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\CompanyDivision;
+use App\Services\BudgetService;
+use App\Helpers\UserRoleChecker;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
+use App\Helpers\RequestStatusChecker;
 use Filament\Forms\Components\Repeater;
 use Filament\Notifications\Notification;
 use Filament\Tables\Filters\SelectFilter;
@@ -48,14 +50,52 @@ class OfficeStationeryStockUsageResource extends Resource
                             ->relationship()
                             ->addable(false)
                             ->cloneable()
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set, $state = null) {
+                                $items = $get('items') ?? [];
+                                $totalCost = 0;
+
+                                foreach ($items as $itemData) {
+                                    if (!empty($itemData['item_id']) && !empty($itemData['quantity'])) {
+                                        $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                        if ($item) {
+                                            $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>', now()))
+                                                ->orderBy('effective_date', 'desc')
+                                                ->first();
+
+                                            if ($itemPrice) {
+                                                $totalCost += $itemPrice->price * $itemData['quantity'];
+                                            }
+                                        }
+                                    }
+                                }
+
+                                $budgetService = new BudgetService();
+                                $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK') ?? 0;
+                                $newBudget = $remainingBudget - $totalCost;
+
+                                // set the display fields (formatted)
+                                $set('total_cost', 'Rp ' . number_format($totalCost, 0));
+                                $set('remaining_budget', 'Rp ' . number_format($remainingBudget, 0));
+                                $set('new_budget', 'Rp ' . number_format($newBudget, 0));
+
+                                if ($newBudget < 0) {
+                                    Notification::make()
+                                        ->title('Budget Warning')
+                                        ->body("The total cost (Rp " . number_format($totalCost, 2) . ") exceeds your remaining budget (Rp " . number_format($remainingBudget, 2) . ").")
+                                        ->warning()
+                                        ->send();
+                                }
+                            })
                             ->extraItemActions([
                                 Action::make('add_new_after')
                                     ->icon('heroicon-m-plus')
                                     ->color('primary')
-                                    ->action(function (array $arguments, Repeater $component) {
-                                        $items = $component->getState();
+                                    ->action(function (array $arguments, Repeater $component, Set $set) {
+                                        $items = $component->getState() ?? [];
                                         $currentKey = $arguments['item'];
-                                        // New repeater item with default state
+
                                         $newItem = [
                                             'category_id' => null,
                                             'item_id'     => null,
@@ -64,7 +104,6 @@ class OfficeStationeryStockUsageResource extends Resource
                                         ];
                                         $newKey = uniqid();
 
-                                        // Insert after current item
                                         $newItems = [];
                                         foreach ($items as $key => $item) {
                                             $newItems[$key] = $item;
@@ -73,7 +112,42 @@ class OfficeStationeryStockUsageResource extends Resource
                                             }
                                         }
 
-                                        $component->state($newItems);
+                                        // Update the form state properly
+                                        $set('items', $newItems);
+
+                                        // Recompute budgets and set fields (programmatic set does NOT trigger afterStateUpdated)
+                                        $totalCost = 0;
+                                        foreach ($newItems as $itemData) {
+                                            if (!empty($itemData['item_id']) && !empty($itemData['quantity'])) {
+                                                $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                        ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>', now()))
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        $budgetService = new BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK') ?? 0;
+                                        $newBudget = $remainingBudget - $totalCost;
+
+                                        $set('total_cost', 'Rp ' . number_format($totalCost, 0));
+                                        $set('remaining_budget', 'Rp ' . number_format($remainingBudget, 0));
+                                        $set('new_budget', 'Rp ' . number_format($newBudget, 0));
+
+                                        if ($newBudget < 0) {
+                                            Notification::make()
+                                                ->title('Budget Warning')
+                                                ->body("The total cost (Rp " . number_format($totalCost, 2) . ") exceeds your remaining budget (Rp " . number_format($remainingBudget, 2) . ").")
+                                                ->warning()
+                                                ->send();
+                                        }
+                                        
                                     }),
                             ])
                             ->schema([
@@ -115,9 +189,11 @@ class OfficeStationeryStockUsageResource extends Resource
                                             if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                                 $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
                                                 if ($item) {
-                                                    $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                        ->where('item_id', $item->id)
-                                                        ->active()
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                        ->where(function ($query) {
+                                                            $query->whereNull('end_date')
+                                                                  ->orWhere('end_date', '>', now());
+                                                        })
                                                         ->orderBy('effective_date', 'desc')
                                                         ->first();
                                                     
@@ -226,6 +302,45 @@ class OfficeStationeryStockUsageResource extends Resource
                                                 ->warning()
                                                 ->send();
                                         }
+                                        
+                                        // Calculate total cost and check budget
+                                        $items = $get('../../items');
+                                        $totalCost = 0;
+                                        
+                                        foreach ($items as $itemData) {
+                                            if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
+                                                $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
+                                                if ($item) {
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                        ->where(function ($query) {
+                                                            $query->whereNull('end_date')
+                                                                  ->orWhere('end_date', '>', now());
+                                                        })
+                                                        ->orderBy('effective_date', 'desc')
+                                                        ->first();
+                                                    
+                                                    if ($itemPrice) {
+                                                        $totalCost += $itemPrice->price * $itemData['quantity'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // Get remaining budget for ATK
+                                        $budgetService = new BudgetService();
+                                        $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
+                                        
+                                        // Calculate new budget after usage
+                                        $newBudget = $remainingBudget - $totalCost;
+                                        
+                                        // Show warning if budget is insufficient
+                                        if ($newBudget < 0) {
+                                            Notification::make()
+                                                ->title('Budget Warning')
+                                                ->body("The total cost (Rp " . number_format($totalCost, 2) . ") exceeds your remaining budget (Rp " . number_format($remainingBudget, 2) . ").")
+                                                ->warning()
+                                                ->send();
+                                        }
                                     }),
                                 Forms\Components\Textarea::make('notes')
                                     ->maxLength(1000)
@@ -243,6 +358,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         Forms\Components\TextInput::make('total_cost')
                             ->label('Total Cost')
                             ->disabled()
+                            ->live(onBlur: true)
                             ->formatStateUsing(function (callable $get) {
                                 $items = $get('items') ?? [];
                                 $totalCost = 0;
@@ -251,9 +367,11 @@ class OfficeStationeryStockUsageResource extends Resource
                                     if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                         $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
                                         if ($item) {
-                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                ->where('item_id', $item->id)
-                                                ->active()
+                                            $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                ->where(function ($query) {
+                                                    $query->whereNull('end_date')
+                                                          ->orWhere('end_date', '>', now());
+                                                })
                                                 ->orderBy('effective_date', 'desc')
                                                 ->first();
                                             
@@ -270,6 +388,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         Forms\Components\TextInput::make('remaining_budget')
                             ->label('Remaining Budget')
                             ->disabled()
+                            ->live(onBlur: true)
                             ->formatStateUsing(function () {
                                 $budgetService = new BudgetService();
                                 $remainingBudget = $budgetService->getRemainingBudget(auth()->user()->division_id, 'ATK');
@@ -280,6 +399,7 @@ class OfficeStationeryStockUsageResource extends Resource
                         Forms\Components\TextInput::make('new_budget')
                             ->label('New Budget')
                             ->disabled()
+                            ->live(onBlur: true)
                             ->formatStateUsing(function (callable $get) {
                                 $items = $get('items') ?? [];
                                 $totalCost = 0;
@@ -288,9 +408,11 @@ class OfficeStationeryStockUsageResource extends Resource
                                     if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                         $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
                                         if ($item) {
-                                            $itemPrice = ItemPrice::where('item_type', get_class($item))
-                                                ->where('item_id', $item->id)
-                                                ->active()
+                                            $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                                                ->where(function ($query) {
+                                                    $query->whereNull('end_date')
+                                                          ->orWhere('end_date', '>', now());
+                                                })
                                                 ->orderBy('effective_date', 'desc')
                                                 ->first();
                                             
@@ -669,9 +791,11 @@ class OfficeStationeryStockUsageResource extends Resource
         foreach ($usageItems as $itemData) {
             $item = \App\Models\OfficeStationeryItem::find($itemData['item_id']);
             if ($item) {
-                $itemPrice = ItemPrice::where('item_type', get_class($item))
-                    ->where('item_id', $item->id)
-                    ->active()
+                $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_id', $item->id)
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                              ->orWhere('end_date', '>', now());
+                    })
                     ->orderBy('effective_date', 'desc')
                     ->first();
                 
