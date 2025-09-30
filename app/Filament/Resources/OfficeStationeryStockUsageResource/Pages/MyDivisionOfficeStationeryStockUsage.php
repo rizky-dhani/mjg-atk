@@ -383,7 +383,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                             if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                                 $item = OfficeStationeryItem::find($itemData['item_id']);
                                                 if ($item) {
-                                                    $itemPrice = \App\Models\ItemPrice::where('item_type', get_class($item))
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_type', get_class($item))
                                                         ->where('item_id', $item->id)
                                                         ->active()
                                                         ->orderBy('effective_date', 'desc')
@@ -420,7 +420,7 @@ class MyDivisionOfficeStationeryStockUsage extends ListRecords
                                             if (isset($itemData['item_id']) && isset($itemData['quantity'])) {
                                                 $item = OfficeStationeryItem::find($itemData['item_id']);
                                                 if ($item) {
-                                                    $itemPrice = \App\Models\ItemPrice::where('item_type', get_class($item))
+                                                    $itemPrice = \App\Models\OfficeStationeryItemPrice::where('item_type', get_class($item))
                                                         ->where('item_id', $item->id)
                                                         ->active()
                                                         ->orderBy('effective_date', 'desc')
