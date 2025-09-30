@@ -67,9 +67,9 @@ class MarketingMediaItem extends Model
     /**
      * Get the prices for this item.
      */
-    public function prices(): MorphMany
+    public function prices(): HasMany
     {
-        return $this->morphMany(ItemPrice::class, 'item');
+        return $this->hasMany(MarketingMediaItemPrice::class, 'item_id');
     }
 
     /**
@@ -77,6 +77,11 @@ class MarketingMediaItem extends Model
      */
     public function getLatestPrice()
     {
-        return $this->prices()->active()->orderBy('effective_date', 'desc')->first();
+        return $this->prices()->where(function ($query) {
+            $query->whereNull('end_date')
+                  ->orWhere('end_date', '>', now());
+        })
+        ->orderBy('effective_date', 'desc')
+        ->first();
     }
 }
